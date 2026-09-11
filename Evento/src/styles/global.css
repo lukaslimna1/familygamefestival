@@ -316,7 +316,8 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .partner-footnote { display: flex; align-items: center; gap: 12px; padding: 17px 0 0; color: var(--muted); }
 .partner-footnote img { width: 38px; height: 20px; object-fit: contain; }
 .partner-footnote p { margin: 0; font-size: 13px; }
-.exhibitor-cta { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 35px; margin-top: 116px; padding-top: 54px; padding-bottom: 57px; overflow: hidden; border-top: 1px solid var(--line-light); }
+.exhibitor-cta { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 28px; margin-top: 0; padding: 30px; overflow: hidden; border: 1px solid var(--line-light); border-left: 4px solid var(--cyan); background: #fff; }
+.exhibitor-cta-copy { position: relative; z-index: 1; flex: 1; }
 .exhibitor-cta h2 { margin-bottom: 15px; font-size: clamp(3rem, 5vw, 4.7rem); }
 .exhibitor-cta p:last-child { max-width: 590px; margin: 0; color: var(--muted); }
 .exhibitor-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; max-width: 360px; }
@@ -665,8 +666,8 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
   .inclusive-note { align-items: flex-start; }
   .ticket-card { min-height: 270px; }
   .ticket-footer { gap: 20px; }
-  .exhibitor-cta { margin-top: 77px; padding-top: 38px; padding-bottom: 42px; }
-  .exhibitor-cta > div:first-child { padding-right: 0; }
+  .exhibitor-cta { gap: 21px; padding: 22px 18px; }
+  .exhibitor-cta-copy { padding-right: 0; }
   .exhibitor-mascot { position: static; align-self: flex-end; width: 76px; height: 112px; margin-top: -4px; opacity: .72; }
   .exhibitor-actions { align-items: flex-start; justify-content: flex-start; max-width: none; }
   .partner-card { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; }

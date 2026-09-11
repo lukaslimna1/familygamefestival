@@ -64,7 +64,7 @@ export const attractions = [
 
 export const tournaments = [
   { id: 'cosplay', category: 'Cosplay', title: 'Concurso Cosplay', time: '16h00', date: '20', accent: 'pink', prize: 'R$ 1.000', detail: 'Participação sujeita ao regulamento oficial e limite de vagas.', featured: true },
-  { id: 'just-dance-2026', category: 'Dance Game', title: 'Just Dance 2026', time: '', date: '19', accent: 'yellow', prize: '1 vaga', detail: 'Seletiva valendo 1 vaga para o Nacional de Just Dance 2026.', featured: true },
+  { id: 'just-dance-2026', category: 'Dance Game', title: 'Just Dance 2026', time: '', date: '19', accent: 'yellow', prize: '1 vaga para o Nacional de Just Dance', detail: 'Seletiva valendo 1 vaga para o Nacional de Just Dance 2026.', featured: true },
   { id: 'mortal-kombat-1', category: 'Fight Games', title: 'Mortal Kombat 1', time: '14h00', date: '20', accent: 'red', prize: 'R$ 1.000', detail: 'Vagas limitadas.' },
   { id: 'street-fighter-6', category: 'Fight Games', title: 'Street Fighter 6', time: '18h00', date: '20', accent: 'cyan', prize: 'R$ 1.000', detail: 'Vagas limitadas.' },
   { id: 'tekken-8', category: 'Fight Games', title: 'Tekken 8', time: '16h00', date: '20', accent: 'pink', prize: 'R$ 1.000', detail: 'Vagas limitadas.' },
