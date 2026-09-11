@@ -5,6 +5,7 @@
 ## Conteúdo
 
 - `Usar/Cores e Tipografia/` — paleta de cores, elementos gráficos e recomendações tipográficas.
+- `Usar/Elementos Graficos/` — dez ícones PNG para interface, destaque e composição visual.
 - `Usar/Mascote/PNG/` — seis poses do mascote em PNG.
 - `Usar/Mascote/SVG/` — seis poses do mascote em vetor.
 - `Usar/Mascote/Mascotes.ai` — arquivo-fonte editável do mascote.
