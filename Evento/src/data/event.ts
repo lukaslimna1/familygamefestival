@@ -147,7 +147,6 @@ export const experiences = [
 export const tickets = [
   { name: 'Ingresso diário', price: 'R$ 30', fee: '+ R$ 2,55 de taxa', detail: 'Acesso por um dia', note: 'Escolha 19/09 ou 20/09.', accent: 'cyan' },
   { name: 'Família / grupo', price: 'R$ 100', fee: '+ R$ 8,50 de taxa', detail: 'Quatro pessoas no mesmo dia', note: 'Sem comprovação de parentesco.', accent: 'yellow' },
-  { name: 'VIP Diamante', price: 'R$ 100', fee: '+ R$ 8,50 de taxa', detail: 'Acesso aos dois dias · 100 unidades', note: 'Entrada antecipada, prioridade, credencial e 3 brindes. Não inclui campeonatos.', accent: 'pink' },
   { name: 'Meia / benefício', price: 'R$ 50', fee: '+ R$ 4,25 de taxa', detail: 'PCD, TEA e demais beneficiários', note: 'Conforme legislação e regras aplicáveis.', accent: 'red' }
 ] as const;
 
@@ -161,5 +160,5 @@ export const competitorTickets = [
 export const partners = [
   { name: 'Edge 3D Studio', handle: '@edge3dstudio', status: 'Patrocinador oficial · expositor confirmado', href: 'https://www.instagram.com/edge3dstudio/', accent: 'yellow' },
   { name: 'Alterstate', handle: '@usealterstate', status: 'Apoio confirmado', href: 'https://www.instagram.com/usealterstate/', accent: 'cyan' },
-  { name: 'SORRI Bauru', handle: 'Arena Tauste · Bauru/SP', status: 'Apoio institucional · sede do festival', href: '', accent: 'pink' }
+  { name: 'SORRI Bauru', handle: 'sorribauru.com.br', status: 'Apoio institucional · sede do festival', href: 'https://sorribauru.com.br', accent: 'pink' }
 ] as const;
