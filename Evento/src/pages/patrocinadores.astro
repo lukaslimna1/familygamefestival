@@ -1,0 +1,159 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { event, navItems, partners, sponsorTiers, directSponsorOptions } from '../data/event';
+
+const logoDirectory = path.join(process.cwd(), 'public', 'assets', 'logos', 'parceiros');
+const logoCandidates: Record<string, string[]> = {
+  'Family Games': ['family-games.svg', 'family-games.png', 'family-games-logo.svg'],
+  'Edge 3D Studio': ['edge-3d-studio.svg', 'edge-3d-studio.png', 'Edge 3D Studio.svg', 'Edge 3D Studio.png'],
+  Alterstate: ['alterstate.svg', 'alterstate.png'],
+  'SORRI Bauru': ['Sorri Bauru.png', 'sorri-bauru.svg', 'sorri-bauru.png']
+};
+
+const getLogo = (name: string) => {
+  const filename = logoCandidates[name]?.find((candidate) => fs.existsSync(path.join(logoDirectory, candidate)));
+  return filename ? `/assets/logos/parceiros/${filename.split('/').map(encodeURIComponent).join('/')}` : '';
+};
+
+const navLinks = navItems.map((item) => ({ ...item, href: item.href.startsWith('#') ? `/${item.href}` : item.href }));
+const powerUpPartners = partners.filter((partner) => partner.level === 'Power-up');
+const supportPartners = partners.filter((partner) => partner.level === 'Apoio' || partner.level === 'Realização');
+const getTier = (name: string) => sponsorTiers.find((tier) => tier.name.toLowerCase() === name.toLowerCase());
+
+const hierarchyTiers = [
+  { key: 'legend', title: 'Legend', kicker: 'Principal parceiro institucional', meta: getTier('Legend')?.slots ?? '1 cota', partners: [], empty: 'Espaço reservado para o principal parceiro do festival.' },
+  { key: 'champion', title: 'Champion', kicker: 'Marca em posição de alta visibilidade', meta: getTier('Champion')?.slots ?? '2 cotas', partners: [], empty: 'Espaço reservado para marcas Champion.' },
+  { key: 'power', title: 'Power-up', kicker: 'Patrocinador em destaque', meta: getTier('Power-up')?.slots ?? '4 cotas', partners: powerUpPartners, empty: 'Espaço reservado para novos parceiros Power-up.' },
+  { key: 'player', title: 'Player', kicker: 'Entrada no grupo oficial de patrocinadores', meta: getTier('Player')?.slots ?? '8 cotas', partners: [], empty: 'Espaço reservado para marcas Player.' },
+  { key: 'support', title: 'Apoio & realização', kicker: 'A base que coloca o festival em movimento', meta: 'marcas confirmadas', partners: supportPartners, empty: '' }
+] as const;
+---
+
+<BaseLayout
+  title="Patrocinadores | Family Game Festival"
+  description="Conheça os patrocinadores, apoiadores e níveis de parceria do Family Game Festival 2026."
+  canonical="https://familygamefestival.vercel.app/patrocinadores"
+>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="Family Game Festival · início">
+        <img src="/assets/logo.svg" alt="Family Game Festival" />
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
+        <span></span><span></span><span></span>
+        <span class="sr-only">Abrir menu</span>
+      </button>
+      <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
+        {navLinks.map((item) => <a class={item.href === '/patrocinadores' ? 'is-current' : undefined} href={item.href} aria-current={item.href === '/patrocinadores' ? 'page' : undefined}>{item.label}</a>)}
+        <a class="button button-small button-yellow nav-cta" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="sponsor-page-hero">
+      <div class="container sponsor-page-hero-grid">
+        <div class="sponsor-page-hero-copy">
+          <p class="eyebrow eyebrow-yellow">Family Game Festival · parceiros</p>
+          <h1>Nossos patrocinadores <em>entram no jogo.</em></h1>
+          <p>Logos, apoios e marcas que constroem a arena — organizados por nível de presença no festival.</p>
+          <div class="sponsor-page-actions">
+            <a class="button button-yellow" href="/patrocinadores/como-participar">Veja como ser patrocinador <span aria-hidden="true">↗</span></a>
+            <a class="button button-outline-light" href="/">Voltar ao festival <span aria-hidden="true">↩</span></a>
+          </div>
+        </div>
+        <div class="sponsor-hero-index" aria-hidden="true">
+          <span class="sponsor-hero-index-small">FGF / 26</span>
+          <strong>PARTNERS<br /><em>PLAYBOOK</em></strong>
+          <span class="sponsor-hero-index-line"></span>
+          <span class="sponsor-hero-index-foot">BASE → TOPO · PRESENÇA COM PROPÓSITO</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section hierarchy-section">
+      <div class="container">
+        <div class="section-heading heading-row hierarchy-heading">
+          <div><p class="eyebrow eyebrow-red">A pirâmide de parceiros</p><h2>Do apoio ao <em>Legend.</em></h2></div>
+          <p class="heading-note">Cada nível organiza a presença da marca. Os logos oficiais entram nesta estrutura conforme forem adicionados à pasta de parceiros.</p>
+        </div>
+
+        <div class="hierarchy-pyramid">
+          {hierarchyTiers.map((tier) => (
+            <article class={`hierarchy-tier hierarchy-tier-${tier.key}`}>
+              <div class="hierarchy-tier-topline">
+                <div><p class="hierarchy-tier-kicker">{tier.kicker}</p><h3>{tier.title}</h3></div>
+                <span class="hierarchy-tier-meta">{tier.meta}</span>
+              </div>
+              {tier.partners.length > 0 ? (
+                <div class="hierarchy-logo-grid">
+                  {tier.partners.map((partner) => (
+                    <div class="hierarchy-logo-card">
+                      <span class="hierarchy-logo-frame">
+                        {getLogo(partner.name) ? <img src={getLogo(partner.name)} alt={`Logo ${partner.name}`} /> : <span class="hierarchy-logo-fallback" aria-hidden="true">{partner.name.slice(0, 1)}</span>}
+                      </span>
+                      <span><strong>{partner.name}</strong><small>{partner.level}</small></span>
+                    </div>
+                  ))}
+                </div>
+              ) : tier.empty ? (
+                <div class="hierarchy-empty"><span>+</span>{tier.empty}</div>
+              ) : null}
+            </article>
+          ))}
+        </div>
+        <p class="hierarchy-note"><span aria-hidden="true">✦</span> A hierarquia cresce de baixo para cima: apoio, Player, Power-up, Champion e Legend.</p>
+      </div>
+    </section>
+
+    <section class="section sponsor-direct-section">
+      <div class="container">
+        <div class="section-heading heading-row sponsor-direct-heading">
+          <div><p class="eyebrow eyebrow-yellow">Estruturas especiais</p><h2>Parceiros que assumem o palco.</h2></div>
+          <p class="heading-note heading-note-light">Duas áreas já ficam prontas para receber marcas ligadas diretamente às competições e às atrações.</p>
+        </div>
+        <div class="sponsor-direct-page-grid">
+          {directSponsorOptions.map((option) => (
+            <article class={`sponsor-direct-page-card sponsor-direct-${option.accent}`}>
+              <div class="sponsor-direct-page-top"><p class="eyebrow">{option.kicker}</p><span class="sponsor-direct-status">DISPONÍVEL</span></div>
+              <h3>{option.title}</h3>
+              <p>{option.title === 'Arena Partner' ? 'Sua marca associada a uma competição, ao troféu e ao momento decisivo.' : 'Sua marca associada a uma atração especial e à experiência do público.'}</p>
+              <div class="sponsor-option-list" aria-label={`Áreas de ${option.title}`}>
+                {option.items.map((item) => <span>{item}</span>)}
+              </div>
+              <a class="text-link text-link-light" href="/patrocinadores/como-participar">Ver esta parceria <span aria-hidden="true">↗</span></a>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="section sponsor-page-cta">
+      <div class="container sponsor-page-cta-grid">
+        <div><p class="eyebrow eyebrow-yellow">Quer entrar no jogo?</p><h2>Veja como ser patrocinador.</h2><p>Conheça as cotas, as possibilidades de apoio e fale com a organização.</p></div>
+        <a class="button button-yellow" href="/patrocinadores/como-participar">Ver cotas e falar com o Juruna <span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-top"><a class="brand" href="/"><img src="/assets/logo.svg" alt="Family Game Festival" /></a><p>Games, cultura geek e impacto local.<br />Bauru · 19—20 setembro 2026</p><a class="button button-yellow button-small" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a></div>
+    <div class="container footer-bottom"><span>© 2026 Family Game Festival</span><a href={event.instagramUrl} target="_blank" rel="noreferrer">{event.instagram}</a><span>Parte da arrecadação será revertida para a SORRI Bauru.</span></div>
+  </footer>
+
+  <script>
+    const header = document.querySelector('.site-header');
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelectorAll('.main-nav a');
+    menuToggle?.addEventListener('click', () => {
+      const open = header?.classList.toggle('menu-open') ?? false;
+      menuToggle.setAttribute('aria-expanded', String(open));
+    });
+    navLinks.forEach((link) => link.addEventListener('click', () => {
+      header?.classList.remove('menu-open');
+      menuToggle?.setAttribute('aria-expanded', 'false');
+    }));
+  </script>
+</BaseLayout>

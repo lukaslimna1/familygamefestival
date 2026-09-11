@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { event, navItems, sponsorTiers, sponsorBenefits, directSponsorOptions, supportOptions } from '../../data/event';
+
+const navLinks = navItems.map((item) => ({ ...item, href: item.href.startsWith('#') ? `/${item.href}` : item.href }));
+---
+
+<BaseLayout
+  title="Como patrocinar | Family Game Festival"
+  description="Veja as cotas, contrapartidas e formatos de parceria do Family Game Festival 2026."
+  canonical="https://familygamefestival.vercel.app/patrocinadores/como-participar"
+>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="Family Game Festival · início"><img src="/assets/logo.svg" alt="Family Game Festival" /></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav"><span></span><span></span><span></span><span class="sr-only">Abrir menu</span></button>
+      <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
+        {navLinks.map((item) => <a class={item.href === '/patrocinadores' ? 'is-current' : undefined} href={item.href}>{item.label}</a>)}
+        <a class="button button-small button-yellow nav-cta" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="sponsor-guide-hero">
+      <div class="container sponsor-guide-hero-grid">
+        <div>
+          <p class="eyebrow eyebrow-yellow">Patrocínio & apoio · Family Game Festival 2026</p>
+          <h1>Como sua marca pode <em>entrar no jogo.</em></h1>
+          <p>Escolha o nível de presença que faz sentido para a sua marca ou converse com a organização sobre uma parceria sob medida.</p>
+          <div class="sponsor-page-actions"><a class="button button-yellow" href={event.whatsapp.sponsors} target="_blank" rel="noreferrer">Falar com o Juruna <span aria-hidden="true">↗</span></a><a class="button button-outline-light" href="/patrocinadores">Voltar para patrocinadores <span aria-hidden="true">↩</span></a></div>
+        </div>
+        <div class="sponsor-guide-contact"><span class="sponsor-guide-contact-label">CONTATO DIRETO</span><strong>+55 14<br />99115-2263</strong><span>WhatsApp da organização</span></div>
+      </div>
+    </section>
+
+    <section class="section section-navy sponsor-guide-section">
+      <div class="container">
+        <div class="section-heading heading-row sponsor-area-heading"><div><p class="eyebrow eyebrow-red">Níveis de parceria</p><h2>Escolha seu nível.</h2></div><p class="heading-note heading-note-light">Quanto maior a cota, maior a hierarquia e a presença da marca na experiência.</p></div>
+        <div class="sponsor-grid">
+          {sponsorTiers.map((tier, index) => (
+            <article class={`sponsor-card sponsor-${tier.accent}`}>
+              <div class="sponsor-card-top"><span class="sponsor-level">COTA</span><span class="sponsor-number">0{index + 1}</span></div>
+              <h3>{tier.name}</h3><span class="sponsor-slots">{tier.slots}</span><strong>{tier.amount}</strong><p>{tier.detail}</p>
+            </article>
+          ))}
+        </div>
+
+        <div class="sponsor-benefit-panel">
+          <div class="sponsor-benefit-copy"><p class="eyebrow eyebrow-cyan">Contrapartidas progressivas</p><h3>Mais nível.<br /><em>Mais presença.</em></h3><p>A marca aparece conectada à programação, aos campeonatos e aos momentos de destaque do festival.</p></div>
+          <ol class="sponsor-benefit-list">{sponsorBenefits.map((benefit, index) => <li><span>0{index + 1}</span><strong>{benefit}</strong></li>)}</ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-navy sponsor-guide-section sponsor-guide-section-tight">
+      <div class="container">
+        <div class="section-heading heading-row sponsor-area-heading"><div><p class="eyebrow eyebrow-yellow">Frentes especiais</p><h2>Arena ou atração?</h2></div><p class="heading-note heading-note-light">Formatos diretos para associar sua marca a um momento específico do festival.</p></div>
+        <div class="sponsor-direct-page-grid">
+          {directSponsorOptions.map((option) => (
+            <article class={`sponsor-direct-page-card sponsor-direct-${option.accent}`}>
+              <div class="sponsor-direct-page-top"><p class="eyebrow">{option.kicker}</p><strong>{option.amount}</strong></div>
+              <h3>{option.title}</h3><p>{option.detail}</p>
+              <div class="sponsor-option-list" aria-label={`Opções de ${option.title}`}>{option.items.map((item) => <span>{item}</span>)}</div>
+              <a class="text-link text-link-light" href={event.whatsapp.sponsors} target="_blank" rel="noreferrer">Falar sobre esta parceria <span aria-hidden="true">↗</span></a>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-navy sponsor-guide-section sponsor-guide-section-tight">
+      <div class="container">
+        <div class="sponsor-support-panel">
+          <div class="sponsor-support-copy"><p class="eyebrow eyebrow-yellow">Apoio em produtos & serviços</p><h3>Também dá para apoiar fazendo acontecer.</h3><p>Alimentação, prêmios, estrutura, serviços, mídia e divulgação também podem entrar na parceria.</p></div>
+          <div class="support-grid">{supportOptions.map((option) => <article class={`support-card support-${option.accent}`}><span>{option.number}</span><h4>{option.title}</h4><p>{option.text}</p></article>)}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section sponsor-guide-final-cta">
+      <div class="container sponsor-page-cta-grid"><div><p class="eyebrow eyebrow-yellow">Vamos conversar?</p><h2>Coloque sua marca na arena.</h2><p>Envie uma mensagem e receba as informações do formato mais adequado para a sua empresa.</p></div><a class="button button-yellow" href={event.whatsapp.sponsors} target="_blank" rel="noreferrer">Chamar no WhatsApp <span aria-hidden="true">↗</span></a></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-top"><a class="brand" href="/"><img src="/assets/logo.svg" alt="Family Game Festival" /></a><p>Games, cultura geek e impacto local.<br />Bauru · 19—20 setembro 2026</p><a class="button button-yellow button-small" href="/">Voltar ao site <span aria-hidden="true">↩</span></a></div>
+    <div class="container footer-bottom"><span>© 2026 Family Game Festival</span><a href={event.instagramUrl} target="_blank" rel="noreferrer">{event.instagram}</a><span>Parte da arrecadação será revertida para a SORRI Bauru.</span></div>
+  </footer>
+
+  <script>
+    const header = document.querySelector('.site-header');
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelectorAll('.main-nav a');
+    menuToggle?.addEventListener('click', () => {
+      const open = header?.classList.toggle('menu-open') ?? false;
+      menuToggle.setAttribute('aria-expanded', String(open));
+    });
+    navLinks.forEach((link) => link.addEventListener('click', () => {
+      header?.classList.remove('menu-open');
+      menuToggle?.setAttribute('aria-expanded', 'false');
+    }));
+  </script>
+</BaseLayout>

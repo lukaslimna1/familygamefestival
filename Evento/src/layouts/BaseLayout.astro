@@ -5,14 +5,15 @@ import { event } from '../data/event';
 interface Props {
   title?: string;
   description?: string;
+  canonical?: string;
 }
 
 const {
   title = event.name,
   description = 'Games, cultura geek, campeonatos e experiências para toda a família em Bauru.',
+  canonical = 'https://familygamefestival.vercel.app/',
 } = Astro.props;
 
-const canonical = 'https://familygamefestival.vercel.app/';
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Festival',
