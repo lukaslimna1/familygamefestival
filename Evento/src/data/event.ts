@@ -63,7 +63,35 @@ export const attractions = [
 export const tournaments = [
   { title: 'Mortal Kombat 1', icon: 'controller.svg', time: '14h', accent: 'red', prize: 'R$ 1.000', detail: '20/09 · domingo' },
   { title: 'Street Fighter 6', icon: 'dpad.svg', time: '16h', accent: 'cyan', prize: 'R$ 1.000', detail: '20/09 · domingo' },
-  { title: 'Tekken 8', icon: 'lightning.svg', time: '18h', accent: 'pink', prize: 'R$ 1.000', detail: '20/09 · domingo' }
+  { title: 'Tekken 8', icon: 'lightning.svg', time: '18h', accent: 'pink', prize: 'R$ 1.000', detail: '20/09 · domingo' },
+  { title: 'Campeonato Just Dance 2026', icon: 'controller.svg', time: '19/09', accent: 'yellow', prize: '', detail: 'sábado · seletiva valendo 1 vaga para o Nacional' }
+] as const;
+
+export const gameArt = [
+  {
+    title: 'Mortal Kombat 1',
+    image: 'https://mortalkombatgamessupport.wbgames.com/hc/article_attachments/32814706772371',
+    alt: 'Arte oficial de Mortal Kombat 1',
+    accent: 'red'
+  },
+  {
+    title: 'Street Fighter 6',
+    image: 'https://img-eshop.cdn.nintendo.net/i/0d7ec0b23a532e3d3ebb8c8a1f8287703d57212b71c97286c954220f1320dba7.jpg',
+    alt: 'Arte oficial de Street Fighter 6',
+    accent: 'cyan'
+  },
+  {
+    title: 'Tekken 8',
+    image: 'https://us-east-1-bandai.graphassets.com/AXzioIclSWilEjFtsMJPwz/cm8xnqwr6jlkt07lccbz2dcqa',
+    alt: 'Arte oficial de Tekken 8',
+    accent: 'pink'
+  },
+  {
+    title: 'Just Dance 2026',
+    image: 'https://staticctf.ubisoft.com/J3yJr34U2pZ2Ieem48Dwy9uqj5PNUQTn/5l2jwO39hbiuxP6YflvAMz/08e8183e56b5be38032f9a563a9387c6/JD26-logo-header.png',
+    alt: 'Logo oficial de Just Dance 2026',
+    accent: 'yellow'
+  }
 ] as const;
 
 export const experiences = [

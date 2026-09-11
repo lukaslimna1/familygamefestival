@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { event, navItems, guests, attractions, tournaments, experiences, tickets, partners } from '../data/event';
+import { event, navItems, guests, attractions, tournaments, gameArt, experiences, tickets, partners } from '../data/event';
 ---
 
 <BaseLayout>
@@ -138,7 +138,7 @@ import { event, navItems, guests, attractions, tournaments, experiences, tickets
               <article class={`tournament-row row-${tournament.accent}`}>
                 <span class="tournament-number">0{index + 1}</span>
                 <img src={`/assets/svg/${tournament.icon}`} alt="" aria-hidden="true" />
-                <div><h3>{tournament.title}</h3><p>{tournament.detail} · campeão leva {tournament.prize}</p></div>
+                <div><h3>{tournament.title}</h3><p>{tournament.detail}{tournament.prize ? ` · campeão leva ${tournament.prize}` : ''}</p></div>
                 <time>{tournament.time}</time>
               </article>
             ))}
@@ -147,6 +147,17 @@ import { event, navItems, guests, attractions, tournaments, experiences, tickets
         <div class="cosplay-banner">
           <div><p class="eyebrow eyebrow-pink">Também vale o look</p><h3>Concurso Cosplay · R$ 1.000 em prêmio</h3><p>20/09 · domingo · 16h · inscrição R$ 60 + taxa. Sujeito a regulamento e limite de vagas.</p></div>
           <a class="button button-outline-light" href="#ingressos">Ver ingressos <span aria-hidden="true">↓</span></a>
+        </div>
+        <div class="game-art-showcase">
+          <div class="game-art-heading"><p class="eyebrow eyebrow-cyan">Jogos em destaque</p><h3>Os duelos têm identidade própria.</h3><p>Artes limpas dos títulos que entram na programação competitiva do festival.</p></div>
+          <div class="game-art-grid">
+            {gameArt.map((game) => (
+              <a class={`game-art-card game-art-${game.accent}`} href={game.image} target="_blank" rel="noreferrer" aria-label={`Abrir arte de ${game.title}`}>
+                <img src={game.image} alt={game.alt} loading="lazy" />
+                <span>{game.title} <b aria-hidden="true">↗</b></span>
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     </section>
