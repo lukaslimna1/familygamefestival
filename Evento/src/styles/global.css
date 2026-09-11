@@ -396,8 +396,8 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .realization-feature { display: grid; grid-template-columns: minmax(0, 1fr) minmax(230px, .82fr) auto; align-items: center; gap: 28px; margin-bottom: 18px; padding: 25px 28px; color: var(--ink); border: 1px solid var(--line-light); border-top: 5px solid var(--yellow); background: #fff; }
 .realization-feature-copy h3 { margin: 0 0 8px; font-size: clamp(2.5rem, 5vw, 4.8rem); }
 .realization-feature-copy > p:last-child { max-width: 380px; margin: 0; color: var(--muted); font-size: 13px; }
-.realization-logo-frame { display: grid; place-items: center; min-height: 108px; padding: 14px 22px; background: var(--paper); border: 1px solid var(--line-light); }
-.realization-logo-frame img { width: min(100%, 270px); height: 78px; object-fit: contain; }
+.realization-logo-frame { display: grid; place-items: center; width: 210px; min-height: 174px; padding: 12px; background: var(--paper); border: 1px solid var(--line-light); }
+.realization-logo-frame img { width: 148px; height: 148px; object-fit: contain; }
 .realization-pill, .hierarchy-partner-pill { display: inline-flex; align-items: center; justify-content: center; width: max-content; padding: 6px 9px; color: var(--yellow); border: 1px solid currentColor; font-size: 10px; font-weight: 700; letter-spacing: .1em; line-height: 1; text-transform: uppercase; }
 .hierarchy-pyramid { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .hierarchy-tier { width: var(--tier-width); padding: 21px 24px 22px; border: 1px solid var(--line-light); border-top: 4px solid var(--accent); background: #fff; }
@@ -453,8 +453,12 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .sponsor-home-section .realization-logo-frame { background: #fff; border-color: rgba(255,255,255,.18); }
 .sponsor-home-section .hierarchy-note { color: rgba(255,255,255,.62); }
 .sponsor-home-special { display: grid; grid-template-columns: minmax(0, .68fr) minmax(0, 1.32fr); gap: 28px; margin-top: 48px; padding-top: 30px; border-top: 1px solid var(--line-dark); }
+.sponsor-home-special-copy { position: relative; min-height: 185px; }
 .sponsor-home-special-copy h3 { max-width: 350px; margin: 0 0 12px; color: #fff; font-size: clamp(2.3rem, 4vw, 3.8rem); }
 .sponsor-home-special-copy > p:last-child { max-width: 340px; margin: 0; color: rgba(255,255,255,.62); font-size: 13px; }
+.sponsor-home-mascot { position: absolute; right: 10px; bottom: -18px; display: flex; align-items: flex-end; gap: 6px; width: 128px; transform: rotate(3deg); pointer-events: none; }
+.sponsor-home-mascot img { width: 98px; height: 148px; object-fit: contain; object-position: bottom; filter: drop-shadow(0 12px 10px rgba(0,0,0,.25)); }
+.sponsor-home-mascot span { padding-bottom: 22px; color: var(--cyan); font-size: 8px; font-weight: 700; letter-spacing: .1em; writing-mode: vertical-rl; transform: rotate(180deg); }
 .sponsor-home-special-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .sponsor-home-special-card { min-height: 170px; padding: 20px; border: 1px solid var(--line-dark); border-top: 4px solid var(--accent); background: rgba(255,255,255,.035); }
 .sponsor-home-special-card h4 { margin: 21px 0 9px; color: #fff; font-family: var(--display); font-size: 29px; line-height: .9; text-transform: uppercase; }
@@ -715,8 +719,8 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
   .sponsor-hero-index strong { font-size: clamp(3.6rem, 16vw, 5.6rem); }
   .realization-feature { display: block; padding: 20px 16px; }
   .realization-feature-copy { margin-bottom: 18px; }
-  .realization-logo-frame { width: 100%; min-height: 86px; }
-  .realization-logo-frame img { height: 62px; }
+  .realization-logo-frame { width: 100%; min-height: 174px; }
+  .realization-logo-frame img { width: 148px; height: 148px; }
   .realization-pill { margin-top: 13px; }
   .hierarchy-tier, .hierarchy-tier-legend, .hierarchy-tier-champion, .hierarchy-tier-power, .hierarchy-tier-player, .hierarchy-tier-support { width: 100%; padding: 19px 16px 18px; }
   .hierarchy-tier-topline { display: block; }
@@ -730,6 +734,9 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
   .merchant-logo-frame { width: 104px; height: 59px; }
   .sponsor-home-special { gap: 22px; padding-top: 24px; }
   .sponsor-home-special-grid { grid-template-columns: 1fr; }
+  .sponsor-home-special-copy { min-height: 225px; }
+  .sponsor-home-mascot { right: 0; bottom: -24px; width: 112px; }
+  .sponsor-home-mascot img { width: 84px; height: 132px; }
   .sponsor-direct-page-card { min-height: 0; padding: 22px 18px; }
   .sponsor-direct-page-card h3 { font-size: 3rem; }
   .sponsor-direct-page-card > p { min-height: 0; }
