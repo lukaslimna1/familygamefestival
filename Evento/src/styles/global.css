@@ -52,8 +52,7 @@ section[id] { scroll-margin-top: 92px; }
 .text-link:hover, .text-link:focus-visible { color: var(--red); }
 .text-link-light { color: #fff; }
 
-.event-spotlight { position: relative; overflow: hidden; color: #fff; background: #06101d; border-bottom: 1px solid var(--line-dark); isolation: isolate; }
-.event-spotlight::before { position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(242,43,53,.15), transparent 28%, transparent 72%, rgba(25,198,242,.12)), url('/assets/svg/grid.svg') center / cover; opacity: .45; content: ''; }
+.event-spotlight { position: relative; overflow: hidden; color: #fff; background: var(--navy); border-bottom: 1px solid var(--line-dark); }
 .event-spotlight::after { position: absolute; top: 0; bottom: 0; left: 0; width: 5px; background: var(--yellow); content: ''; }
 .event-spotlight-shell { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, .62fr); gap: 42px; align-items: center; min-height: 220px; padding: 32px 0 30px; }
 .event-spotlight-main { min-width: 0; }
@@ -391,6 +390,7 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
   .main-nav .nav-cta { padding-inline: 11px; }
   .event-spotlight-shell { grid-template-columns: 1fr; gap: 25px; min-height: 0; padding-top: 30px; padding-bottom: 31px; }
   .event-spotlight-heading { align-items: flex-start; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .event-spotlight-facts { gap: 20px; }
   .event-countdown { padding: 21px 0 0; border-top: 1px solid var(--line-dark); border-left: 0; }
   .hero-grid { grid-template-columns: 1fr; min-height: auto; padding-top: 72px; }
   .hero-copy { max-width: 680px; }
@@ -420,8 +420,9 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
   .event-spotlight-shell { padding-top: 25px; padding-bottom: 27px; }
   .event-spotlight-heading h2 { font-size: 2.65rem; }
   .event-spotlight-facts { gap: 15px; }
-  .event-spotlight-fact strong { font-size: 2.2rem; }
-  .event-spotlight-fact small { font-size: 9px; }
+  .event-spotlight-fact strong { font-size: clamp(1.85rem, 8vw, 2.2rem); white-space: nowrap; }
+  .event-spotlight-fact small { min-height: 2.3em; font-size: 9px; line-height: 1.2; }
+  .event-countdown-heading strong { font-size: 16px; }
   .event-countdown-grid { gap: 5px; }
   .event-countdown-grid div { padding-inline: 3px; }
   .hero-grid { gap: 37px; padding-top: 54px; padding-bottom: 48px; }
