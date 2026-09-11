@@ -61,10 +61,10 @@ export const attractions = [
 ] as const;
 
 export const tournaments = [
-  { title: 'Mortal Kombat 1', icon: 'controller.svg', time: '14h', accent: 'red', prize: 'R$ 1.000', detail: '20/09 · domingo' },
-  { title: 'Street Fighter 6', icon: 'dpad.svg', time: '16h', accent: 'cyan', prize: 'R$ 1.000', detail: '20/09 · domingo' },
-  { title: 'Tekken 8', icon: 'lightning.svg', time: '18h', accent: 'pink', prize: 'R$ 1.000', detail: '20/09 · domingo' },
-  { title: 'Campeonato Just Dance 2026', icon: 'controller.svg', time: '19/09', accent: 'yellow', prize: '', detail: 'sábado · seletiva valendo 1 vaga para o Nacional' }
+  { title: 'Mortal Kombat 1', time: '14h', accent: 'red', prize: 'R$ 1.000', detail: '20/09 · domingo' },
+  { title: 'Street Fighter 6', time: '16h', accent: 'cyan', prize: 'R$ 1.000', detail: '20/09 · domingo' },
+  { title: 'Tekken 8', time: '18h', accent: 'pink', prize: 'R$ 1.000', detail: '20/09 · domingo' },
+  { title: 'Campeonato Just Dance 2026', time: '19/09', accent: 'yellow', prize: '', detail: 'sábado · seletiva valendo 1 vaga para o Nacional' }
 ] as const;
 
 export const gameArt = [

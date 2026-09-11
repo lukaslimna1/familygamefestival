@@ -1,6 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { event, navItems, guests, attractions, tournaments, gameArt, experiences, tickets, partners } from '../data/event';
+
+const getGameArt = (title: string) => gameArt.find((game) => title.includes(game.title));
 ---
 
 <BaseLayout>
@@ -123,7 +125,6 @@ import { event, navItems, guests, attractions, tournaments, gameArt, experiences
       <div class="container">
         <div class="section-heading heading-row">
           <div><p class="eyebrow eyebrow-yellow">Modo competitivo</p><h2>Entre na arena. Saia campeão.</h2></div>
-          <p class="heading-note heading-note-light">Inscrições dos campeonatos: R$ 60 + taxa da plataforma. Consulte o regulamento antes de se inscrever.</p>
         </div>
         <div class="tournament-layout">
           <div class="tournament-feature">
@@ -137,7 +138,7 @@ import { event, navItems, guests, attractions, tournaments, gameArt, experiences
             {tournaments.map((tournament, index) => (
               <article class={`tournament-row row-${tournament.accent}`}>
                 <span class="tournament-number">0{index + 1}</span>
-                <img src={`/assets/svg/${tournament.icon}`} alt="" aria-hidden="true" />
+                <img class={`tournament-art tournament-art-${tournament.accent}`} src={getGameArt(tournament.title)?.image ?? ''} alt="" aria-hidden="true" loading="lazy" />
                 <div><h3>{tournament.title}</h3><p>{tournament.detail}{tournament.prize ? ` · campeão leva ${tournament.prize}` : ''}</p></div>
                 <time>{tournament.time}</time>
               </article>
@@ -145,19 +146,8 @@ import { event, navItems, guests, attractions, tournaments, gameArt, experiences
           </div>
         </div>
         <div class="cosplay-banner">
-          <div><p class="eyebrow eyebrow-pink">Também vale o look</p><h3>Concurso Cosplay · R$ 1.000 em prêmio</h3><p>20/09 · domingo · 16h · inscrição R$ 60 + taxa. Sujeito a regulamento e limite de vagas.</p></div>
+          <div><p class="eyebrow eyebrow-pink">Também vale o look</p><h3>Concurso Cosplay · R$ 1.000 em prêmio</h3><p>20/09 · domingo · 16h</p></div>
           <a class="button button-outline-light" href="#ingressos">Ver ingressos <span aria-hidden="true">↓</span></a>
-        </div>
-        <div class="game-art-showcase">
-          <div class="game-art-heading"><p class="eyebrow eyebrow-cyan">Jogos em destaque</p><h3>Os duelos têm identidade própria.</h3><p>Artes limpas dos títulos que entram na programação competitiva do festival.</p></div>
-          <div class="game-art-grid">
-            {gameArt.map((game) => (
-              <a class={`game-art-card game-art-${game.accent}`} href={game.image} target="_blank" rel="noreferrer" aria-label={`Abrir arte de ${game.title}`}>
-                <img src={game.image} alt={game.alt} loading="lazy" />
-                <span>{game.title} <b aria-hidden="true">↗</b></span>
-              </a>
-            ))}
-          </div>
         </div>
       </div>
     </section>
@@ -211,7 +201,7 @@ import { event, navItems, guests, attractions, tournaments, gameArt, experiences
           <div class="partner-footnote"><img src="/assets/svg/chevrons.svg" alt="" aria-hidden="true" /><p>Há espaço para mais histórias, produtos e experiências.</p></div>
         </div>
       </div>
-      <div class="container exhibitor-cta"><div><p class="eyebrow eyebrow-cyan">Expositores & marcas</p><h2>Leve sua marca para dentro do jogo.</h2><p>Serão três espaços para expositores além da Edge 3D Studio. Para participar ou patrocinar o festival, fale diretamente com o Juruna.</p></div><div class="exhibitor-actions"><a class="button button-red" href={event.whatsapp.exhibitors} target="_blank" rel="noreferrer">Quero ser expositor <span aria-hidden="true">↗</span></a><a class="button button-outline-dark" href={event.whatsapp.sponsors} target="_blank" rel="noreferrer">Quero ser patrocinador <span aria-hidden="true">↗</span></a><small>WhatsApp · +55 14 99115-2263</small></div></div>
+      <div class="container exhibitor-cta"><div><p class="eyebrow eyebrow-cyan">Expositores & marcas</p><h2>Leve sua marca para dentro do jogo.</h2><p>Serão três espaços para expositores além da Edge 3D Studio. Para participar ou patrocinar o festival, fale diretamente com o Juruna.</p></div><div class="exhibitor-actions"><a class="button button-red" href={event.whatsapp.exhibitors} target="_blank" rel="noreferrer">Quero ser expositor <span aria-hidden="true">↗</span></a><a class="button button-outline-dark" href={event.whatsapp.sponsors} target="_blank" rel="noreferrer">Quero ser patrocinador <span aria-hidden="true">↗</span></a></div></div>
     </section>
 
     <section class="section contact-section" id="contato">
