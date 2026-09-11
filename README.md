@@ -24,3 +24,7 @@ A identidade combina uma base escura com acentos vibrantes em amarelo, vermelho,
 ## Observação
 
 O conteúdo deste repositório é material de trabalho e deve permanecer privado.
+
+## Aplicação web
+
+A Landing Page está sendo construída com Astro em modo estático, usando HTML semântico, CSS nativo e JavaScript leve. A mesma estrutura foi pensada para futuramente gerar a versão PDF por impressão/renderização da página.

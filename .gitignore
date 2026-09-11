@@ -1,6 +1,11 @@
 # Arquivos temporários de inspeção/renderização
 tmp/
 temp/
+node_modules/
+dist/
+.astro/
+.vercel/
+.sites-runtime/
 
 # Arquivos gerados pelo sistema operacional
 Thumbs.db

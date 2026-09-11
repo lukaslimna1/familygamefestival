@@ -1,0 +1,191 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import '../styles/global.css';
+
+const eventPage = 'https://eventiza.com.br/evento/family-game-festival';
+
+const attractions = [
+  {
+    icon: '/assets/trophy.png',
+    eyebrow: 'COMPETIÇÃO',
+    title: 'Campeonatos',
+    text: 'Mortal Kombat 1, Street Fighter 6 e Tekken 8 em arenas para quem gosta de jogar valendo.',
+    accent: 'yellow'
+  },
+  {
+    icon: '/assets/chevron.png',
+    eyebrow: 'DANÇA',
+    title: 'Just Dance 2026',
+    text: 'Uma seletiva com Lana VGS valendo vaga para o Nacional de Just Dance 2026.',
+    accent: 'cyan'
+  },
+  {
+    icon: '/assets/star.png',
+    eyebrow: 'PALCO',
+    title: 'Concurso Cosplay',
+    text: 'Vista seu personagem, suba ao palco e compartilhe sua paixão com a comunidade.',
+    accent: 'pink'
+  },
+  {
+    icon: '/assets/controller.png',
+    eyebrow: 'CULTURA GEEK',
+    title: 'K-pop e dublagem',
+    text: 'Espaço para K-pop e uma experiência especial com Raul Schlosser, voz brasileira de personagens marcantes.',
+    accent: 'red'
+  }
+];
+
+const experience = [
+  { number: '01', title: 'Chegue para jogar', text: 'Escolha sua arena, seu palco ou seu espaço de encontro.' },
+  { number: '02', title: 'Encontre sua comunidade', text: 'Games, cosplay, dança e cultura geek no mesmo lugar.' },
+  { number: '03', title: 'Leve uma história', text: 'Um festival para jogar junto e criar novas memórias.' }
+];
+---
+
+<BaseLayout
+  title="Family Game Festival 2026 | Bauru"
+  description="O Family Game Festival reúne games, campeonatos, cultura geek, cosplay e K-pop em Bauru."
+>
+  <header class="site-header">
+    <a class="wordmark" href="#top" aria-label="Family Game Festival, início">
+      <span class="wordmark-mark" aria-hidden="true">FG</span>
+      <span>FAMILY GAME<br /><small>FESTIVAL</small></span>
+    </a>
+
+    <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false">
+      <span class="sr-only">Abrir menu</span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
+
+    <nav id="site-nav" class="site-nav" aria-label="Navegação principal">
+      <a href="#evento">O evento</a>
+      <a href="#atracoes">Atrações</a>
+      <a href="#experiencia">Experiência</a>
+      <a class="nav-cta" href={eventPage} target="_blank" rel="noreferrer">Ingressos <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main id="conteudo">
+    <section id="top" class="hero section-shell">
+      <div class="hero-copy">
+        <p class="kicker"><span class="pulse-dot" aria-hidden="true"></span> Bauru · 19 e 20 de setembro de 2026</p>
+        <h1>Jogue junto.<br /><em>Viva o festival.</em></h1>
+        <p class="hero-text">Dois dias de competição, descoberta e encontro para quem faz da cultura gamer um jeito de estar no mundo.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#atracoes">Explorar atrações <span aria-hidden="true">↓</span></a>
+          <a class="button button-quiet" href={eventPage} target="_blank" rel="noreferrer">Ver ingressos <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="hero-meta" aria-label="Informações principais">
+          <span><strong>19–20</strong> SET</span>
+          <span class="meta-divider" aria-hidden="true"></span>
+          <span><strong>SORRI</strong> BAURU · SP</span>
+        </div>
+      </div>
+
+      <div class="hero-art" aria-label="Mascote do Family Game Festival">
+        <div class="hero-grid-glow" aria-hidden="true"></div>
+        <span class="pixel-label pixel-label-top" aria-hidden="true">READY?</span>
+        <img class="hero-mascot" src="/assets/mascot-original.png" alt="Mascote felino ninja do Family Game Festival" />
+        <img class="hero-logo" src="/assets/logo.jpeg" alt="Family Game Festival" />
+        <div class="hero-coin" aria-hidden="true">I</div>
+        <div class="hero-spark spark-one" aria-hidden="true">✦</div>
+        <div class="hero-spark spark-two" aria-hidden="true">♥</div>
+      </div>
+    </section>
+
+    <div class="game-strip" aria-label="Temas do festival">
+      <span>GAMES</span><i aria-hidden="true">✦</i><span>CULTURA GEEK</span><i aria-hidden="true">✦</i><span>COSPLAY</span><i aria-hidden="true">✦</i><span>K-POP</span><i aria-hidden="true">✦</i><span>FREE PLAY</span>
+    </div>
+
+    <section id="evento" class="intro section-shell section-block">
+      <div class="section-heading">
+        <p class="kicker kicker-cyan">UM NOVO SAVE POINT</p>
+        <h2>Mais que jogos.<br /><span>Um lugar para jogar junto.</span></h2>
+      </div>
+      <div class="intro-copy">
+        <p>O Family Game Festival nasce da experiência da Family Game em campeonatos, arenas e ações para o público gamer e geek. Agora, essa história ganha um encontro próprio em Bauru.</p>
+        <p class="muted">Primeira edição · dois dias · uma comunidade inteira em play.</p>
+      </div>
+    </section>
+
+    <section id="atracoes" class="attractions section-shell section-block">
+      <div class="section-topline">
+        <div>
+          <p class="kicker kicker-yellow">ESCOLHA SEU POWER-UP</p>
+          <h2>Tem espaço para<br /><span>todo tipo de jogador.</span></h2>
+        </div>
+        <p class="section-aside">Compita, dance, crie, assista e encontre sua próxima memória favorita.</p>
+      </div>
+
+      <div class="attraction-grid">
+        {attractions.map((attraction) => (
+          <article class={`attraction-card accent-${attraction.accent}`}>
+            <div class="card-icon"><img src={attraction.icon} alt="" /></div>
+            <p class="card-eyebrow">{attraction.eyebrow}</p>
+            <h3>{attraction.title}</h3>
+            <p>{attraction.text}</p>
+            <span class="card-line" aria-hidden="true"></span>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section id="experiencia" class="experience section-shell section-block">
+      <div class="experience-panel">
+        <div class="experience-heading">
+          <p class="kicker kicker-pink">CONTINUE?</p>
+          <h2>Seu próximo<br /><span>nível começa aqui.</span></h2>
+          <p>Uma experiência feita para aproximar pessoas, marcas e jogos.</p>
+        </div>
+        <div class="experience-list">
+          {experience.map((item) => (
+            <div class="experience-item">
+              <span class="experience-number">{item.number}</span>
+              <div><h3>{item.title}</h3><p>{item.text}</p></div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div class="experience-art" aria-hidden="true">
+        <img src="/assets/mascot-invite.png" alt="" />
+        <img class="experience-controller" src="/assets/controller.png" alt="" />
+        <span class="experience-badge">PLAYER<br /><strong>1</strong></span>
+      </div>
+    </section>
+
+    <section class="location section-shell section-block">
+      <div class="location-mark" aria-hidden="true"><img src="/assets/coin.png" alt="" /></div>
+      <div>
+        <p class="kicker kicker-red">MARQUE NA AGENDA</p>
+        <h2>19 e 20 de setembro<br /><span>no SORRI Bauru.</span></h2>
+        <p>Av. Nações Unidas · Núcleo Habitacional Presidente Geisel · Bauru/SP</p>
+      </div>
+      <a class="button button-primary" href={eventPage} target="_blank" rel="noreferrer">Quero participar <span aria-hidden="true">↗</span></a>
+    </section>
+  </main>
+
+  <footer class="site-footer section-shell">
+    <div class="footer-brand"><span class="wordmark-mark" aria-hidden="true">FG</span><span>FAMILY GAME<br /><small>FESTIVAL</small></span></div>
+    <p>Jogar junto sempre faz mais sentido.</p>
+    <p class="footer-note">© 2026 Family Game · Bauru, SP</p>
+  </footer>
+
+  <script>
+    const toggle = document.querySelector('.menu-toggle');
+    const nav = document.querySelector('#site-nav');
+
+    toggle?.addEventListener('click', () => {
+      const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!isOpen));
+      nav?.classList.toggle('is-open', !isOpen);
+    });
+
+    nav?.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        toggle?.setAttribute('aria-expanded', 'false');
+        nav.classList.remove('is-open');
+      });
+    });
+  </script>
+</BaseLayout>
