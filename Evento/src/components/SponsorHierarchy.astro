@@ -41,7 +41,6 @@ const activeHierarchyTiers = hierarchyTiers.filter((tier) => tier.partners.lengt
   <div class="hierarchy-pyramid">
     {activeHierarchyTiers.map((tier) => (
       <article class={`hierarchy-tier hierarchy-tier-${tier.key}`}>
-        <span class="hierarchy-level-pill">{tier.title}</span>
         <div class="hierarchy-logo-grid">
           {tier.partners.map((partner) => (
             <a class="hierarchy-logo-card" href={partner.href || undefined} target={partner.href ? '_blank' : undefined} rel={partner.href ? 'noreferrer' : undefined} aria-label={`Ver ${partner.name}`}>

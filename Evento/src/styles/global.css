@@ -406,7 +406,7 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .realization-feature-copy .realization-pill { display: inline-flex; }
 .realization-logo-frame { display: grid; place-items: center; width: min(100%, 430px); min-height: 280px; padding: 20px; background: rgba(8,17,31,.06); border: 1px solid var(--line-light); }
 .realization-logo-frame img { width: min(100%, 330px); height: 235px; object-fit: contain; }
-.realization-pill, .hierarchy-level-pill, .hierarchy-partner-pill { display: inline-flex; align-items: center; justify-content: center; width: max-content; padding: 7px 11px; color: var(--yellow); border: 1px solid currentColor; font-size: 10px; font-weight: 700; letter-spacing: .1em; line-height: 1; text-transform: uppercase; }
+.realization-pill, .hierarchy-partner-pill { display: inline-flex; align-items: center; justify-content: center; width: max-content; padding: 7px 11px; color: var(--yellow); border: 1px solid currentColor; font-size: 10px; font-weight: 700; letter-spacing: .1em; line-height: 1; text-transform: uppercase; }
 .hierarchy-pyramid { display: flex; flex-direction: column; align-items: center; gap: 27px; }
 .hierarchy-tier { display: flex; width: var(--tier-width); flex-direction: column; align-items: center; padding: 0; border: 0; background: transparent; }
 .hierarchy-tier-legend { --accent: var(--pink); --tier-width: 44%; }
@@ -415,12 +415,12 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .hierarchy-tier-player { --accent: var(--cyan); --tier-width: 85%; }
 .hierarchy-tier-support { --accent: var(--cyan); --tier-width: 100%; }
 .hierarchy-logo-grid { display: flex; width: 100%; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 16px; }
-.hierarchy-logo-card { display: flex; flex-direction: column; align-items: center; gap: 11px; width: min(100%, 300px); min-width: 0; padding: 14px; color: inherit; border: 1px solid var(--line-light); background: rgba(255,255,255,.28); transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
+.hierarchy-logo-card { display: flex; flex-direction: column; align-items: center; gap: 11px; width: min(100%, 300px); min-width: 0; padding: 0; color: inherit; border: 0; background: transparent; transition: transform .25s ease, filter .25s ease; }
 .hierarchy-logo-card:hover, .hierarchy-logo-card:focus-visible { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 13px 0 color-mix(in srgb, var(--accent) 20%, transparent); }
 .hierarchy-logo-frame { display: grid; place-items: center; width: 100%; height: 105px; flex: 0 0 auto; overflow: hidden; color: var(--navy); background: rgba(8,17,31,.06); border: 1px solid var(--line-light); }
 .hierarchy-logo-frame img { width: 100%; height: 100%; max-width: 100%; max-height: 100%; padding: 5px; object-fit: contain; }
 .hierarchy-logo-fallback { color: var(--accent); font-family: var(--display); font-size: 30px; font-weight: 900; }
-.hierarchy-logo-caption { display: flex; flex-direction: column; align-items: center; gap: 7px; min-width: 0; }
+.hierarchy-logo-caption { display: flex; flex-direction: column; align-items: center; gap: 7px; min-width: 0; padding: 9px 13px 10px; border: 1px solid var(--line-light); background: rgba(255,255,255,.28); }
 .hierarchy-logo-card strong { color: var(--ink); font-family: var(--display); font-size: 24px; line-height: .95; text-align: center; text-transform: uppercase; }
 .hierarchy-logo-card .hierarchy-partner-pill { color: var(--accent); }
 .hierarchy-tier-power .hierarchy-logo-card { width: min(100%, 440px); }
@@ -447,9 +447,10 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .sponsor-home-heading .heading-note { max-width: 415px; }
 .sponsor-home-section .realization-feature { color: #fff; border-color: var(--line-dark); background: rgba(255,255,255,.035); }
 .sponsor-home-section .realization-logo-frame { background: rgba(255,255,255,.035); border-color: var(--line-dark); }
-.sponsor-home-section .hierarchy-logo-card { color: #fff; border-color: var(--line-dark); background: rgba(255,255,255,.025); }
+.sponsor-home-section .hierarchy-logo-card { color: #fff; }
 .sponsor-home-section .hierarchy-logo-card strong { color: #fff; }
 .sponsor-home-section .hierarchy-logo-frame { background: rgba(255,255,255,.035); border-color: var(--line-dark); }
+.sponsor-home-section .hierarchy-logo-caption { border-color: var(--line-dark); background: rgba(255,255,255,.025); }
 .sponsor-inline-cta { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 28px; margin-top: 43px; padding: 25px 30px; overflow: hidden; border: 1px solid var(--line-dark); border-left: 4px solid var(--yellow); background: rgba(255,255,255,.035); }
 .sponsor-inline-cta-copy { position: relative; z-index: 1; padding-right: 120px; }
 .sponsor-inline-cta-copy h3 { max-width: 560px; margin: 0; color: #fff; font-size: clamp(2.2rem, 4vw, 3.8rem); line-height: .9; }
