@@ -35,6 +35,7 @@ export const navItems = [
 export const guests = [
   {
     name: 'Lana VGS',
+    slug: 'lana',
     handle: '@lana_vgs',
     instagramUrl: 'https://www.instagram.com/lana_vgs/',
     role: 'Just Dance 2026',
@@ -45,6 +46,7 @@ export const guests = [
   },
   {
     name: 'Raul Schlosser',
+    slug: 'raul',
     handle: '@raul_schlosser',
     instagramUrl: 'https://www.instagram.com/raul_schlosser/',
     role: 'Painel de dublagem',
@@ -64,7 +66,7 @@ export const attractions = [
 
 export const tournaments = [
   { id: 'cosplay', category: 'Cosplay', title: 'Concurso Cosplay', time: '16h00', date: '20', accent: 'pink', prize: 'R$ 1.000', detail: 'Participação sujeita ao regulamento oficial e limite de vagas.', featured: true },
-  { id: 'just-dance-2026', category: 'Dance Game', title: 'Just Dance 2026', time: '', date: '19', accent: 'yellow', prize: '1 vaga para o Nacional de Just Dance', detail: 'Seletiva valendo 1 vaga para o Nacional de Just Dance 2026.', featured: true },
+  { id: 'just-dance-2026', category: 'Dance Game', title: 'Just Dance 2026', time: '', date: '19', accent: 'yellow', prize: '1 vaga para o Nacional', detail: 'Seletiva valendo 1 vaga para o Nacional de Just Dance 2026.', featured: true },
   { id: 'mortal-kombat-1', category: 'Fight Games', title: 'Mortal Kombat 1', time: '14h00', date: '20', accent: 'red', prize: 'R$ 1.000', detail: 'Vagas limitadas.' },
   { id: 'street-fighter-6', category: 'Fight Games', title: 'Street Fighter 6', time: '18h00', date: '20', accent: 'cyan', prize: 'R$ 1.000', detail: 'Vagas limitadas.' },
   { id: 'tekken-8', category: 'Fight Games', title: 'Tekken 8', time: '16h00', date: '20', accent: 'pink', prize: 'R$ 1.000', detail: 'Vagas limitadas.' },
@@ -205,4 +207,17 @@ export const supportOptions = [
   { number: '02', title: 'Prêmios & brindes', text: 'Produtos, vouchers, kits e benefícios para competidores e participantes.', accent: 'cyan' },
   { number: '03', title: 'Estrutura & serviços', text: 'Tecnologia, impressão, mobiliário, audiovisual, logística e serviços úteis à realização.', accent: 'pink' },
   { number: '04', title: 'Mídia & divulgação', text: 'Cobertura e apoio de comunicação local ou digital para ampliar o alcance do festival.', accent: 'red' }
+] as const;
+
+export const pressKitAngles = [
+  { title: 'Portal & jornal', text: 'Agenda cultural, impacto regional, cultura geek, campeonatos, premiações e histórias dos participantes.', accent: 'cyan' },
+  { title: 'Rádio & podcast', text: 'Serviço do fim de semana, entrevistas com a organização, atrações, games, entretenimento e comportamento.', accent: 'yellow' },
+  { title: 'TV & vídeo', text: 'Competição, cosplay, dança, Free Play, público, bastidores e entrevistas com forte potencial visual.', accent: 'pink' }
+] as const;
+
+export const pressKitSnippets = [
+  { label: 'Rádio / podcast · locução 30s', text: 'Bauru recebe nos dias 19 e 20 de setembro o Family Game Festival. Das 11h às 21h, a Arena Tauste - SORRI Bauru terá campeonatos, cosplay, Just Dance, K-pop, Free Play, atrações e jogos atuais e retrô. Informações em familygamefestival.vercel.app.', accent: 'yellow' },
+  { label: 'TV / vídeo · cabeça de 20s', text: 'Bauru entra no universo dos games nos dias 19 e 20 de setembro. O Family Game Festival reúne campeonatos, cosplay, Just Dance, atrações, K-pop e Free Play na Arena Tauste - SORRI Bauru, das 11h às 21h.', accent: 'cyan' },
+  { label: 'Portal / jornal · abertura', text: 'Bauru recebe nos dias 19 e 20 de setembro de 2026 o Family Game Festival, evento que reúne games, cultura geek, campeonatos, cosplay, dança e atrações especiais. A programação acontece das 11h às 21h, na Arena Tauste - SORRI Bauru.', accent: 'pink' },
+  { label: 'Agenda / serviço · nota curta', text: 'Family Game Festival · 19 e 20/09/2026 · 11h às 21h · Arena Tauste - SORRI Bauru · Av. Nações Unidas, 53-40, Bauru/SP · Site: familygamefestival.vercel.app · Instagram: @familygamex.', accent: 'red' }
 ] as const;
