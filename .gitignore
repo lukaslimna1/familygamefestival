@@ -1,0 +1,12 @@
+# Arquivos temporários de inspeção/renderização
+tmp/
+temp/
+
+# Arquivos gerados pelo sistema operacional
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Arquivos de editor
+.vscode/
+.idea/
