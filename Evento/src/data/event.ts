@@ -65,9 +65,9 @@ export const tournaments = [
   { title: 'Street Fighter 6', time: '16h', accent: 'cyan', prize: 'R$ 1.000', detail: '20/09 · domingo' },
   { title: 'Tekken 8', time: '18h', accent: 'pink', prize: 'R$ 1.000', detail: '20/09 · domingo' },
   { title: 'Campeonato Just Dance 2026', time: '19/09', accent: 'yellow', prize: '', detail: 'sábado · seletiva valendo 1 vaga para o Nacional' },
-  { title: 'FC 26', time: '—', accent: 'cyan', prize: 'R$ 100', detail: '19 e 20/09 · inscrição R$ 30 · vagas limitadas' },
-  { title: 'eFootball', time: '—', accent: 'yellow', prize: 'R$ 100', detail: '19 e 20/09 · inscrição R$ 30 · vagas limitadas' },
-  { title: 'Campeonato de Top Gear 1', time: '—', accent: 'red', prize: 'R$ 100', detail: '19 e 20/09 · inscrição R$ 30 · vagas limitadas' }
+  { title: 'FC 26', time: '', accent: 'cyan', prize: 'R$ 100', detail: '19 e 20/09 · inscrição R$ 30 · vagas limitadas' },
+  { title: 'eFootball', time: '', accent: 'yellow', prize: 'R$ 100', detail: '19 e 20/09 · inscrição R$ 30 · vagas limitadas' },
+  { title: 'Campeonato de Top Gear 1', time: '', accent: 'red', prize: 'R$ 100', detail: '19 e 20/09 · inscrição R$ 30 · vagas limitadas' }
 ] as const;
 
 export const gameArt = [

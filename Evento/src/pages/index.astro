@@ -129,9 +129,10 @@ const getGameArt = (title: string) => gameArt.find((game) => title.includes(game
         <div class="tournament-layout">
           <div class="tournament-feature">
             <img src="/assets/svg/trophy.svg" alt="" aria-hidden="true" />
-            <p class="card-eyebrow">PREMIAÇÃO POR TÍTULO</p>
+            <p class="card-eyebrow">PREMIAÇÃO PRINCIPAL</p>
             <strong>R$ 1.000</strong>
-            <p>para cada campeão da arena principal.</p>
+            <p>Mortal Kombat 1, Street Fighter 6 e Tekken 8.</p>
+            <div class="feature-secondary"><p class="card-eyebrow">OUTROS CAMPEONATOS</p><strong>R$ 100</strong><p>FC 26, eFootball e Top Gear 1.</p></div>
             <span class="feature-corner">VS</span>
           </div>
           <div class="tournament-list">
@@ -140,7 +141,7 @@ const getGameArt = (title: string) => gameArt.find((game) => title.includes(game
                 <span class="tournament-number">0{index + 1}</span>
                 <img class={`tournament-art tournament-art-${tournament.accent}`} src={getGameArt(tournament.title)?.image ?? ''} alt="" aria-hidden="true" loading="lazy" />
                 <div><h3>{tournament.title}</h3><p>{tournament.detail}{tournament.prize ? ` · campeão leva ${tournament.prize}` : ''}</p></div>
-                <time>{tournament.time}</time>
+                {tournament.time && <time>{tournament.time}</time>}
               </article>
             ))}
           </div>
