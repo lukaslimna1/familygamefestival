@@ -9,7 +9,7 @@ export const event = {
   address: 'Av. Nações Unidas, 53-40 · Bauru/SP',
   instagram: '@familygamex',
   instagramUrl: 'https://www.instagram.com/familygamex/',
-  ticketUrl: 'https://eventiza.com.br/evento/family-game-festival?utm_source=chatgpt.com',
+  ticketUrl: 'https://www.eventiza.com.br/evento/family-game-festival',
   whatsapp: {
     exhibitors: 'https://wa.me/5514991152263?text=Ol%C3%A1%2C%20quero%20saber%20como%20participar%20como%20expositor%20no%20Family%20Game%20Festival.',
     sponsors: 'https://wa.me/5514991152263?text=Ol%C3%A1%2C%20quero%20receber%20mais%20informa%C3%A7%C3%B5es%20sobre%20como%20patrocinar%20o%20Family%20Game%20Festival.'
@@ -38,7 +38,7 @@ export const guests = [
     role: 'Just Dance 2026',
     accent: 'cyan',
     image: '/assets/mascot-original.png',
-    description: 'Embaixadora e referência de Just Dance, bacharel em Dança, jogadora campeã e produtora de eventos geek.',
+    description: 'Jogadora de Just Dance, com mais de 10 anos de experiência no universo geek e da dança; campeã, produtora e apresentadora de eventos geek.',
     highlight: 'Seletiva valendo vaga para o Nacional de Just Dance 2026 · 19/09'
   },
   {
@@ -54,10 +54,10 @@ export const guests = [
 ] as const;
 
 export const attractions = [
-  { eyebrow: 'COMPITA', title: 'Arena de campeonatos', text: 'Mortal Kombat 1, Street Fighter 6 e Tekken 8 com premiação de R$ 1.000 para cada campeão.', icon: 'trophy.svg', accent: 'red' },
+  { eyebrow: 'COMPITA', title: 'Arena de campeonatos', text: 'Mortal Kombat 1, Street Fighter 6, Tekken 8, FC 26, eFootball e Top Gear 1.', icon: 'trophy.svg', accent: 'red' },
   { eyebrow: 'DANCE MODE', title: 'Just Dance 2026', text: 'Uma seletiva especial no dia 19/09 valendo vaga para o Nacional de Just Dance 2026.', icon: 'controller.svg', accent: 'cyan' },
   { eyebrow: 'COSPLAY', title: 'Concurso Cosplay', text: 'Solte a criatividade com temas de games, anime, mangá, filmes, séries, quadrinhos e cultura geek.', icon: 'crown.svg', accent: 'pink' },
-  { eyebrow: 'COMUNIDADE', title: 'Random Play Dance', text: 'A música toca, a roda abre e quem souber a coreografia entra para dançar.', icon: 'star.svg', accent: 'yellow' }
+  { eyebrow: 'COMUNIDADE', title: 'Random Play Dance', text: 'K-pop no centro do festival: a música toca, a roda abre e quem souber a coreografia entra para dançar.', icon: 'star.svg', accent: 'yellow' }
 ] as const;
 
 export const tournaments = [
@@ -65,7 +65,9 @@ export const tournaments = [
   { title: 'Street Fighter 6', time: '16h', accent: 'cyan', prize: 'R$ 1.000', detail: '20/09 · domingo' },
   { title: 'Tekken 8', time: '18h', accent: 'pink', prize: 'R$ 1.000', detail: '20/09 · domingo' },
   { title: 'Campeonato Just Dance 2026', time: '19/09', accent: 'yellow', prize: '', detail: 'sábado · seletiva valendo 1 vaga para o Nacional' },
-  { title: 'Campeonato de Top Gear', time: '—', accent: 'red', prize: '', detail: 'campeonato retrô' }
+  { title: 'FC 26', time: '—', accent: 'cyan', prize: 'R$ 100', detail: '19 e 20/09 · inscrição R$ 30 · vagas limitadas' },
+  { title: 'eFootball', time: '—', accent: 'yellow', prize: 'R$ 100', detail: '19 e 20/09 · inscrição R$ 30 · vagas limitadas' },
+  { title: 'Campeonato de Top Gear 1', time: '—', accent: 'red', prize: 'R$ 100', detail: '19 e 20/09 · inscrição R$ 30 · vagas limitadas' }
 ] as const;
 
 export const gameArt = [
@@ -94,6 +96,18 @@ export const gameArt = [
     accent: 'yellow'
   },
   {
+    title: 'FC 26',
+    image: 'https://drop-assets.ea.com/images/6g5Yie1DUeAS4zbSBADAr0/0aee1e0e6d4c371042db4ad7b521e377/EAS_FC26_WGE_KeyArt-no-copy-16x9.jpg?im=AspectCrop%3D%2816%2C9%29%2CxPosition%3D0.5%2CyPosition%3D0.5',
+    alt: 'Arte oficial de EA SPORTS FC 26',
+    accent: 'cyan'
+  },
+  {
+    title: 'eFootball',
+    image: 'https://img.konami.com/efootball/s/img/page/overview/27_002_yamal.jpg',
+    alt: 'Arte oficial de eFootball',
+    accent: 'yellow'
+  },
+  {
     title: 'Top Gear',
     image: 'https://images.launchbox-app.com/d7c80b5e-dc9c-4539-ae2e-3d192ca4e563.jpg',
     alt: 'Capa clássica de Top Gear para Super Nintendo',
@@ -103,7 +117,7 @@ export const gameArt = [
 
 export const experiences = [
   { number: '01', title: 'Free Play', text: 'Games atuais e clássicos para jogar no seu ritmo.', icon: 'controller.svg' },
-  { number: '02', title: 'Retrô em play', text: 'Games retrô e campeonatos retrô para revisitar grandes fases.', icon: 'coin.svg' },
+  { number: '02', title: 'Retrô em play', text: 'Top Gear 1 e outros clássicos para revisitar grandes fases.', icon: 'coin.svg' },
   { number: '03', title: 'Cultura geek', text: 'K-pop, painéis, convidados, cosplay e expositores.', icon: 'pixels.svg' },
   { number: '04', title: 'Todo mundo joga', text: 'Experiências para diferentes públicos e atividades para toda a família.', icon: 'dpad.svg' }
 ] as const;
