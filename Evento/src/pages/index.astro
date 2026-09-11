@@ -135,7 +135,7 @@ const initialArt = getTournamentArt(initialTournament);
             <article class={`guest-card guest-${guest.accent}`}>
               <div class="guest-art">
                 <span class="guest-art-label">ATRAÇÃO CONFIRMADA</span>
-                <img src={guest.image} alt="" aria-hidden="true" />
+                <img src={guest.image} alt={`${guest.name} no Family Game Festival`} loading="lazy" />
                 <span class="guest-art-number">FGF 26</span>
               </div>
               <div class="guest-content">
