@@ -1,7 +1,7 @@
 ---
 import fs from 'node:fs';
 import path from 'node:path';
-import { partners, sponsorTiers } from '../data/event';
+import { partners } from '../data/event';
 
 const logoDirectory = path.join(process.cwd(), 'public', 'assets', 'logos', 'parceiros');
 const logoCandidates: Record<string, string[]> = {
@@ -20,60 +20,53 @@ const getLogo = (name: string) => {
 const realizationPartner = partners.find((partner) => partner.level === 'Realização');
 const supportPartners = partners.filter((partner) => partner.level === 'Apoio');
 const merchantPartners = partners.filter((partner) => partner.merchant);
-const getTier = (name: string) => sponsorTiers.find((tier) => tier.name.toLowerCase() === name.toLowerCase());
-
 const hierarchyTiers = [
-  { key: 'legend', title: 'Legend', kicker: 'Principal parceiro institucional', meta: getTier('Legend')?.slots ?? '1 cota', partners: [], empty: 'Espaço reservado para o principal parceiro do festival.' },
-  { key: 'champion', title: 'Champion', kicker: 'Marca em posição de alta visibilidade', meta: getTier('Champion')?.slots ?? '2 cotas', partners: [], empty: 'Espaço reservado para marcas Champion.' },
-  { key: 'power', title: 'Power-up', kicker: 'Patrocinador em destaque', meta: getTier('Power-up')?.slots ?? '4 cotas', partners: partners.filter((partner) => partner.level === 'Power-up'), empty: 'Espaço reservado para novos parceiros Power-up.' },
-  { key: 'player', title: 'Player', kicker: 'Entrada no grupo oficial de patrocinadores', meta: getTier('Player')?.slots ?? '8 cotas', partners: partners.filter((partner) => partner.level === 'Player'), empty: 'Espaço reservado para marcas Player.' },
-  { key: 'support', title: 'Apoio', kicker: 'Marcas que sustentam a experiência', meta: 'apoios confirmados', partners: supportPartners, empty: 'Espaço reservado para novos apoios.' }
+  { key: 'legend', title: 'Legend', partners: partners.filter((partner) => partner.level === 'Legend') },
+  { key: 'champion', title: 'Champion', partners: partners.filter((partner) => partner.level === 'Champion') },
+  { key: 'power', title: 'Power Up', partners: partners.filter((partner) => partner.level === 'Power-up') },
+  { key: 'player', title: 'Player', partners: partners.filter((partner) => partner.level === 'Player') },
+  { key: 'support', title: 'Apoio', partners: supportPartners }
 ] as const;
+const activeHierarchyTiers = hierarchyTiers.filter((tier) => tier.partners.length > 0);
 ---
 
 <div class="sponsor-hierarchy">
   {realizationPartner && (
     <article class="realization-feature">
-      <div class="realization-feature-copy"><p class="eyebrow eyebrow-yellow">Realização</p><h3>{realizationPartner.name}</h3><p>A marca que coloca o Family Game Festival em movimento.</p></div>
+      <div class="realization-feature-copy"><p class="eyebrow eyebrow-yellow">Realização</p><h3>{realizationPartner.name}</h3><span class="realization-pill">REALIZAÇÃO</span></div>
       <span class="realization-logo-frame"><img src={getLogo(realizationPartner.name)} alt={`Logo ${realizationPartner.name}`} /></span>
-      <span class="realization-pill">REALIZAÇÃO</span>
     </article>
   )}
 
   <div class="hierarchy-pyramid">
-    {hierarchyTiers.map((tier) => (
+    {activeHierarchyTiers.map((tier) => (
       <article class={`hierarchy-tier hierarchy-tier-${tier.key}`}>
-        <div class="hierarchy-tier-topline">
-          <div><p class="hierarchy-tier-kicker">{tier.kicker}</p><h3>{tier.title}</h3></div>
-          <span class="hierarchy-tier-meta">{tier.title} · {tier.meta}</span>
+        <span class="hierarchy-level-pill">{tier.title}</span>
+        <div class="hierarchy-logo-grid">
+          {tier.partners.map((partner) => (
+            <a class="hierarchy-logo-card" href={partner.href || undefined} target={partner.href ? '_blank' : undefined} rel={partner.href ? 'noreferrer' : undefined} aria-label={`Ver ${partner.name}`}>
+              <span class="hierarchy-logo-frame">
+                {getLogo(partner.name) ? <img src={getLogo(partner.name)} alt={`Logo ${partner.name}`} /> : <span class="hierarchy-logo-fallback" aria-hidden="true">{partner.name.slice(0, 1)}</span>}
+              </span>
+              <span class="hierarchy-logo-caption"><strong>{partner.name}</strong><small class="hierarchy-partner-pill">{tier.title}</small></span>
+            </a>
+          ))}
         </div>
-        {tier.partners.length > 0 ? (
-          <div class="hierarchy-logo-grid">
-            {tier.partners.map((partner) => (
-              <div class="hierarchy-logo-card">
-                <span class="hierarchy-logo-frame">
-                  {getLogo(partner.name) ? <img src={getLogo(partner.name)} alt={`Logo ${partner.name}`} /> : <span class="hierarchy-logo-fallback" aria-hidden="true">{partner.name.slice(0, 1)}</span>}
-                </span>
-                <span><strong>{partner.name}</strong><small class="hierarchy-partner-pill">{partner.level}</small></span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div class="hierarchy-empty"><span>+</span>{tier.empty}</div>
-        )}
       </article>
     ))}
   </div>
+
+  <slot name="after-hierarchy" />
+
   <section class="merchant-panel" aria-labelledby="merchant-panel-title">
-    <div class="merchant-panel-copy"><p class="eyebrow eyebrow-cyan">Lojistas / expositores</p><h3 id="merchant-panel-title">Quem você encontra na arena.</h3><p>As logos dos lojistas ficam aqui, separadas da hierarquia de patrocínio. Por enquanto, a Edge 3D Studio é a única presença confirmada.</p></div>
+    <div class="merchant-panel-copy"><p class="eyebrow eyebrow-cyan">Lojistas / expositores</p><h3 id="merchant-panel-title">Quem você encontra na arena.</h3><p>As logos dos lojistas ficam aqui, separadas da hierarquia de patrocínio. A lista cresce conforme novas presenças forem confirmadas.</p></div>
     <div class="merchant-logo-grid">
       {merchantPartners.length > 0 ? merchantPartners.map((partner) => (
-        <a class="merchant-logo-card" href={partner.href || undefined} target={partner.href ? '_blank' : undefined} rel={partner.href ? 'noreferrer' : undefined}>
+        <a class="merchant-logo-card" href={partner.href || undefined} target={partner.href ? '_blank' : undefined} rel={partner.href ? 'noreferrer' : undefined} aria-label={`Ver o lojista ${partner.name}`} title={partner.name}>
           <span class="merchant-logo-frame">{getLogo(partner.name) ? <img src={getLogo(partner.name)} alt={`Logo ${partner.name}`} /> : <span class="hierarchy-logo-fallback" aria-hidden="true">{partner.name.slice(0, 1)}</span>}</span>
-          <span><strong>{partner.name}</strong><small>Lojista confirmado</small></span>
         </a>
-      )) : <div class="hierarchy-empty"><span>+</span>Espaço reservado para lojistas.</div>}
+      )) : <p class="merchant-empty">As logos dos lojistas confirmados aparecerão aqui.</p>}
     </div>
   </section>
-  <p class="hierarchy-note"><span aria-hidden="true">✦</span> Do Legend ao apoio: quanto maior o nível, maior o destaque da marca.</p>
+  <p class="hierarchy-note"><span aria-hidden="true">✦</span> As marcas confirmadas aparecem em ordem de presença no festival.</p>
 </div>

@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { event, navItems } from '../data/event';
+
+const navLinks = navItems.map((item) => ({ ...item, href: item.href.startsWith('#') ? `/${item.href}` : item.href }));
+---
+
+<BaseLayout
+  title="Expositores e lojistas | Family Game Festival"
+  description="Veja como levar sua loja ou marca para a arena do Family Game Festival 2026."
+  canonical="https://familygamefestival.vercel.app/expositores"
+>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="Family Game Festival · início"><img src="/assets/logo.svg" alt="Family Game Festival" /></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav"><span></span><span></span><span></span><span class="sr-only">Abrir menu</span></button>
+      <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
+        {navLinks.map((item) => <a class={item.label === 'Expositores' ? 'is-current' : undefined} href={item.href}>{item.label}</a>)}
+        <a class="button button-small button-yellow nav-cta" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="sponsor-guide-hero exhibitor-guide-hero">
+      <div class="container sponsor-guide-hero-grid">
+        <div>
+          <p class="eyebrow eyebrow-cyan">Expositores & lojistas · Family Game Festival 2026</p>
+          <h1>Leve sua marca <em>para dentro do jogo.</em></h1>
+          <p>Monte sua presença na Arena Tauste e encontre um público que gosta de games, cultura geek e experiências ao vivo.</p>
+          <div class="sponsor-page-actions"><a class="button button-yellow" href={event.whatsapp.exhibitors} target="_blank" rel="noreferrer">Quero ser expositor <span aria-hidden="true">↗</span></a><a class="button button-outline-light" href="/#expositores">Voltar ao festival <span aria-hidden="true">↩</span></a></div>
+        </div>
+        <div class="exhibitor-guide-mark"><span class="eyebrow eyebrow-yellow">Presença confirmada</span><img src="/assets/logos/parceiros/Edge%203D%20Studio.webp" alt="Logo Edge 3D Studio" /><span>Uma das lojas que você encontra na arena.</span></div>
+      </div>
+    </section>
+
+    <section class="section section-light exhibitor-guide-section">
+      <div class="container exhibitor-guide-grid">
+        <div><p class="eyebrow eyebrow-red">Sua loja na arena</p><h2>Faça parte da experiência.</h2><p>Expositores e lojistas entram em uma área própria, com suas logos em destaque no site e presença junto do público do festival.</p></div>
+        <div class="exhibitor-guide-list"><div><span>01</span><strong>Converse com a organização</strong><p>Receba os formatos e a disponibilidade de espaço.</p></div><div><span>02</span><strong>Escolha sua presença</strong><p>Leve produtos, serviços, ativações ou itens colecionáveis.</p></div><div><span>03</span><strong>Entre no mapa da arena</strong><p>Sua logo passa a fazer parte da lista oficial de lojistas.</p></div></div>
+      </div>
+    </section>
+
+    <section class="section exhibitor-guide-contact">
+      <div class="container exhibitor-guide-contact-grid"><div><p class="eyebrow eyebrow-yellow">Fale com o Juruna</p><h2>Quer reservar seu espaço?</h2><p>Envie uma mensagem pelo WhatsApp e receba as informações para participar como expositor ou lojista.</p></div><a class="button button-yellow" href={event.whatsapp.exhibitors} target="_blank" rel="noreferrer">Falar no WhatsApp <span aria-hidden="true">↗</span></a></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-top"><a class="brand" href="/"><img src="/assets/logo.svg" alt="Family Game Festival" /></a><p>Games, cultura geek e impacto local.<br />Bauru · 19—20 setembro 2026</p><a class="button button-yellow button-small" href="/">Voltar ao site <span aria-hidden="true">↩</span></a></div>
+    <div class="container footer-bottom"><span>© 2026 Family Game Festival</span><a href={event.instagramUrl} target="_blank" rel="noreferrer">{event.instagram}</a><span>Parte da arrecadação será revertida para a SORRI Bauru.</span></div>
+  </footer>
+
+  <script>
+    const header = document.querySelector('.site-header');
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelectorAll('.main-nav a');
+    menuToggle?.addEventListener('click', () => {
+      const open = header?.classList.toggle('menu-open') ?? false;
+      menuToggle.setAttribute('aria-expanded', String(open));
+    });
+    navLinks.forEach((link) => link.addEventListener('click', () => {
+      header?.classList.remove('menu-open');
+      menuToggle?.setAttribute('aria-expanded', 'false');
+    }));
+  </script>
+</BaseLayout>

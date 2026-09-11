@@ -39,7 +39,7 @@ export const guests = [
     instagramUrl: 'https://www.instagram.com/lana_vgs/',
     role: 'Just Dance 2026',
     accent: 'cyan',
-    image: '/assets/mascots/mascot-original.svg',
+    image: '/assets/mascots/1 - Pose Aqui.svg',
     description: 'Jogadora de Just Dance, com mais de 10 anos de experiência no universo geek e da dança; campeã, produtora e apresentadora de eventos geek.',
     highlight: 'Seletiva valendo vaga para o Nacional de Just Dance 2026 · 19/09'
   },
@@ -49,7 +49,7 @@ export const guests = [
     instagramUrl: 'https://www.instagram.com/raul_schlosser/',
     role: 'Painel de dublagem',
     accent: 'pink',
-    image: '/assets/mascots/mascot-invite.svg',
+    image: '/assets/mascots/4 - Pose Ok.svg',
     description: 'Dublador brasileiro de Jiraiya, Wolverine, Luigi, Cell e outros personagens queridos pelo público.',
     highlight: 'Painel, fotos, autógrafos e interação com o público · 19/09'
   }

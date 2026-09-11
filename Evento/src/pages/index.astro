@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SponsorHierarchy from '../components/SponsorHierarchy.astro';
-import { event, navItems, guests, attractions, tournaments, tournamentGroups, gameArt, experiences, tickets, competitorTickets, directSponsorOptions } from '../data/event';
+import { event, navItems, guests, attractions, tournaments, tournamentGroups, gameArt, experiences, tickets, competitorTickets } from '../data/event';
 
 const getTournamentArt = (tournament: (typeof tournaments)[number]) => gameArt.find((game) => tournament.title.includes(game.title)) ?? gameArt[0];
 const initialTournament = tournaments[0];
@@ -54,6 +54,7 @@ const initialArt = getTournamentArt(initialTournament);
             <div><strong data-countdown-seconds>00</strong><span>seg</span></div>
           </div>
         </div>
+        <img class="event-spotlight-mascot" src="/assets/mascots/1 - Pose Aqui.svg" alt="" aria-hidden="true" />
       </div>
     </div>
   </section>
@@ -83,7 +84,7 @@ const initialArt = getTournamentArt(initialTournament);
             <img class="stage-lines" src="/assets/svg/interface-lines.svg" alt="" aria-hidden="true" />
             <span class="stage-label stage-label-top">GAME · GEEK · CULTURE</span>
             <img class="stage-logo" src="/assets/logo.svg" alt="Family Game Festival 2026" />
-            <img class="stage-mascot" src="/assets/mascots/mascot-original.svg" alt="Mascote do Family Game Festival" />
+            <img class="stage-mascot" src="/assets/mascots/0 - Pose Original.svg" alt="Mascote do Family Game Festival" />
             <span class="stage-chip chip-cyan">PLAY</span>
             <span class="stage-chip chip-pink">LEVEL 01</span>
             <span class="stage-label stage-label-bottom">19—20 SET · BAURU/SP</span>
@@ -107,11 +108,12 @@ const initialArt = getTournamentArt(initialTournament);
       </div>
     </section>
 
-    <section class="section section-light" id="atracoes">
+    <section class="section section-light attractions-section" id="atracoes">
       <div class="container">
-        <div class="section-heading heading-row">
+        <div class="section-heading heading-row section-heading-with-mascot">
           <div><p class="eyebrow eyebrow-red">O que te espera</p><h2>Escolha seu modo de jogar.</h2></div>
           <p class="heading-note">Experiências para quem compete, assiste, coleciona ou só quer passar um dia diferente com a família.</p>
+          <img class="section-mascot section-mascot-strength" src="/assets/mascots/2 - Pose Força.svg" alt="" aria-hidden="true" />
         </div>
 
         <div class="attraction-grid">
@@ -152,9 +154,10 @@ const initialArt = getTournamentArt(initialTournament);
 
     <section class="section section-navy tournaments-section" id="campeonatos">
       <div class="container">
-        <div class="section-heading heading-row">
+        <div class="section-heading heading-row section-heading-with-mascot">
           <div><p class="eyebrow eyebrow-yellow">Programação competitiva</p><h2>Escolha seu campeonato.</h2></div>
           <p class="heading-note heading-note-light">Cosplay e Just Dance ganham o destaque do palco. Passe o mouse — ou use Tab — nos cards para trocar a imagem e os detalhes ao lado.</p>
+          <img class="section-mascot section-mascot-fight" src="/assets/mascots/3 - Pose Luta.svg" alt="" aria-hidden="true" />
         </div>
 
         <div class="tournament-showcase" data-tournament-showcase>
@@ -250,7 +253,7 @@ const initialArt = getTournamentArt(initialTournament);
 
     <section class="section section-light experiences-section">
       <div class="container">
-        <div class="section-heading"><p class="eyebrow eyebrow-cyan">Mais para viver</p><h2>O ingresso abre um mapa inteiro.</h2></div>
+        <div class="section-heading section-heading-with-mascot"><p class="eyebrow eyebrow-cyan">Mais para viver</p><h2>O ingresso abre um mapa inteiro.</h2><img class="section-mascot section-mascot-ok" src="/assets/mascots/4 - Pose Ok.svg" alt="" aria-hidden="true" /></div>
         <div class="experience-grid">
           {experiences.map((experience) => (
             <article class="experience-card">
@@ -267,9 +270,10 @@ const initialArt = getTournamentArt(initialTournament);
 
     <section class="section section-dark tickets-section" id="ingressos">
       <div class="container">
-        <div class="section-heading heading-row">
+        <div class="section-heading heading-row section-heading-with-mascot">
           <div><p class="eyebrow eyebrow-yellow">Escolha seu passe</p><h2>Seu próximo fim de semana começa aqui.</h2></div>
           <p class="heading-note heading-note-light">Os valores abaixo não incluem a taxa da plataforma. Garanta seu ingresso na bilheteria oficial.</p>
+          <img class="section-mascot section-mascot-here" src="/assets/mascots/1 - Pose Aqui.svg" alt="" aria-hidden="true" />
         </div>
         <div class="ticket-grid">
           {tickets.map((ticket) => (
@@ -326,28 +330,21 @@ const initialArt = getTournamentArt(initialTournament);
       <div class="container">
         <div class="section-heading heading-row sponsor-home-heading">
           <div><p class="eyebrow eyebrow-red">Patrocinadores e apoiadores</p><h2>Nossos patrocinadores <em>entram no jogo.</em></h2></div>
-          <p class="heading-note heading-note-light">Do Legend ao apoio: cada nível organiza o tamanho do destaque e a presença da marca na arena.</p>
+          <p class="heading-note heading-note-light">A realização vem primeiro. As marcas confirmadas aparecem na sequência do nível de parceria.</p>
         </div>
 
-        <SponsorHierarchy />
-
-        <div class="sponsor-home-special">
-          <div class="sponsor-home-special-copy"><p class="eyebrow eyebrow-yellow">Estruturas especiais</p><h3>Assuma uma competição ou atração.</h3><p>Áreas reservadas para parceiros que querem estar diretamente no palco do festival.</p><div class="sponsor-home-mascot" aria-hidden="true"><img src="/assets/mascots/mascot-invite.svg" alt="" /><span>PARTNER MODE</span></div></div>
-          <div class="sponsor-home-special-grid">
-            {directSponsorOptions.map((option) => (
-              <article class={`sponsor-home-special-card sponsor-direct-${option.accent}`}>
-                <span class="sponsor-direct-status">DISPONÍVEL</span><h4>{option.title}</h4><p>{option.title === 'Arena Partner' ? 'Sua marca ligada a uma competição.' : 'Sua marca ligada a uma atração especial.'}</p><a class="text-link text-link-light" href="/patrocinadores/como-participar">Ver parceria <span aria-hidden="true">↗</span></a>
-              </article>
-            ))}
+        <SponsorHierarchy>
+          <div slot="after-hierarchy" class="sponsor-inline-cta">
+            <div class="sponsor-inline-cta-copy"><p class="eyebrow eyebrow-yellow">Quer entrar no jogo?</p><h3>Seja também um dos nossos patrocinadores.</h3></div>
+            <a class="button button-yellow" href="/patrocinadores/como-participar">Veja como ser patrocinador <span aria-hidden="true">↗</span></a>
+            <img class="sponsor-inline-cta-mascot" src="/assets/mascots/5 - Pose Convidando.svg" alt="" aria-hidden="true" />
           </div>
-        </div>
-
-        <div class="sponsor-bottom sponsor-home-bottom"><p><strong>Quer colocar sua marca na arena?</strong> Veja as possibilidades e fale com a organização.</p><a class="button button-yellow" href="/patrocinadores/como-participar">Veja como ser patrocinador <span aria-hidden="true">↗</span></a></div>
+        </SponsorHierarchy>
       </div>
     </section>
 
     <section class="section section-light exhibitor-section" id="expositores">
-      <div class="container exhibitor-cta"><div><p class="eyebrow eyebrow-cyan">Expositores & marcas</p><h2>Leve sua marca para dentro do jogo.</h2><p>Serão três espaços para expositores além da Edge 3D Studio. Para participar como expositor, fale diretamente com o Juruna.</p></div><div class="exhibitor-actions"><a class="button button-red" href={event.whatsapp.exhibitors} target="_blank" rel="noreferrer">Quero ser expositor <span aria-hidden="true">↗</span></a></div></div>
+      <div class="container exhibitor-cta"><div><p class="eyebrow eyebrow-cyan">Expositores & lojistas</p><h2>Leve sua marca para dentro do jogo.</h2><p>Espaços para lojistas e expositores na Arena Tauste. Veja como participar ou fale diretamente com a organização.</p></div><div class="exhibitor-actions"><a class="button button-red" href="/expositores">Veja como ser expositor <span aria-hidden="true">↗</span></a><a class="button button-outline-dark" href="/patrocinadores/como-participar">Quero ser patrocinador <span aria-hidden="true">↗</span></a></div><img class="exhibitor-mascot" src="/assets/mascots/4 - Pose Ok.svg" alt="" aria-hidden="true" /></div>
     </section>
 
     <section class="section contact-section" id="contato">
