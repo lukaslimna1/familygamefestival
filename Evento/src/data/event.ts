@@ -158,7 +158,50 @@ export const competitorTickets = [
 ] as const;
 
 export const partners = [
+  { name: 'Family Games', handle: 'Realização', status: 'Responsável pela realização do Family Game Festival.', href: '', accent: 'yellow' },
   { name: 'Edge 3D Studio', handle: '@edge3dstudio', status: 'Patrocinador oficial · expositor confirmado', href: 'https://www.instagram.com/edge3dstudio/', accent: 'yellow' },
   { name: 'Alterstate', handle: '@usealterstate', status: 'Apoio confirmado', href: 'https://www.instagram.com/usealterstate/', accent: 'cyan' },
   { name: 'SORRI Bauru', handle: 'sorribauru.com.br', status: 'Apoio institucional · sede do festival', href: 'https://sorribauru.com.br', accent: 'pink' }
+] as const;
+
+export const sponsorTiers = [
+  { name: 'Player', slots: '8 cotas', amount: 'R$ 500', detail: 'Entrada da marca no grupo oficial de patrocinadores.', accent: 'cyan' },
+  { name: 'Power-up', slots: '4 cotas', amount: 'R$ 1.000', detail: 'Mais destaque nas comunicações e peças do evento.', accent: 'red' },
+  { name: 'Champion', slots: '2 cotas', amount: 'R$ 2.000', detail: 'Alta visibilidade e presença nos momentos de destaque.', accent: 'yellow' },
+  { name: 'Legend', slots: '1 cota', amount: 'R$ 5.000', detail: 'Máxima hierarquia como principal parceiro institucional.', accent: 'pink' }
+] as const;
+
+export const sponsorBenefits = [
+  'Site e painel geral de patrocinadores',
+  'Menção coletiva nas redes sociais',
+  'Destaque individual e peças prioritárias',
+  'Menções durante a programação',
+  'Hierarquia visual ampliada',
+  'Principal parceiro institucional'
+] as const;
+
+export const directSponsorOptions = [
+  {
+    title: 'Arena Partner',
+    kicker: '1 parceiro por competição',
+    amount: 'R$ 1.500',
+    detail: 'Patrocínio direto de um campeonato, com associação à disputa, ao troféu e à premiação.',
+    items: ['Cosplay', 'Just Dance', 'Mortal Kombat 1', 'Street Fighter 6', 'Tekken 8', 'FC 26', 'eFootball', 'Top Gear 1'],
+    accent: 'red'
+  },
+  {
+    title: 'Attraction Partner',
+    kicker: '1 cota para cada atração',
+    amount: 'R$ 1.000',
+    detail: 'Associe sua marca diretamente a uma das atrações especiais confirmadas.',
+    items: ['Raul Schlosser', 'Lana VGS'],
+    accent: 'yellow'
+  }
+] as const;
+
+export const supportOptions = [
+  { number: '01', title: 'Alimentação', text: 'Refeições, lanches e bebidas para apoiar a operação, a equipe e os convidados.', accent: 'yellow' },
+  { number: '02', title: 'Prêmios & brindes', text: 'Produtos, vouchers, kits e benefícios para competidores e participantes.', accent: 'cyan' },
+  { number: '03', title: 'Estrutura & serviços', text: 'Tecnologia, impressão, mobiliário, audiovisual, logística e serviços úteis à realização.', accent: 'pink' },
+  { number: '04', title: 'Mídia & divulgação', text: 'Cobertura e apoio de comunicação local ou digital para ampliar o alcance do festival.', accent: 'red' }
 ] as const;

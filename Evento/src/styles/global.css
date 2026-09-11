@@ -317,23 +317,56 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .button-outline-dark { color: var(--navy); border-color: var(--line-light); background: transparent; }
 .button-outline-dark:hover, .button-outline-dark:focus-visible { color: #fff; border-color: var(--navy); background: var(--navy); }
 
-.sponsor-section { background: var(--navy-2); }
+.sponsor-area { margin-top: 102px; padding: 91px 0 83px; color: #fff; background: var(--navy); }
+.sponsor-area-heading { margin-bottom: 43px; }
+.sponsor-area-heading h2 { color: #fff; }
+.sponsor-area-heading .heading-note { max-width: 415px; }
 .sponsor-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.sponsor-card { min-height: 196px; padding: 24px 22px; border: 1px solid var(--line-dark); border-top: 4px solid var(--accent); background: rgba(255,255,255,.035); }
-.sponsor-1 { --accent: var(--cyan); }
-.sponsor-2 { --accent: var(--yellow); }
-.sponsor-3 { --accent: var(--pink); }
-.sponsor-4 { --accent: var(--red); }
-.sponsor-level { color: rgba(255,255,255,.43); font-family: var(--display); font-size: 13px; }
-.sponsor-card h3 { margin: 25px 0 8px; color: #fff; font-size: 29px; }
-.sponsor-card strong { display: block; color: var(--accent); font-family: var(--display); font-size: 40px; line-height: 1; }
-.sponsor-card p { margin: 7px 0 0; color: rgba(255,255,255,.65); font-size: 13px; }
-.sponsor-card small { color: rgba(255,255,255,.42); font-size: 11px; }
-.sponsor-options { display: grid; grid-template-columns: .8fr 1.2fr; gap: 35px; margin-top: 19px; padding: 26px 24px; border: 1px solid var(--line-dark); }
-.sponsor-options h3 { margin-bottom: 8px; color: #fff; font-size: 26px; }
-.sponsor-options p:last-child { margin: 0; color: rgba(255,255,255,.59); font-size: 13px; }
-.property-list { display: flex; flex-wrap: wrap; align-content: center; gap: 8px; }
-.property-list span { padding: 8px 11px; border: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.73); font-size: 11px; }
+.sponsor-card { min-height: 242px; padding: 24px 22px 22px; border: 1px solid var(--line-dark); border-top: 4px solid var(--accent); background: rgba(255,255,255,.035); }
+.sponsor-cyan { --accent: var(--cyan); }
+.sponsor-red { --accent: var(--red); }
+.sponsor-yellow { --accent: var(--yellow); }
+.sponsor-pink { --accent: var(--pink); }
+.sponsor-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sponsor-level { color: rgba(255,255,255,.43); font-family: var(--display); font-size: 13px; letter-spacing: .12em; }
+.sponsor-number { color: var(--accent); font-family: var(--display); font-size: 16px; font-weight: 800; }
+.sponsor-card h3 { margin: 28px 0 8px; color: #fff; font-size: 29px; }
+.sponsor-slots { display: inline-block; padding: 4px 8px; border: 1px solid var(--accent); color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.sponsor-card strong { display: block; margin-top: 17px; color: var(--accent); font-family: var(--display); font-size: 40px; line-height: 1; }
+.sponsor-card p { margin: 8px 0 0; color: rgba(255,255,255,.65); font-size: 13px; line-height: 1.4; }
+.sponsor-benefit-panel { display: grid; grid-template-columns: .75fr 1.25fr; gap: 38px; margin-top: 18px; padding: 30px 24px; border: 1px solid var(--line-dark); background: rgba(255,255,255,.035); }
+.sponsor-benefit-copy h3 { margin: 13px 0 14px; color: #fff; font-size: clamp(2.65rem, 4.2vw, 4.3rem); }
+.sponsor-benefit-copy h3 em { color: var(--cyan); font-style: normal; }
+.sponsor-benefit-copy > p:last-child { max-width: 390px; margin: 0; color: rgba(255,255,255,.6); font-size: 13px; }
+.sponsor-benefit-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: center; gap: 0 22px; margin: 0; padding: 0; list-style: none; }
+.sponsor-benefit-list li { display: flex; align-items: center; gap: 12px; min-height: 53px; border-bottom: 1px solid var(--line-dark); }
+.sponsor-benefit-list li:nth-last-child(-n + 2) { border-bottom: 0; }
+.sponsor-benefit-list span { flex: 0 0 auto; color: var(--cyan); font-family: var(--display); font-size: 17px; }
+.sponsor-benefit-list strong { color: rgba(255,255,255,.82); font-size: 12px; line-height: 1.25; }
+.sponsor-direct-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.sponsor-direct-card { min-height: 300px; padding: 26px 24px 23px; border: 1px solid var(--line-dark); border-top: 4px solid var(--accent); background: rgba(255,255,255,.035); }
+.sponsor-direct-red { --accent: var(--red); }
+.sponsor-direct-yellow { --accent: var(--yellow); }
+.sponsor-direct-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.sponsor-direct-top .eyebrow { margin-bottom: 9px; color: var(--accent); }
+.sponsor-direct-top h3 { margin: 0; color: #fff; font-size: clamp(2rem, 3.2vw, 3rem); }
+.sponsor-direct-top > strong { color: var(--accent); font-family: var(--display); font-size: 32px; line-height: 1; white-space: nowrap; }
+.sponsor-direct-card > p { max-width: 610px; margin: 20px 0 0; color: rgba(255,255,255,.63); font-size: 13px; }
+.sponsor-option-list { display: flex; flex-wrap: wrap; gap: 7px; margin: 21px 0 25px; }
+.sponsor-option-list span { padding: 7px 9px; border: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.76); font-size: 10px; }
+.sponsor-direct-card .text-link { color: var(--accent); font-size: 10px; }
+.sponsor-support-panel { display: grid; grid-template-columns: .72fr 1.28fr; gap: 38px; margin-top: 12px; padding: 30px 24px; border: 1px solid var(--line-dark); background: rgba(255,255,255,.035); }
+.sponsor-support-copy h3 { margin: 14px 0 13px; color: #fff; font-size: clamp(2rem, 3.5vw, 3.2rem); }
+.sponsor-support-copy > p:last-child { max-width: 390px; margin: 0; color: rgba(255,255,255,.6); font-size: 13px; }
+.support-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.support-card { min-height: 135px; padding: 17px 18px; border: 1px solid var(--line-dark); border-top: 3px solid var(--accent); background: rgba(255,255,255,.025); }
+.support-yellow { --accent: var(--yellow); }
+.support-cyan { --accent: var(--cyan); }
+.support-pink { --accent: var(--pink); }
+.support-red { --accent: var(--red); }
+.support-card > span { color: var(--accent); font-family: var(--display); font-size: 18px; font-weight: 800; }
+.support-card h4 { margin: 9px 0 5px; color: #fff; font-family: var(--display); font-size: 22px; line-height: 1; text-transform: uppercase; }
+.support-card p { margin: 0; color: rgba(255,255,255,.57); font-size: 11px; line-height: 1.35; }
 .sponsor-bottom { display: flex; align-items: center; justify-content: space-between; gap: 28px; margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line-dark); }
 .sponsor-bottom p { max-width: 660px; margin: 0; color: rgba(255,255,255,.63); font-size: 14px; }
 .sponsor-bottom strong { color: #fff; }
@@ -383,6 +416,9 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
   .vip-warning { grid-column: 2; max-width: none; }
   .vip-highlight .button { grid-column: 3; justify-self: end; }
   .competitor-ticket-grid { grid-template-columns: repeat(2, 1fr); }
+  .sponsor-area { margin-top: 78px; padding-top: 72px; padding-bottom: 68px; }
+  .sponsor-benefit-panel, .sponsor-support-panel { grid-template-columns: 1fr; gap: 24px; }
+  .sponsor-direct-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 820px) {
@@ -477,6 +513,19 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
   .partner-mark { width: 48px; height: 48px; }
   .sponsor-options { padding: 20px 18px; }
   .sponsor-bottom { gap: 20px; }
+  .sponsor-area { margin-top: 70px; padding-top: 64px; padding-bottom: 58px; }
+  .sponsor-area-heading { margin-bottom: 34px; }
+  .sponsor-card { min-height: 220px; }
+  .sponsor-benefit-panel, .sponsor-support-panel { padding: 22px 18px; }
+  .sponsor-benefit-list { grid-template-columns: 1fr; }
+  .sponsor-benefit-list li:nth-last-child(-n + 2) { border-bottom: 1px solid var(--line-dark); }
+  .sponsor-benefit-list li:last-child { border-bottom: 0; }
+  .sponsor-direct-card { min-height: 0; padding: 22px 18px; }
+  .sponsor-direct-top { display: block; }
+  .sponsor-direct-top > strong { display: block; margin-top: 14px; font-size: 30px; }
+  .sponsor-support-panel { gap: 24px; }
+  .support-grid { grid-template-columns: 1fr; }
+  .sponsor-bottom { align-items: flex-start; flex-direction: column; }
   .footer-top { min-height: 200px; padding: 35px 0; }
   .footer-top p { margin: 0; }
   .footer-bottom { align-items: flex-start; flex-direction: column; justify-content: center; gap: 4px; padding: 17px 0; }

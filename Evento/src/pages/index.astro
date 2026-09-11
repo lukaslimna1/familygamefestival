@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { event, navItems, guests, attractions, tournaments, tournamentGroups, gameArt, experiences, tickets, competitorTickets, partners } from '../data/event';
+import { event, navItems, guests, attractions, tournaments, tournamentGroups, gameArt, experiences, tickets, competitorTickets, partners, sponsorTiers, sponsorBenefits, directSponsorOptions, supportOptions } from '../data/event';
 
 const getTournamentArt = (tournament: (typeof tournaments)[number]) => gameArt.find((game) => tournament.title.includes(game.title)) ?? gameArt[0];
 const initialTournament = tournaments[0];
@@ -323,15 +323,64 @@ const initialArt = getTournamentArt(initialTournament);
 
     <section class="section section-light partner-section" id="expositores">
       <div class="container split-section">
-        <div class="split-copy"><p class="eyebrow eyebrow-red">Quem faz acontecer</p><h2>Marcas, criadores e apoios fazem parte da fase.</h2><p>O Family Game Festival conecta o público de Bauru a quem movimenta a cultura gamer e geek. Conheça quem já está confirmado.</p></div>
+        <div class="split-copy"><p class="eyebrow eyebrow-red">Quem já está com o evento</p><h2>Realização, marcas e apoios confirmados.</h2><p>O Family Game Festival aproxima o público de Bauru de quem movimenta a cultura gamer e geek. Conheça quem já está no ecossistema do festival.</p></div>
         <div class="partner-list">
           {partners.map((partner) => (
-            <article class={`partner-card partner-${partner.accent}`}><span class="partner-mark">{partner.name.slice(0, 1)}</span><div><h3>{partner.name}</h3><p>{partner.status}</p><small>{partner.handle}</small></div>{partner.href ? <a href={partner.href} target="_blank" rel="noreferrer" aria-label={`Ver ${partner.name} no Instagram`}>↗</a> : <span class="partner-pending">apoio</span>}</article>
+            <article class={`partner-card partner-${partner.accent}`}><span class="partner-mark">{partner.name.slice(0, 1)}</span><div><h3>{partner.name}</h3><p>{partner.status}</p><small>{partner.handle}</small></div>{partner.href ? <a href={partner.href} target="_blank" rel="noreferrer" aria-label={`Visitar ${partner.name}`}>↗</a> : <span class="partner-pending">{partner.handle}</span>}</article>
           ))}
           <div class="partner-footnote"><img src="/assets/svg/chevrons.svg" alt="" aria-hidden="true" /><p>Há espaço para mais histórias, produtos e experiências.</p></div>
         </div>
       </div>
-      <div class="container exhibitor-cta"><div><p class="eyebrow eyebrow-cyan">Expositores & marcas</p><h2>Leve sua marca para dentro do jogo.</h2><p>Serão três espaços para expositores além da Edge 3D Studio. Para participar ou patrocinar o festival, fale diretamente com o Juruna.</p></div><div class="exhibitor-actions"><a class="button button-red" href={event.whatsapp.exhibitors} target="_blank" rel="noreferrer">Quero ser expositor <span aria-hidden="true">↗</span></a><a class="button button-outline-dark" href={event.whatsapp.sponsors} target="_blank" rel="noreferrer">Quero ser patrocinador <span aria-hidden="true">↗</span></a></div></div>
+
+      <div class="sponsor-area">
+        <div class="container">
+          <div class="section-heading heading-row sponsor-area-heading">
+            <div><p class="eyebrow eyebrow-red">Patrocínio & apoio</p><h2>Sua marca entra no jogo.</h2></div>
+            <p class="heading-note heading-note-light">Presença com propósito: quanto maior a cota, maior a hierarquia e a presença da marca na experiência.</p>
+          </div>
+
+          <div class="sponsor-grid">
+            {sponsorTiers.map((tier, index) => (
+              <article class={`sponsor-card sponsor-${tier.accent}`}>
+                <div class="sponsor-card-top"><span class="sponsor-level">COTA</span><span class="sponsor-number">0{index + 1}</span></div>
+                <h3>{tier.name}</h3>
+                <span class="sponsor-slots">{tier.slots}</span>
+                <strong>{tier.amount}</strong>
+                <p>{tier.detail}</p>
+              </article>
+            ))}
+          </div>
+
+          <div class="sponsor-benefit-panel">
+            <div class="sponsor-benefit-copy"><p class="eyebrow eyebrow-cyan">Contrapartidas progressivas</p><h3>Mais nível.<br /><em>Mais presença.</em></h3><p>A marca não fica no rodapé: ela aparece conectada à programação, aos campeonatos e aos momentos de destaque.</p></div>
+            <ol class="sponsor-benefit-list">
+              {sponsorBenefits.map((benefit, index) => <li><span>0{index + 1}</span><strong>{benefit}</strong></li>)}
+            </ol>
+          </div>
+
+          <div class="sponsor-direct-grid">
+            {directSponsorOptions.map((option) => (
+              <article class={`sponsor-direct-card sponsor-direct-${option.accent}`}>
+                <div class="sponsor-direct-top"><div><p class="eyebrow">{option.kicker}</p><h3>{option.title}</h3></div><strong>{option.amount}</strong></div>
+                <p>{option.detail}</p>
+                <div class="sponsor-option-list" aria-label={`Opções de ${option.title}`}>{option.items.map((item) => <span>{item}</span>)}</div>
+                <a class="text-link text-link-light" href={event.whatsapp.sponsors} target="_blank" rel="noreferrer">{option.title === 'Arena Partner' ? 'Patrocinar campeonato' : 'Patrocinar atração'} <span aria-hidden="true">↗</span></a>
+              </article>
+            ))}
+          </div>
+
+          <div class="sponsor-support-panel">
+            <div class="sponsor-support-copy"><p class="eyebrow eyebrow-yellow">Apoio em produtos & serviços</p><h3>O evento também precisa de quem faz acontecer.</h3><p>Empresas podem participar com produtos, serviços, estrutura ou divulgação. As contrapartidas são definidas conforme a contribuição e o valor equivalente da parceria.</p></div>
+            <div class="support-grid">
+              {supportOptions.map((option) => <article class={`support-card support-${option.accent}`}><span>{option.number}</span><h4>{option.title}</h4><p>{option.text}</p></article>)}
+            </div>
+          </div>
+
+          <div class="sponsor-bottom"><p><strong>Vamos colocar essa parceria em play.</strong> Escolha uma cota, apoie com produtos ou serviços, patrocine uma competição ou associe sua marca a uma atração especial.</p><a class="button button-yellow" href={event.whatsapp.sponsors} target="_blank" rel="noreferrer">Falar com Juruna <span aria-hidden="true">↗</span></a></div>
+        </div>
+      </div>
+
+      <div class="container exhibitor-cta"><div><p class="eyebrow eyebrow-cyan">Expositores & marcas</p><h2>Leve sua marca para dentro do jogo.</h2><p>Serão três espaços para expositores além da Edge 3D Studio. Para participar como expositor, fale diretamente com o Juruna.</p></div><div class="exhibitor-actions"><a class="button button-red" href={event.whatsapp.exhibitors} target="_blank" rel="noreferrer">Quero ser expositor <span aria-hidden="true">↗</span></a></div></div>
     </section>
 
     <section class="section contact-section" id="contato">
