@@ -6,9 +6,9 @@ Preferência: arquivos SVG com fundo transparente. PNG em alta resolução tamb�
 
 Arquivos esperados:
 
-- `family-games.svg` ou `family-games.png`
-- `edge-3d-studio.svg` ou `edge-3d-studio.png`
-- `alterstate.svg` ou `alterstate.png`
+- `Family Games Festival.svg`, `family-games.svg` ou `family-games.png`
+- `Edge 3D Studio.webp`, `edge-3d-studio.svg` ou `edge-3d-studio.png`
+- `ALTERSTATE.png`, `alterstate.svg` ou `alterstate.png`
 - `sorri-bauru.svg`, `sorri-bauru.png` ou `Sorri Bauru.png`
 
-Para novos parceiros, adicione a logo nesta pasta e inclua o nome e os candidatos de arquivo em `src/pages/patrocinadores.astro`.
+Os lojistas/expositores ficam em uma área própria. Para adicionar um novo lojista, inclua a logo nesta pasta e marque `merchant: true` no parceiro em `src/data/event.ts`. Para novos nomes, inclua também os candidatos de arquivo em `src/components/SponsorHierarchy.astro`.

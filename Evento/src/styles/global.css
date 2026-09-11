@@ -392,6 +392,13 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 
 .hierarchy-section { color: var(--ink); background: var(--paper); }
 .hierarchy-heading h2 em { color: var(--red); font-style: normal; }
+.sponsor-hierarchy { width: 100%; }
+.realization-feature { display: grid; grid-template-columns: minmax(0, 1fr) minmax(230px, .82fr) auto; align-items: center; gap: 28px; margin-bottom: 18px; padding: 25px 28px; color: var(--ink); border: 1px solid var(--line-light); border-top: 5px solid var(--yellow); background: #fff; }
+.realization-feature-copy h3 { margin: 0 0 8px; font-size: clamp(2.5rem, 5vw, 4.8rem); }
+.realization-feature-copy > p:last-child { max-width: 380px; margin: 0; color: var(--muted); font-size: 13px; }
+.realization-logo-frame { display: grid; place-items: center; min-height: 108px; padding: 14px 22px; background: var(--paper); border: 1px solid var(--line-light); }
+.realization-logo-frame img { width: min(100%, 270px); height: 78px; object-fit: contain; }
+.realization-pill, .hierarchy-partner-pill { display: inline-flex; align-items: center; justify-content: center; width: max-content; padding: 6px 9px; color: var(--yellow); border: 1px solid currentColor; font-size: 10px; font-weight: 700; letter-spacing: .1em; line-height: 1; text-transform: uppercase; }
 .hierarchy-pyramid { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .hierarchy-tier { width: var(--tier-width); padding: 21px 24px 22px; border: 1px solid var(--line-light); border-top: 4px solid var(--accent); background: #fff; }
 .hierarchy-tier-legend { --accent: var(--pink); --tier-width: 44%; }
@@ -411,10 +418,51 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .hierarchy-logo-card > span:last-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .hierarchy-logo-card strong { color: var(--ink); font-family: var(--display); font-size: 20px; line-height: .95; text-transform: uppercase; }
 .hierarchy-logo-card small { color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.hierarchy-logo-card .hierarchy-partner-pill { color: var(--accent); }
+.hierarchy-tier-legend .hierarchy-logo-card { min-height: 112px; }
+.hierarchy-tier-legend .hierarchy-logo-frame { width: 170px; height: 82px; }
+.hierarchy-tier-legend .hierarchy-logo-card strong { font-size: 25px; }
+.hierarchy-tier-champion .hierarchy-logo-card { min-height: 98px; }
+.hierarchy-tier-champion .hierarchy-logo-frame { width: 145px; height: 70px; }
+.hierarchy-tier-power .hierarchy-logo-card { min-height: 90px; }
+.hierarchy-tier-power .hierarchy-logo-frame { width: 126px; height: 62px; }
+.hierarchy-tier-player .hierarchy-logo-frame { width: 108px; height: 56px; }
 .hierarchy-empty { display: flex; align-items: center; gap: 10px; margin-top: 17px; padding: 12px 13px; color: var(--muted); border: 1px dashed var(--line-light); font-size: 12px; }
 .hierarchy-empty span { color: var(--accent); font-family: var(--display); font-size: 25px; line-height: 1; }
 .hierarchy-note { display: flex; align-items: center; gap: 9px; margin: 25px auto 0; color: var(--muted); font-size: 12px; text-align: center; justify-content: center; }
 .hierarchy-note span { color: var(--red); font-size: 17px; }
+.merchant-panel { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 28px; margin-top: 18px; padding: 25px 28px; color: #fff; border: 1px solid var(--line-dark); background: var(--navy-2); }
+.merchant-panel-copy h3 { margin: 0 0 9px; color: #fff; font-size: clamp(2.1rem, 3.7vw, 3.5rem); }
+.merchant-panel-copy > p:last-child { max-width: 390px; margin: 0; color: rgba(255,255,255,.63); font-size: 13px; line-height: 1.45; }
+.merchant-logo-grid { display: flex; flex-wrap: wrap; align-content: center; gap: 10px; }
+.merchant-logo-card { display: flex; align-items: center; gap: 14px; min-width: min(100%, 310px); padding: 12px; border: 1px solid var(--line-dark); background: rgba(255,255,255,.04); }
+.merchant-logo-card:hover, .merchant-logo-card:focus-visible { border-color: var(--cyan); }
+.merchant-logo-frame { display: grid; place-items: center; width: 125px; height: 70px; flex: 0 0 auto; overflow: hidden; background: #fff; }
+.merchant-logo-frame img { width: 100%; height: 100%; padding: 6px; object-fit: contain; }
+.merchant-logo-card > span:last-child { display: flex; flex-direction: column; gap: 4px; }
+.merchant-logo-card strong { color: #fff; font-family: var(--display); font-size: 22px; line-height: .95; text-transform: uppercase; }
+.merchant-logo-card small { color: var(--cyan); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+
+.sponsor-home-section { color: #fff; background: var(--navy); }
+.sponsor-home-heading { margin-bottom: 43px; }
+.sponsor-home-heading h2 { color: #fff; }
+.sponsor-home-heading h2 em { display: block; color: var(--cyan); font-style: normal; }
+.sponsor-home-heading .heading-note { max-width: 415px; }
+.sponsor-home-section .realization-feature { color: #fff; border-color: var(--line-dark); background: var(--navy-2); }
+.sponsor-home-section .realization-feature-copy > p:last-child { color: rgba(255,255,255,.63); }
+.sponsor-home-section .realization-logo-frame { background: #fff; border-color: rgba(255,255,255,.18); }
+.sponsor-home-section .hierarchy-note { color: rgba(255,255,255,.62); }
+.sponsor-home-special { display: grid; grid-template-columns: minmax(0, .68fr) minmax(0, 1.32fr); gap: 28px; margin-top: 48px; padding-top: 30px; border-top: 1px solid var(--line-dark); }
+.sponsor-home-special-copy h3 { max-width: 350px; margin: 0 0 12px; color: #fff; font-size: clamp(2.3rem, 4vw, 3.8rem); }
+.sponsor-home-special-copy > p:last-child { max-width: 340px; margin: 0; color: rgba(255,255,255,.62); font-size: 13px; }
+.sponsor-home-special-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.sponsor-home-special-card { min-height: 170px; padding: 20px; border: 1px solid var(--line-dark); border-top: 4px solid var(--accent); background: rgba(255,255,255,.035); }
+.sponsor-home-special-card h4 { margin: 21px 0 9px; color: #fff; font-family: var(--display); font-size: 29px; line-height: .9; text-transform: uppercase; }
+.sponsor-home-special-card p { min-height: 38px; margin: 0 0 18px; color: rgba(255,255,255,.63); font-size: 12px; }
+.sponsor-home-special-card .text-link { color: var(--accent); font-size: 10px; }
+.sponsor-home-bottom { margin-top: 24px; }
+.exhibitor-section { padding-top: 0; }
+.exhibitor-section .exhibitor-cta { margin-top: 0; }
 
 .sponsor-direct-section { color: #fff; background: var(--navy); }
 .sponsor-direct-heading { margin-bottom: 43px; }
@@ -647,6 +695,10 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
   .sponsor-page-hero-grid, .sponsor-guide-hero-grid { grid-template-columns: 1fr; gap: 38px; }
   .sponsor-page-hero-grid { min-height: 0; }
   .sponsor-hero-index { max-width: 590px; min-height: 230px; }
+  .realization-feature { grid-template-columns: minmax(0, 1fr) auto; }
+  .realization-logo-frame { grid-column: 1 / -1; grid-row: 2; justify-self: start; width: min(100%, 370px); }
+  .realization-pill { grid-column: 2; grid-row: 1; justify-self: end; }
+  .merchant-panel, .sponsor-home-special { grid-template-columns: 1fr; }
   .sponsor-direct-page-grid { grid-template-columns: 1fr; }
   .sponsor-page-cta-grid { align-items: flex-start; flex-direction: column; }
 }
@@ -661,12 +713,23 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
   .sponsor-page-actions .button { width: 100%; }
   .sponsor-hero-index { min-height: 210px; padding: 22px 18px; box-shadow: 9px 9px 0 rgba(242,43,53,.16); }
   .sponsor-hero-index strong { font-size: clamp(3.6rem, 16vw, 5.6rem); }
+  .realization-feature { display: block; padding: 20px 16px; }
+  .realization-feature-copy { margin-bottom: 18px; }
+  .realization-logo-frame { width: 100%; min-height: 86px; }
+  .realization-logo-frame img { height: 62px; }
+  .realization-pill { margin-top: 13px; }
   .hierarchy-tier, .hierarchy-tier-legend, .hierarchy-tier-champion, .hierarchy-tier-power, .hierarchy-tier-player, .hierarchy-tier-support { width: 100%; padding: 19px 16px 18px; }
   .hierarchy-tier-topline { display: block; }
   .hierarchy-tier-meta { display: inline-block; margin-top: 13px; }
   .hierarchy-logo-grid { gap: 8px; }
   .hierarchy-logo-card { width: 100%; min-width: 0; }
+  .hierarchy-tier-legend .hierarchy-logo-frame, .hierarchy-tier-champion .hierarchy-logo-frame, .hierarchy-tier-power .hierarchy-logo-frame, .hierarchy-tier-player .hierarchy-logo-frame { width: 100px; height: 56px; }
   .hierarchy-note { align-items: flex-start; text-align: left; }
+  .merchant-panel { padding: 21px 16px; }
+  .merchant-logo-card { min-width: 0; width: 100%; }
+  .merchant-logo-frame { width: 104px; height: 59px; }
+  .sponsor-home-special { gap: 22px; padding-top: 24px; }
+  .sponsor-home-special-grid { grid-template-columns: 1fr; }
   .sponsor-direct-page-card { min-height: 0; padding: 22px 18px; }
   .sponsor-direct-page-card h3 { font-size: 3rem; }
   .sponsor-direct-page-card > p { min-height: 0; }

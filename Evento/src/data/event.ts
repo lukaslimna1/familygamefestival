@@ -27,7 +27,7 @@ export const navItems = [
   { label: 'Atrações', href: '#atracoes' },
   { label: 'Campeonatos', href: '#campeonatos' },
   { label: 'Ingressos', href: '#ingressos' },
-  { label: 'Patrocinadores', href: '/patrocinadores' },
+  { label: 'Patrocinadores', href: '#patrocinadores' },
   { label: 'Expositores', href: '#expositores' },
   { label: 'Contato', href: '#contato' }
 ] as const;
@@ -159,10 +159,10 @@ export const competitorTickets = [
 ] as const;
 
 export const partners = [
-  { name: 'Family Games', handle: 'Realização', level: 'Realização', status: 'Responsável pela realização do Family Game Festival.', href: '', accent: 'yellow' },
-  { name: 'Edge 3D Studio', handle: '@edge3dstudio', level: 'Power-up', status: 'Patrocinador oficial · expositor confirmado', href: 'https://www.instagram.com/edge3dstudio/', accent: 'yellow' },
-  { name: 'Alterstate', handle: '@usealterstate', level: 'Apoio', status: 'Apoio confirmado', href: 'https://www.instagram.com/usealterstate/', accent: 'cyan' },
-  { name: 'SORRI Bauru', handle: 'sorribauru.com.br', level: 'Apoio', status: 'Apoio institucional · sede do festival', href: 'https://sorribauru.com.br', accent: 'pink' }
+  { name: 'Family Games', handle: 'Realização', level: 'Realização', status: 'Responsável pela realização do Family Game Festival.', href: '', merchant: false, accent: 'yellow' },
+  { name: 'Edge 3D Studio', handle: '@edge3dstudio', level: 'Power-up', status: 'Patrocinador oficial · lojista confirmado', href: 'https://www.instagram.com/edge3dstudio/', merchant: true, accent: 'yellow' },
+  { name: 'Alterstate', handle: '@usealterstate', level: 'Apoio', status: 'Apoio confirmado', href: 'https://www.instagram.com/usealterstate/', merchant: false, accent: 'cyan' },
+  { name: 'SORRI Bauru', handle: 'sorribauru.com.br', level: 'Apoio', status: 'Apoio institucional · sede do festival', href: 'https://sorribauru.com.br', merchant: false, accent: 'pink' }
 ] as const;
 
 export const sponsorTiers = [

@@ -1,34 +1,9 @@
 ---
-import fs from 'node:fs';
-import path from 'node:path';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { event, navItems, partners, sponsorTiers, directSponsorOptions } from '../data/event';
-
-const logoDirectory = path.join(process.cwd(), 'public', 'assets', 'logos', 'parceiros');
-const logoCandidates: Record<string, string[]> = {
-  'Family Games': ['family-games.svg', 'family-games.png', 'family-games-logo.svg'],
-  'Edge 3D Studio': ['edge-3d-studio.svg', 'edge-3d-studio.png', 'Edge 3D Studio.svg', 'Edge 3D Studio.png'],
-  Alterstate: ['alterstate.svg', 'alterstate.png'],
-  'SORRI Bauru': ['Sorri Bauru.png', 'sorri-bauru.svg', 'sorri-bauru.png']
-};
-
-const getLogo = (name: string) => {
-  const filename = logoCandidates[name]?.find((candidate) => fs.existsSync(path.join(logoDirectory, candidate)));
-  return filename ? `/assets/logos/parceiros/${filename.split('/').map(encodeURIComponent).join('/')}` : '';
-};
+import SponsorHierarchy from '../components/SponsorHierarchy.astro';
+import { event, navItems, sponsorTiers, sponsorBenefits, directSponsorOptions, supportOptions } from '../data/event';
 
 const navLinks = navItems.map((item) => ({ ...item, href: item.href.startsWith('#') ? `/${item.href}` : item.href }));
-const powerUpPartners = partners.filter((partner) => partner.level === 'Power-up');
-const supportPartners = partners.filter((partner) => partner.level === 'Apoio' || partner.level === 'Realização');
-const getTier = (name: string) => sponsorTiers.find((tier) => tier.name.toLowerCase() === name.toLowerCase());
-
-const hierarchyTiers = [
-  { key: 'legend', title: 'Legend', kicker: 'Principal parceiro institucional', meta: getTier('Legend')?.slots ?? '1 cota', partners: [], empty: 'Espaço reservado para o principal parceiro do festival.' },
-  { key: 'champion', title: 'Champion', kicker: 'Marca em posição de alta visibilidade', meta: getTier('Champion')?.slots ?? '2 cotas', partners: [], empty: 'Espaço reservado para marcas Champion.' },
-  { key: 'power', title: 'Power-up', kicker: 'Patrocinador em destaque', meta: getTier('Power-up')?.slots ?? '4 cotas', partners: powerUpPartners, empty: 'Espaço reservado para novos parceiros Power-up.' },
-  { key: 'player', title: 'Player', kicker: 'Entrada no grupo oficial de patrocinadores', meta: getTier('Player')?.slots ?? '8 cotas', partners: [], empty: 'Espaço reservado para marcas Player.' },
-  { key: 'support', title: 'Apoio & realização', kicker: 'A base que coloca o festival em movimento', meta: 'marcas confirmadas', partners: supportPartners, empty: '' }
-] as const;
 ---
 
 <BaseLayout
@@ -46,7 +21,7 @@ const hierarchyTiers = [
         <span class="sr-only">Abrir menu</span>
       </button>
       <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
-        {navLinks.map((item) => <a class={item.href === '/patrocinadores' ? 'is-current' : undefined} href={item.href} aria-current={item.href === '/patrocinadores' ? 'page' : undefined}>{item.label}</a>)}
+        {navLinks.map((item) => <a class={item.label === 'Patrocinadores' ? 'is-current' : undefined} href={item.href}>{item.label}</a>)}
         <a class="button button-small button-yellow nav-cta" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a>
       </nav>
     </div>
@@ -80,31 +55,7 @@ const hierarchyTiers = [
           <p class="heading-note">Cada nível organiza a presença da marca. Os logos oficiais entram nesta estrutura conforme forem adicionados à pasta de parceiros.</p>
         </div>
 
-        <div class="hierarchy-pyramid">
-          {hierarchyTiers.map((tier) => (
-            <article class={`hierarchy-tier hierarchy-tier-${tier.key}`}>
-              <div class="hierarchy-tier-topline">
-                <div><p class="hierarchy-tier-kicker">{tier.kicker}</p><h3>{tier.title}</h3></div>
-                <span class="hierarchy-tier-meta">{tier.meta}</span>
-              </div>
-              {tier.partners.length > 0 ? (
-                <div class="hierarchy-logo-grid">
-                  {tier.partners.map((partner) => (
-                    <div class="hierarchy-logo-card">
-                      <span class="hierarchy-logo-frame">
-                        {getLogo(partner.name) ? <img src={getLogo(partner.name)} alt={`Logo ${partner.name}`} /> : <span class="hierarchy-logo-fallback" aria-hidden="true">{partner.name.slice(0, 1)}</span>}
-                      </span>
-                      <span><strong>{partner.name}</strong><small>{partner.level}</small></span>
-                    </div>
-                  ))}
-                </div>
-              ) : tier.empty ? (
-                <div class="hierarchy-empty"><span>+</span>{tier.empty}</div>
-              ) : null}
-            </article>
-          ))}
-        </div>
-        <p class="hierarchy-note"><span aria-hidden="true">✦</span> A hierarquia cresce de baixo para cima: apoio, Player, Power-up, Champion e Legend.</p>
+        <SponsorHierarchy />
       </div>
     </section>
 

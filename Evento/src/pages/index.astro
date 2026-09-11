@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { event, navItems, guests, attractions, tournaments, tournamentGroups, gameArt, experiences, tickets, competitorTickets, partners } from '../data/event';
+import SponsorHierarchy from '../components/SponsorHierarchy.astro';
+import { event, navItems, guests, attractions, tournaments, tournamentGroups, gameArt, experiences, tickets, competitorTickets, directSponsorOptions } from '../data/event';
 
 const getTournamentArt = (tournament: (typeof tournaments)[number]) => gameArt.find((game) => tournament.title.includes(game.title)) ?? gameArt[0];
 const initialTournament = tournaments[0];
@@ -321,17 +322,31 @@ const initialArt = getTournamentArt(initialTournament);
       </div>
     </section>
 
-    <section class="section section-light partner-section" id="expositores">
-      <div class="container split-section">
-        <div class="split-copy"><p class="eyebrow eyebrow-red">Patrocinadores e apoiadores</p><h2>Quem já está com o evento.</h2><p>Conheça as marcas e apoios confirmados. A hierarquia completa, com os logos em destaque, está na página de patrocinadores.</p><a class="button button-outline-dark partner-portal-button" href="/patrocinadores">Ver patrocinadores <span aria-hidden="true">↗</span></a></div>
-        <div class="partner-list">
-          {partners.map((partner) => (
-            <article class={`partner-card partner-${partner.accent}`}><span class="partner-mark">{partner.name.slice(0, 1)}</span><div><h3>{partner.name}</h3><p>{partner.status}</p><small>{partner.handle}</small></div>{partner.href ? <a href={partner.href} target="_blank" rel="noreferrer" aria-label={`Visitar ${partner.name}`}>↗</a> : <span class="partner-pending">{partner.handle}</span>}</article>
-          ))}
-          <div class="partner-footnote"><img src="/assets/svg/chevrons.svg" alt="" aria-hidden="true" /><p>Há espaço para mais histórias, produtos e experiências.</p></div>
+    <section class="section sponsor-home-section" id="patrocinadores">
+      <div class="container">
+        <div class="section-heading heading-row sponsor-home-heading">
+          <div><p class="eyebrow eyebrow-red">Patrocinadores e apoiadores</p><h2>Nossos patrocinadores <em>entram no jogo.</em></h2></div>
+          <p class="heading-note heading-note-light">Do Legend ao apoio: cada nível organiza o tamanho do destaque e a presença da marca na arena.</p>
         </div>
-      </div>
 
+        <SponsorHierarchy />
+
+        <div class="sponsor-home-special">
+          <div class="sponsor-home-special-copy"><p class="eyebrow eyebrow-yellow">Estruturas especiais</p><h3>Assuma uma competição ou atração.</h3><p>Áreas reservadas para parceiros que querem estar diretamente no palco do festival.</p></div>
+          <div class="sponsor-home-special-grid">
+            {directSponsorOptions.map((option) => (
+              <article class={`sponsor-home-special-card sponsor-direct-${option.accent}`}>
+                <span class="sponsor-direct-status">DISPONÍVEL</span><h4>{option.title}</h4><p>{option.title === 'Arena Partner' ? 'Sua marca ligada a uma competição.' : 'Sua marca ligada a uma atração especial.'}</p><a class="text-link text-link-light" href="/patrocinadores/como-participar">Ver parceria <span aria-hidden="true">↗</span></a>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <div class="sponsor-bottom sponsor-home-bottom"><p><strong>Quer colocar sua marca na arena?</strong> Veja as possibilidades e fale com a organização.</p><a class="button button-yellow" href="/patrocinadores/como-participar">Veja como ser patrocinador <span aria-hidden="true">↗</span></a></div>
+      </div>
+    </section>
+
+    <section class="section section-light exhibitor-section" id="expositores">
       <div class="container exhibitor-cta"><div><p class="eyebrow eyebrow-cyan">Expositores & marcas</p><h2>Leve sua marca para dentro do jogo.</h2><p>Serão três espaços para expositores além da Edge 3D Studio. Para participar como expositor, fale diretamente com o Juruna.</p></div><div class="exhibitor-actions"><a class="button button-red" href={event.whatsapp.exhibitors} target="_blank" rel="noreferrer">Quero ser expositor <span aria-hidden="true">↗</span></a></div></div>
     </section>
 

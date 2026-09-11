@@ -15,7 +15,7 @@ const navLinks = navItems.map((item) => ({ ...item, href: item.href.startsWith('
       <a class="brand" href="/" aria-label="Family Game Festival · início"><img src="/assets/logo.svg" alt="Family Game Festival" /></a>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav"><span></span><span></span><span></span><span class="sr-only">Abrir menu</span></button>
       <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
-        {navLinks.map((item) => <a class={item.href === '/patrocinadores' ? 'is-current' : undefined} href={item.href}>{item.label}</a>)}
+        {navLinks.map((item) => <a class={item.label === 'Patrocinadores' ? 'is-current' : undefined} href={item.href}>{item.label}</a>)}
         <a class="button button-small button-yellow nav-cta" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a>
       </nav>
     </div>
@@ -28,7 +28,7 @@ const navLinks = navItems.map((item) => ({ ...item, href: item.href.startsWith('
           <p class="eyebrow eyebrow-yellow">Patrocínio & apoio · Family Game Festival 2026</p>
           <h1>Como sua marca pode <em>entrar no jogo.</em></h1>
           <p>Escolha o nível de presença que faz sentido para a sua marca ou converse com a organização sobre uma parceria sob medida.</p>
-          <div class="sponsor-page-actions"><a class="button button-yellow" href={event.whatsapp.sponsors} target="_blank" rel="noreferrer">Falar com o Juruna <span aria-hidden="true">↗</span></a><a class="button button-outline-light" href="/patrocinadores">Voltar para patrocinadores <span aria-hidden="true">↩</span></a></div>
+          <div class="sponsor-page-actions"><a class="button button-yellow" href={event.whatsapp.sponsors} target="_blank" rel="noreferrer">Falar com o Juruna <span aria-hidden="true">↗</span></a><a class="button button-outline-light" href="/#patrocinadores">Voltar para patrocinadores <span aria-hidden="true">↩</span></a></div>
         </div>
         <div class="sponsor-guide-contact"><span class="sponsor-guide-contact-label">CONTATO DIRETO</span><strong>+55 14<br />99115-2263</strong><span>WhatsApp da organização</span></div>
       </div>
