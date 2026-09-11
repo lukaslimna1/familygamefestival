@@ -62,14 +62,14 @@ export const attractions = [
 ] as const;
 
 export const tournaments = [
-  { id: 'cosplay', category: 'Cosplay', title: 'Concurso Cosplay', time: '16h00', date: '20/09 · domingo', accent: 'pink', prize: 'R$ 1.000', detail: 'Participação sujeita ao regulamento oficial e limite de vagas.', featured: true },
-  { id: 'just-dance-2026', category: 'Dance Game', title: 'Just Dance 2026', time: '', date: '19/09 · sábado', accent: 'yellow', prize: '1 vaga', detail: 'Seletiva valendo 1 vaga para o Nacional de Just Dance 2026.', featured: true },
-  { id: 'mortal-kombat-1', category: 'Fight Games', title: 'Mortal Kombat 1', time: '14h00', date: '20/09 · domingo', accent: 'red', prize: 'R$ 1.000', detail: 'Vagas limitadas.' },
-  { id: 'street-fighter-6', category: 'Fight Games', title: 'Street Fighter 6', time: '18h00', date: '20/09 · domingo', accent: 'cyan', prize: 'R$ 1.000', detail: 'Vagas limitadas.' },
-  { id: 'tekken-8', category: 'Fight Games', title: 'Tekken 8', time: '16h00', date: '20/09 · domingo', accent: 'pink', prize: 'R$ 1.000', detail: 'Vagas limitadas.' },
-  { id: 'fc-26', category: 'Esport Games', title: 'FC 26', time: '', date: '19 e 20/09 · sábado e domingo', accent: 'cyan', prize: 'R$ 100', detail: 'Inscrição R$ 30 · vagas limitadas.' },
-  { id: 'efootball', category: 'Esport Games', title: 'eFootball', time: '', date: '19 e 20/09 · sábado e domingo', accent: 'yellow', prize: 'R$ 100', detail: 'Inscrição R$ 30 · vagas limitadas.' },
-  { id: 'top-gear-1', category: 'Retrô Games', title: 'Top Gear 1', time: '', date: '19 e 20/09 · sábado e domingo', accent: 'red', prize: 'R$ 100', detail: 'Inscrição R$ 30 · vagas limitadas.' }
+  { id: 'cosplay', category: 'Cosplay', title: 'Concurso Cosplay', time: '16h00', date: '20', accent: 'pink', prize: 'R$ 1.000', detail: 'Participação sujeita ao regulamento oficial e limite de vagas.', featured: true },
+  { id: 'just-dance-2026', category: 'Dance Game', title: 'Just Dance 2026', time: '', date: '19', accent: 'yellow', prize: '1 vaga', detail: 'Seletiva valendo 1 vaga para o Nacional de Just Dance 2026.', featured: true },
+  { id: 'mortal-kombat-1', category: 'Fight Games', title: 'Mortal Kombat 1', time: '14h00', date: '20', accent: 'red', prize: 'R$ 1.000', detail: 'Vagas limitadas.' },
+  { id: 'street-fighter-6', category: 'Fight Games', title: 'Street Fighter 6', time: '18h00', date: '20', accent: 'cyan', prize: 'R$ 1.000', detail: 'Vagas limitadas.' },
+  { id: 'tekken-8', category: 'Fight Games', title: 'Tekken 8', time: '16h00', date: '20', accent: 'pink', prize: 'R$ 1.000', detail: 'Vagas limitadas.' },
+  { id: 'fc-26', category: 'Esport Games', title: 'FC 26', time: '', date: '19 e 20', accent: 'cyan', prize: 'R$ 100', detail: 'Inscrição R$ 30 · vagas limitadas.' },
+  { id: 'efootball', category: 'Esport Games', title: 'eFootball', time: '', date: '19 e 20', accent: 'yellow', prize: 'R$ 100', detail: 'Inscrição R$ 30 · vagas limitadas.' },
+  { id: 'top-gear-1', category: 'Retrô Games', title: 'Top Gear 1', time: '', date: '19 e 20', accent: 'red', prize: 'R$ 100', detail: 'Inscrição R$ 30 · vagas limitadas.' }
 ] as const;
 
 export const tournamentGroups = [
@@ -151,10 +151,10 @@ export const tickets = [
 ] as const;
 
 export const competitorTickets = [
-  { name: 'Tekken 8', icon: '👊', price: 'R$ 60,00', fee: '+ R$ 5,10 de taxa', installments: 'em até 12x de R$ 6,66', schedule: '20/09 · domingo · 16h00', prize: 'R$ 1.000', note: 'Premiação de R$ 1.000 para o campeão. Vagas limitadas.', accent: 'pink' },
-  { name: 'Mortal Kombat 1', icon: '⚔️', price: 'R$ 60,00', fee: '+ R$ 5,10 de taxa', installments: 'em até 12x de R$ 6,66', schedule: '20/09 · domingo · 14h00', prize: 'R$ 1.000', note: 'Premiação de R$ 1.000 para o campeão. Vagas limitadas.', accent: 'red' },
-  { name: 'Street Fighter 6', icon: '🥊', price: 'R$ 60,00', fee: '+ R$ 5,10 de taxa', installments: 'em até 12x de R$ 6,66', schedule: '20/09 · domingo · 18h00', prize: 'R$ 1.000', note: 'Premiação de R$ 1.000 para o campeão. Vagas limitadas.', accent: 'cyan' },
-  { name: 'Concurso Cosplay', icon: '🎭', price: 'R$ 60,00', fee: '+ R$ 5,10 de taxa', installments: 'em até 12x de R$ 6,66', schedule: '20/09 · domingo · 16h00', prize: 'R$ 1.000', note: 'Participação sujeita ao regulamento oficial e limite de vagas.', accent: 'yellow' }
+  { name: 'Tekken 8', icon: '👊', price: 'R$ 60,00', fee: '+ R$ 5,10 de taxa', installments: 'em até 12x de R$ 6,66', schedule: '20 · 16h00', prize: 'R$ 1.000', note: 'Premiação de R$ 1.000 para o campeão. Vagas limitadas.', accent: 'pink' },
+  { name: 'Mortal Kombat 1', icon: '⚔️', price: 'R$ 60,00', fee: '+ R$ 5,10 de taxa', installments: 'em até 12x de R$ 6,66', schedule: '20 · 14h00', prize: 'R$ 1.000', note: 'Premiação de R$ 1.000 para o campeão. Vagas limitadas.', accent: 'red' },
+  { name: 'Street Fighter 6', icon: '🥊', price: 'R$ 60,00', fee: '+ R$ 5,10 de taxa', installments: 'em até 12x de R$ 6,66', schedule: '20 · 18h00', prize: 'R$ 1.000', note: 'Premiação de R$ 1.000 para o campeão. Vagas limitadas.', accent: 'cyan' },
+  { name: 'Concurso Cosplay', icon: '🎭', price: 'R$ 60,00', fee: '+ R$ 5,10 de taxa', installments: 'em até 12x de R$ 6,66', schedule: '20 · 16h00', prize: 'R$ 1.000', note: 'Participação sujeita ao regulamento oficial e limite de vagas.', accent: 'yellow' }
 ] as const;
 
 export const partners = [

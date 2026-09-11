@@ -29,6 +29,34 @@ const initialArt = getTournamentArt(initialTournament);
     </div>
   </header>
 
+  <section class="event-spotlight" aria-labelledby="event-spotlight-title">
+    <div class="container">
+      <div class="event-spotlight-shell">
+        <div class="event-spotlight-main">
+          <div class="event-spotlight-heading">
+            <p class="eyebrow eyebrow-yellow">Evento confirmado · Bauru/SP</p>
+            <h2 id="event-spotlight-title">O festival está chegando.</h2>
+          </div>
+          <div class="event-spotlight-facts" aria-label="Data, local e horário do evento">
+            <div class="event-spotlight-fact"><span>DATA</span><strong>19 e 20</strong><small>SETEMBRO DE 2026</small></div>
+            <div class="event-spotlight-fact"><span>LOCAL</span><strong>SORRI</strong><small>BAURU · ARENA TAUSTE</small></div>
+            <div class="event-spotlight-fact"><span>HORÁRIO</span><strong>{event.hours}</strong><small>HORÁRIO DO EVENTO</small></div>
+          </div>
+        </div>
+
+        <div class="event-countdown" data-countdown data-countdown-target="2026-09-19T11:00:00-03:00" role="timer" aria-label="Contagem regressiva para o início do Family Game Festival">
+          <div class="event-countdown-heading"><span>CONTAGEM REGRESSIVA</span><strong data-countdown-status>PARA O FESTIVAL</strong></div>
+          <div class="event-countdown-grid">
+            <div><strong data-countdown-days>00</strong><span>dias</span></div>
+            <div><strong data-countdown-hours>00</strong><span>horas</span></div>
+            <div><strong data-countdown-minutes>00</strong><span>min</span></div>
+            <div><strong data-countdown-seconds>00</strong><span>seg</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <main>
     <section class="hero" id="inicio">
       <div class="container hero-grid">
@@ -61,14 +89,6 @@ const initialArt = getTournamentArt(initialTournament);
           </div>
           <div class="stage-bottomline"><span>ARENA TAUSTE</span><span class="stage-stars">✦ ✦ ✦</span></div>
         </div>
-      </div>
-    </section>
-
-    <section class="signal-strip" aria-label="Resumo do evento">
-      <div class="container signal-grid">
-        <div><span class="signal-icon">DATA</span><span><strong>19 e 20 de setembro</strong><small>sábado e domingo · 2026</small></span></div>
-        <div><span class="signal-icon">LOCAL</span><span><strong>SORRI Bauru</strong><small>Arena Tauste · Av. Nações Unidas, 53-40</small></span></div>
-        <div><span class="signal-icon">HORA</span><span><strong>{event.hours}</strong><small>horário do festival</small></span></div>
       </div>
     </section>
 
@@ -380,5 +400,38 @@ const initialArt = getTournamentArt(initialTournament);
       card.addEventListener('focus', () => setTournamentPreview(card));
       card.addEventListener('click', () => setTournamentPreview(card));
     });
+
+    const countdown = document.querySelector('[data-countdown]');
+    const countdownTarget = countdown?.getAttribute('data-countdown-target');
+    const countdownStatus = countdown?.querySelector('[data-countdown-status]');
+    const countdownDays = countdown?.querySelector('[data-countdown-days]');
+    const countdownHours = countdown?.querySelector('[data-countdown-hours]');
+    const countdownMinutes = countdown?.querySelector('[data-countdown-minutes]');
+    const countdownSeconds = countdown?.querySelector('[data-countdown-seconds]');
+
+    if (countdown && countdownTarget && countdownDays && countdownHours && countdownMinutes && countdownSeconds) {
+      const targetTimestamp = new Date(countdownTarget).getTime();
+
+      const updateCountdown = () => {
+        const remaining = Math.max(targetTimestamp - Date.now(), 0);
+        const totalSeconds = Math.floor(remaining / 1000);
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        const format = (value) => String(value).padStart(2, '0');
+
+        countdownDays.textContent = format(days);
+        countdownHours.textContent = format(hours);
+        countdownMinutes.textContent = format(minutes);
+        countdownSeconds.textContent = format(seconds);
+
+        if (remaining === 0 && countdownStatus) countdownStatus.textContent = 'O FESTIVAL COMEÇOU';
+      };
+
+      updateCountdown();
+      const countdownTimer = window.setInterval(updateCountdown, 1000);
+      window.addEventListener('pagehide', () => window.clearInterval(countdownTimer), { once: true });
+    }
   </script>
 </BaseLayout>
