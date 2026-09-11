@@ -222,6 +222,10 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .exhibitor-cta { display: flex; align-items: center; justify-content: space-between; gap: 35px; margin-top: 116px; padding-top: 54px; padding-bottom: 57px; border-top: 1px solid var(--line-light); }
 .exhibitor-cta h2 { margin-bottom: 15px; font-size: clamp(3rem, 5vw, 4.7rem); }
 .exhibitor-cta p:last-child { max-width: 590px; margin: 0; color: var(--muted); }
+.exhibitor-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; max-width: 360px; }
+.exhibitor-actions small { width: 100%; color: var(--muted); font-size: 11px; text-align: right; }
+.button-outline-dark { color: var(--navy); border-color: var(--line-light); background: transparent; }
+.button-outline-dark:hover, .button-outline-dark:focus-visible { color: #fff; border-color: var(--navy); background: var(--navy); }
 
 .sponsor-section { background: var(--navy-2); }
 .sponsor-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
@@ -334,13 +338,15 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
   .tournament-row h3 { font-size: 22px; }
   .tournament-row p { font-size: 11px; }
   .tournament-row time { font-size: 30px; }
-  .cosplay-banner, .ticket-footer, .exhibitor-cta, .sponsor-bottom, .footer-top { align-items: flex-start; flex-direction: column; }
+  .cosplay-banner, .ticket-footer, .exhibitor-cta, .footer-top { align-items: flex-start; flex-direction: column; }
   .cosplay-banner { padding: 22px; }
   .experience-card { min-height: 190px; }
   .inclusive-note { align-items: flex-start; }
   .ticket-card { min-height: 270px; }
   .ticket-footer { gap: 20px; }
   .exhibitor-cta { margin-top: 77px; padding-top: 38px; padding-bottom: 42px; }
+  .exhibitor-actions { align-items: flex-start; justify-content: flex-start; max-width: none; }
+  .exhibitor-actions small { text-align: left; }
   .partner-card { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; }
   .partner-mark { width: 48px; height: 48px; }
   .sponsor-options { padding: 20px 18px; }

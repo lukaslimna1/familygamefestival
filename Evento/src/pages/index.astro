@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { event, navItems, guests, attractions, tournaments, experiences, tickets, partners, sponsorshipTiers, experienceProperties, inKindOptions } from '../data/event';
+import { event, navItems, guests, attractions, tournaments, experiences, tickets, partners } from '../data/event';
 ---
 
 <BaseLayout>
@@ -200,18 +200,7 @@ import { event, navItems, guests, attractions, tournaments, experiences, tickets
           <div class="partner-footnote"><img src="/assets/svg/chevrons.svg" alt="" aria-hidden="true" /><p>Há espaço para mais histórias, produtos e experiências.</p></div>
         </div>
       </div>
-      <div class="container exhibitor-cta"><div><p class="eyebrow eyebrow-cyan">Expositores</p><h2>Leve sua marca para dentro do jogo.</h2><p>Serão três espaços para expositores além da Edge 3D Studio. Fale com a organização para receber as condições de participação.</p></div><a class="button button-red" href="#contato">Quero ser expositor <span aria-hidden="true">↗</span></a></div>
-    </section>
-
-    <section class="section section-navy sponsor-section" id="patrocinio">
-      <div class="container">
-        <div class="section-heading heading-row"><div><p class="eyebrow eyebrow-yellow">Para marcas</p><h2>Patrocine a experiência.</h2></div><p class="heading-note heading-note-light">Cotas para associar sua marca ao maior encontro gamer e geek da região, com possibilidades de ativação a definir com a organização.</p></div>
-        <div class="sponsor-grid">
-          {sponsorshipTiers.map((tier, index) => <article class={`sponsor-card sponsor-${index + 1}`}><span class="sponsor-level">0{index + 1}</span><h3>{tier.name}</h3><strong>{tier.price}</strong><p>{tier.availability}</p><small>{tier.note}</small></article>)}
-        </div>
-        <div class="sponsor-options"><div><p class="card-eyebrow">Cotas de experiência</p><h3>Uma marca por campeonato ou atração</h3><p>Investimento de R$ 1.500 para associar seu nome a uma experiência específica.</p></div><div class="property-list">{experienceProperties.map((property) => <span>{property}</span>)}</div></div>
-        <div class="sponsor-bottom"><p><strong>Apoio em produtos e serviços também é bem-vindo.</strong> Alimentação, brindes, estrutura, mídia e outras soluções podem entrar como apoio em espécie.</p><a class="button button-outline-light" href="#contato">Quero ser parceiro <span aria-hidden="true">↗</span></a></div>
-      </div>
+      <div class="container exhibitor-cta"><div><p class="eyebrow eyebrow-cyan">Expositores & marcas</p><h2>Leve sua marca para dentro do jogo.</h2><p>Serão três espaços para expositores além da Edge 3D Studio. Para participar ou apoiar o festival, fale diretamente com o Juruna.</p></div><div class="exhibitor-actions"><a class="button button-red" href={event.whatsapp.exhibitors} target="_blank" rel="noreferrer">Quero ser expositor <span aria-hidden="true">↗</span></a><a class="button button-outline-dark" href={event.whatsapp.sponsors} target="_blank" rel="noreferrer">Quero apoiar o festival <span aria-hidden="true">↗</span></a><small>WhatsApp · +55 14 99115-2263</small></div></div>
     </section>
 
     <section class="section contact-section" id="contato">

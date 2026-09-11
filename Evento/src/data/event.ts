@@ -10,6 +10,10 @@ export const event = {
   instagram: '@familygamex',
   instagramUrl: 'https://www.instagram.com/familygamex/',
   ticketUrl: 'https://eventiza.com.br/evento/family-game-festival?utm_source=chatgpt.com',
+  whatsapp: {
+    exhibitors: 'https://wa.me/5514991152263?text=Ol%C3%A1%2C%20quero%20saber%20como%20participar%20como%20expositor%20no%20Family%20Game%20Festival.',
+    sponsors: 'https://wa.me/5514991152263?text=Ol%C3%A1%2C%20quero%20receber%20mais%20informa%C3%A7%C3%B5es%20sobre%20como%20apoiar%20o%20Family%20Game%20Festival.'
+  },
   experienceLine: 'A primeira edição nasce apoiada por mais de 13 anos de experiência em arenas gamers, campeonatos e eventos voltados ao público geek.',
   socialImpact: 'Parte da arrecadação será revertida para a SORRI Bauru.',
   contact: {
@@ -23,7 +27,7 @@ export const navItems = [
   { label: 'Campeonatos', href: '#campeonatos' },
   { label: 'Ingressos', href: '#ingressos' },
   { label: 'Expositores', href: '#expositores' },
-  { label: 'Patrocínio', href: '#patrocinio' }
+  { label: 'Contato', href: '#contato' }
 ] as const;
 
 export const guests = [
@@ -78,23 +82,5 @@ export const tickets = [
 
 export const partners = [
   { name: 'Edge 3D Studio', handle: '@edge3dstudio', status: 'Patrocinador oficial · expositor confirmado', href: 'https://www.instagram.com/edge3dstudio/', accent: 'yellow' },
-  { name: 'Alterstate', handle: '@usealterstate', status: 'Apoio confirmado', href: '', accent: 'cyan' }
+  { name: 'Alterstate', handle: '@usealterstate', status: 'Apoio confirmado', href: 'https://www.instagram.com/usealterstate/', accent: 'cyan' }
 ] as const;
-
-export const sponsorshipTiers = [
-  { name: 'Start', price: 'R$ 500', availability: '8 cotas', note: 'Cota de entrada' },
-  { name: 'Power-up', price: 'R$ 1.000', availability: '4 cotas', note: 'Cota intermediária' },
-  { name: 'Champion', price: 'R$ 2.000', availability: '2 cotas', note: 'Cota de destaque' },
-  { name: 'Legend', price: 'R$ 5.000', availability: '1 cota', note: 'Cota principal' }
-] as const;
-
-export const experienceProperties = [
-  'Campeonato Mortal Kombat 1',
-  'Campeonato Street Fighter 6',
-  'Campeonato Tekken 8',
-  'Concurso Cosplay',
-  'Just Dance 2026',
-  'Painel de dublagem'
-] as const;
-
-export const inKindOptions = ['alimentação', 'água e bebidas', 'brindes', 'impressão e materiais', 'equipamentos e estrutura', 'serviços e logística', 'mídia e divulgação'] as const;
