@@ -1,126 +1,86 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import '../styles/global.css';
+import { attractions, event, experienceProperties, experiences, guests, navItems, partners, sponsorshipTiers, tickets, tournaments } from '../data/event';
 
-const eventPage = 'https://eventiza.com.br/evento/family-game-festival';
-
-const attractions = [
-  {
-    icon: '/assets/trophy.png',
-    eyebrow: 'COMPETIÇÃO',
-    title: 'Campeonatos',
-    text: 'Mortal Kombat 1, Street Fighter 6 e Tekken 8 em arenas para quem gosta de jogar valendo.',
-    accent: 'yellow'
-  },
-  {
-    icon: '/assets/chevron.png',
-    eyebrow: 'DANÇA',
-    title: 'Just Dance 2026',
-    text: 'Uma seletiva com Lana VGS valendo vaga para o Nacional de Just Dance 2026.',
-    accent: 'cyan'
-  },
-  {
-    icon: '/assets/star.png',
-    eyebrow: 'PALCO',
-    title: 'Concurso Cosplay',
-    text: 'Vista seu personagem, suba ao palco e compartilhe sua paixão com a comunidade.',
-    accent: 'pink'
-  },
-  {
-    icon: '/assets/controller.png',
-    eyebrow: 'CULTURA GEEK',
-    title: 'K-pop e dublagem',
-    text: 'Espaço para K-pop e uma experiência especial com Raul Schlosser, voz brasileira de personagens marcantes.',
-    accent: 'red'
-  }
-];
-
-const experience = [
-  { number: '01', title: 'Chegue para jogar', text: 'Escolha sua arena, seu palco ou seu espaço de encontro.' },
-  { number: '02', title: 'Encontre sua comunidade', text: 'Games, cosplay, dança e cultura geek no mesmo lugar.' },
-  { number: '03', title: 'Leve uma história', text: 'Um festival para jogar junto e criar novas memórias.' }
-];
+const svg = (name: string) => `/assets/svg/${name}`;
+const contactHref = event.contact.ctaHref || '#contato';
 ---
 
-<BaseLayout
-  title="Family Game Festival 2026 | Bauru"
-  description="O Family Game Festival reúne games, campeonatos, cultura geek, cosplay e K-pop em Bauru."
->
-  <header class="site-header">
-    <a class="wordmark" href="#top" aria-label="Family Game Festival, início">
-      <span class="wordmark-mark" aria-hidden="true">FG</span>
-      <span>FAMILY GAME<br /><small>FESTIVAL</small></span>
+<BaseLayout>
+  <header class="site-header" data-site-header>
+    <a class="wordmark" href="#inicio" aria-label="Family Game Festival — início">
+      <img src="/assets/logo.svg" alt="Family Game Festival" width="420" height="316" />
     </a>
-
-    <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false">
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
       <span class="sr-only">Abrir menu</span>
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
+      <span></span><span></span><span></span>
     </button>
-
     <nav id="site-nav" class="site-nav" aria-label="Navegação principal">
-      <a href="#evento">O evento</a>
-      <a href="#atracoes">Atrações</a>
-      <a href="#experiencia">Experiência</a>
-      <a class="nav-cta" href={eventPage} target="_blank" rel="noreferrer">Ingressos <span aria-hidden="true">↗</span></a>
+      {navItems.map((item) => <a href={item.href}>{item.label}</a>)}
+      <a class="nav-cta" href={event.ticketUrl} target="_blank" rel="noreferrer">Ingressos <span aria-hidden="true">↗</span></a>
     </nav>
   </header>
 
   <main id="conteudo">
-    <section id="top" class="hero section-shell">
-      <div class="hero-copy">
-        <p class="kicker"><span class="pulse-dot" aria-hidden="true"></span> Bauru · 19 e 20 de setembro de 2026</p>
+    <section id="inicio" class="hero section-shell">
+      <div class="hero-copy" data-reveal>
+        <p class="kicker"><span class="pulse-dot"></span> A PRIMEIRA EDIÇÃO ESTÁ CHEGANDO</p>
         <h1>Jogue junto.<br /><em>Viva o festival.</em></h1>
-        <p class="hero-text">Dois dias de competição, descoberta e encontro para quem faz da cultura gamer um jeito de estar no mundo.</p>
+        <p class="hero-text">O encontro de games, competição, cultura geek e comunidade que coloca Bauru em modo festival.</p>
         <div class="hero-actions">
-          <a class="button button-primary" href="#atracoes">Explorar atrações <span aria-hidden="true">↓</span></a>
-          <a class="button button-quiet" href={eventPage} target="_blank" rel="noreferrer">Ver ingressos <span aria-hidden="true">↗</span></a>
+          <a class="button button-primary" href={event.ticketUrl} target="_blank" rel="noreferrer">Garantir meu ingresso <span aria-hidden="true">↗</span></a>
+          <a class="button button-quiet" href="#campeonatos">Ver campeonatos <span aria-hidden="true">↓</span></a>
         </div>
-        <div class="hero-meta" aria-label="Informações principais">
-          <span><strong>19–20</strong> SET</span>
+        <div class="hero-meta" aria-label="Data e local do evento">
+          <div><strong>{event.dateShort}</strong><span>{event.edition}</span></div>
           <span class="meta-divider" aria-hidden="true"></span>
-          <span><strong>SORRI</strong> BAURU · SP</span>
+          <div><strong>SORRI BAURU</strong><span>ARENA TAUSTE</span></div>
         </div>
       </div>
 
-      <div class="hero-art" aria-label="Mascote do Family Game Festival">
-        <div class="hero-grid-glow" aria-hidden="true"></div>
-        <span class="pixel-label pixel-label-top" aria-hidden="true">READY?</span>
-        <img class="hero-logo" src="/assets/logo.png" alt="Family Game Festival" />
-        <div class="hero-coin" aria-hidden="true">I</div>
-        <div class="hero-spark spark-one" aria-hidden="true">✦</div>
-        <div class="hero-spark spark-two" aria-hidden="true">♥</div>
+      <div class="hero-art" aria-hidden="true">
+        <img class="hero-grid" src={svg('grid.svg')} alt="" width="1133" height="1133" />
+        <img class="hero-hud" src={svg('hud.svg')} alt="" width="535" height="535" />
+        <img class="hero-lines" src={svg('interface-lines.svg')} alt="" width="586" height="586" />
+        <img class="hero-logo" src="/assets/logo.svg" alt="" width="1448" height="1086" fetchpriority="high" />
+        <img class="hero-mascot" src="/assets/mascot-original.png" alt="" width="1254" height="1254" />
+        <img class="hero-coin" src={svg('coin.svg')} alt="" width="1132" height="1132" />
+        <img class="hero-pixels" src={svg('pixels.svg')} alt="" width="462" height="462" />
+        <img class="hero-lightning" src={svg('lightning.svg')} alt="" width="593" height="593" />
+        <span class="hero-label label-top">READY PLAYER</span>
+        <span class="hero-label label-bottom">BAURU / SP</span>
       </div>
     </section>
 
-    <div class="game-strip" aria-label="Temas do festival">
-      <span>GAMES</span><i aria-hidden="true">✦</i><span>CULTURA GEEK</span><i aria-hidden="true">✦</i><span>COSPLAY</span><i aria-hidden="true">✦</i><span>K-POP</span><i aria-hidden="true">✦</i><span>FREE PLAY</span>
+    <div class="game-strip" aria-label="Conceito do festival">
+      <span>COMPETIÇÃO</span><i>✦</i><span>GAMES</span><i>✦</i><span>CULTURA GEEK</span><i>✦</i><span>COMUNIDADE</span><i>✦</i><span>FAMÍLIA</span>
     </div>
 
-    <section id="evento" class="intro section-shell section-block">
-      <div class="section-heading">
-        <p class="kicker kicker-cyan">UM NOVO SAVE POINT</p>
-        <h2>Mais que jogos.<br /><span>Um lugar para jogar junto.</span></h2>
+    <section class="intro section-shell section-block" data-reveal>
+      <div class="intro-title">
+        <p class="kicker kicker-cyan">UM NOVO MAPA PARA JOGAR</p>
+        <h2>Mais que um campeonato.<br /><span>Um festival inteiro.</span></h2>
       </div>
       <div class="intro-copy">
-        <p>O Family Game Festival nasce da experiência da Family Game em campeonatos, arenas e ações para o público gamer e geek. Agora, essa história ganha um encontro próprio em Bauru.</p>
-        <p class="muted">Primeira edição · dois dias · uma comunidade inteira em play.</p>
+        <p>{event.experienceLine}</p>
+        <p>{event.socialImpact} O festival é um evento de games e cultura geek com impacto social associado.</p>
+        <div class="stat-row">
+          <div><strong>+13</strong><span>anos de experiência</span></div>
+          <div><strong>+180</strong><span>campeonatos realizados</span></div>
+          <div><strong>+90</strong><span>eventos realizados</span></div>
+        </div>
       </div>
     </section>
 
-    <section id="atracoes" class="attractions section-shell section-block">
+    <section id="atracoes" class="section-shell section-block attractions" data-reveal>
       <div class="section-topline">
-        <div>
-          <p class="kicker kicker-yellow">ESCOLHA SEU POWER-UP</p>
-          <h2>Tem espaço para<br /><span>todo tipo de jogador.</span></h2>
-        </div>
+        <div><p class="kicker kicker-yellow">ESCOLHA SEU POWER-UP</p><h2>Tem espaço para<br /><span>todo tipo de jogador.</span></h2></div>
         <p class="section-aside">Compita, dance, crie, assista e encontre sua próxima memória favorita.</p>
       </div>
-
       <div class="attraction-grid">
         {attractions.map((attraction) => (
           <article class={`attraction-card accent-${attraction.accent}`}>
-            <div class="card-icon"><img src={attraction.icon} alt="" /></div>
+            <img class="card-corner-icon" src={svg(attraction.icon)} alt="" width="890" height="890" loading="lazy" />
             <p class="card-eyebrow">{attraction.eyebrow}</p>
             <h3>{attraction.title}</h3>
             <p>{attraction.text}</p>
@@ -130,42 +90,122 @@ const experience = [
       </div>
     </section>
 
-    <section id="experiencia" class="experience section-shell section-block">
-      <div class="experience-panel">
-        <div class="experience-heading">
-          <p class="kicker kicker-pink">CONTINUE?</p>
-          <h2>Seu próximo<br /><span>nível começa aqui.</span></h2>
-          <p>Uma experiência feita para aproximar pessoas, marcas e jogos.</p>
-        </div>
-        <div class="experience-list">
-          {experience.map((item) => (
-            <div class="experience-item">
-              <span class="experience-number">{item.number}</span>
-              <div><h3>{item.title}</h3><p>{item.text}</p></div>
+    <section class="guests section-shell section-block" data-reveal>
+      <div class="section-topline">
+        <div><p class="kicker kicker-pink">GUEST SELECT</p><h2>Quem chega<br /><span>para jogar com a gente.</span></h2></div>
+        <p class="section-aside">Convidados que conectam palco, dança, dublagem e cultura geek.</p>
+      </div>
+      <div class="guest-grid">
+        {guests.map((guest) => (
+          <article class={`guest-card accent-${guest.accent}`}>
+            <div class="guest-visual">
+              <img class="guest-hud" src={svg('hud.svg')} alt="" width="535" height="535" loading="lazy" />
+              <img class="guest-image" src={guest.image} alt={guest.imageAlt} width="1254" height="1254" loading="lazy" />
+              <span class="guest-stamp">{guest.role}</span>
             </div>
+            <div class="guest-copy">
+              <p class="card-eyebrow">{guest.handle}</p>
+              <h3>{guest.name}</h3>
+              <p>{guest.description}</p>
+              <p class="guest-highlight">{guest.highlight}</p>
+              <a class="text-link" href={guest.instagramUrl} target="_blank" rel="noreferrer">Ver Instagram <span aria-hidden="true">↗</span></a>
+            </div>
+          </article>
+        ))}
+      </div>
+      <div class="organizer-note">
+        <img src={svg('crown.svg')} alt="" width="1118" height="1118" loading="lazy" />
+        <p><strong>Por trás do festival:</strong> Raul Schlosser é fundador da Family Game e representa a experiência da organização em arenas gamer, campeonatos, eventos e produção no universo geek.</p>
+      </div>
+    </section>
+
+    <section id="campeonatos" class="tournaments section-block" data-reveal>
+      <div class="section-shell">
+        <div class="section-topline">
+          <div><p class="kicker kicker-red">SELECT YOUR FIGHTER</p><h2>Premiação na arena.<br /><span>R$ 1.000 por título.</span></h2></div>
+          <p class="section-aside">20/09 · domingo<br />Ingresso competidor: R$ 60 + taxa</p>
+        </div>
+        <div class="tournament-grid">
+          {tournaments.map((tournament, index) => (
+            <article class={`tournament-card accent-${tournament.accent}`}>
+              <div class="tournament-top"><span class="tournament-index">0{index + 1}</span><img src={svg(tournament.icon)} alt="" width="1002" height="1002" loading="lazy" /></div>
+              <h3>{tournament.title}</h3>
+              <div class="tournament-details"><span><small>HORÁRIO</small><strong>{tournament.time}</strong></span><span><small>CAMPEÃO</small><strong>R$ 1.000</strong></span></div>
+            </article>
           ))}
+        </div>
+        <div class="cosplay-row">
+          <div><p class="kicker kicker-pink">ALÉM DA ARENA</p><h3>Concurso Cosplay</h3><p>20/09 · domingo · 16h · R$ 1.000 em premiação</p></div>
+          <div><p>Ingresso competidor: R$ 60 + taxa. Participação sujeita ao regulamento oficial e limite de vagas.</p><a class="text-link" href={event.ticketUrl} target="_blank" rel="noreferrer">Quero competir <span aria-hidden="true">↗</span></a></div>
+        </div>
+        <div class="contest-note">
+          <img src={svg('star.svg')} alt="" width="921" height="921" loading="lazy" />
+          <div><strong>Desafios temáticos</strong><p>Games, anime, mangá, filmes, séries, quadrinhos e cultura geek · inscrição divulgada de R$ 30 · premiação divulgada de R$ 100.</p></div>
+        </div>
+        <div class="inclusive-note"><span>PCD</span><p>Competições inclusivas também farão parte da programação. Jogos, horários, formato e premiação serão divulgados no regulamento oficial.</p></div>
+      </div>
+    </section>
+
+    <section class="experience section-shell section-block" data-reveal>
+      <div class="experience-panel">
+        <div class="experience-heading"><p class="kicker kicker-red">CONTINUE?</p><h2>Seu próximo<br /><span>nível começa aqui.</span></h2><p>Uma experiência feita para aproximar pessoas, marcas e jogos.</p></div>
+        <div class="experience-list">
+          {experiences.map((item) => <div class="experience-item"><img src={svg(item.icon)} alt="" width="1002" height="1002" loading="lazy" /><span class="experience-number">{item.number}</span><div><h3>{item.title}</h3><p>{item.text}</p></div></div>)}
         </div>
       </div>
       <div class="experience-art" aria-hidden="true">
-        <img src="/assets/mascot-invite.png" alt="" />
-        <img class="experience-controller" src="/assets/controller.png" alt="" />
+        <img class="art-hud" src={svg('hud.svg')} alt="" width="535" height="535" loading="lazy" />
+        <img class="art-pixels" src={svg('pixels.svg')} alt="" width="462" height="462" loading="lazy" />
+        <img class="art-mascot" src="/assets/mascot-invite.png" alt="" width="1254" height="1254" loading="lazy" />
+        <img class="experience-controller" src={svg('controller.svg')} alt="" width="1002" height="1002" loading="lazy" />
         <span class="experience-badge">PLAYER<br /><strong>1</strong></span>
       </div>
     </section>
 
-    <section class="location section-shell section-block">
-      <div class="location-mark" aria-hidden="true"><img src="/assets/coin.png" alt="" /></div>
-      <div>
-        <p class="kicker kicker-red">MARQUE NA AGENDA</p>
-        <h2>19 e 20 de setembro<br /><span>no SORRI Bauru.</span></h2>
-        <p>Av. Nações Unidas · Núcleo Habitacional Presidente Geisel · Bauru/SP</p>
+    <section id="ingressos" class="tickets section-shell section-block" data-reveal>
+      <div class="section-topline"><div><p class="kicker kicker-yellow">CHOOSE YOUR PASS</p><h2>Seu ingresso<br /><span>para entrar no jogo.</span></h2></div><p class="section-aside">Escolha como viver os dois dias de festival.</p></div>
+      <div class="ticket-grid">
+        {tickets.map((ticket) => <article class={`ticket-card accent-${ticket.accent}`}><p class="ticket-name">{ticket.name}</p><strong class="ticket-price">{ticket.price}</strong><span class="ticket-fee">{ticket.fee}</span><p>{ticket.detail}</p><small>{ticket.note}</small></article>)}
       </div>
-      <a class="button button-primary" href={eventPage} target="_blank" rel="noreferrer">Quero participar <span aria-hidden="true">↗</span></a>
+      <div class="ticket-cta"><div><p class="kicker kicker-cyan">SEU SAVE POINT</p><p>Ingressos oficiais pelo Eventiza. O ingresso competidor inclui a entrada no evento no respectivo dia.</p></div><a class="button button-primary" href={event.ticketUrl} target="_blank" rel="noreferrer">Garantir meu ingresso <span aria-hidden="true">↗</span></a></div>
+    </section>
+
+    <section class="partners section-shell section-block" data-reveal>
+      <div class="section-topline"><div><p class="kicker kicker-cyan">SQUAD CONFIRMADO</p><h2>Marcas que já estão<br /><span>no nosso player one.</span></h2></div><p class="section-aside">Parcerias que ajudam a colocar o festival em movimento.</p></div>
+      <div class="partner-grid">
+        {partners.map((partner) => <article class={`partner-card accent-${partner.accent}`}><img src={svg('interface-lines.svg')} alt="" width="586" height="586" loading="lazy" /><p class="card-eyebrow">{partner.status}</p><h3>{partner.name}</h3><p>{partner.handle}</p>{partner.href ? <a class="text-link" href={partner.href} target="_blank" rel="noreferrer">Conhecer <span aria-hidden="true">↗</span></a> : <span class="partner-label">Apoio confirmado</span>}</article>)}
+      </div>
+    </section>
+
+    <section id="expositores" class="exhibitors section-block" data-reveal>
+      <div class="section-shell exhibitor-layout">
+        <div><p class="kicker kicker-pink">PLAYERS COMERCIAIS</p><h2>Leve sua marca,<br /><span>seus produtos e sua experiência para dentro do festival.</span></h2><p class="lead-copy">A Edge 3D Studio já está confirmada como patrocinadora oficial e expositora. Além dela, restam espaços para mais lojas e expositores.</p><span class="availability"><img src={svg('energy.svg')} alt="" width="463" height="463" loading="lazy" /> Últimos 3 espaços disponíveis</span></div>
+        <div class="exhibitor-card"><img src={svg('cursor.svg')} alt="" width="518" height="518" loading="lazy" /><p class="card-eyebrow">QUER PARTICIPAR?</p><h3>Quero ser expositor</h3><p>Apresente sua loja, seus produtos e sua experiência ao público do Family Game Festival.</p><a class="button button-primary" href={contactHref}>Quero ser expositor <span aria-hidden="true">↗</span></a></div>
+      </div>
+    </section>
+
+    <section id="patrocinio" class="sponsors section-shell section-block" data-reveal>
+      <div class="section-topline"><div><p class="kicker kicker-yellow">POWER-UP YOUR BRAND</p><h2>Patrocínio com<br /><span>espaço para crescer.</span></h2></div><p class="section-aside">Um modelo híbrido para marcas que querem entrar no jogo.</p></div>
+      <div class="sponsor-grid">{sponsorshipTiers.map((tier) => <article class={`sponsor-card accent-${tier.accent} ${tier.name === 'Legend' ? 'is-legend' : ''}`}><div class="sponsor-card-top"><span>{tier.name}</span><img src={svg(tier.name === 'Legend' ? 'crown.svg' : 'chevrons.svg')} alt="" width="1118" height="1118" loading="lazy" /></div><strong>{tier.price}</strong><p>{tier.availability}</p><small>{tier.position}</small></article>)}</div>
+      <div class="sponsor-options">
+        <article><p class="kicker kicker-red">PATROCÍNIO DE EXPERIÊNCIA</p><h3>Uma marca por campeonato ou atração</h3><strong>R$ 1.500</strong><p>Associe sua marca a uma propriedade oficial do festival.</p><ul>{experienceProperties.map((property) => <li>{property}</li>)}</ul><a class="text-link" href={contactHref}>Patrocinar uma experiência <span aria-hidden="true">↗</span></a></article>
+        <article><p class="kicker kicker-cyan">APOIO EM PRODUTOS E SERVIÇOS</p><h3>Proponha um apoio</h3><p>Alimentação, água, bebidas, brindes, impressão, materiais, equipamentos, estrutura, serviços, mídia, divulgação, produtos, logística e outras soluções.</p><p class="muted">A contrapartida é negociada proporcionalmente ao apoio, sem equivalência monetária automática.</p><a class="text-link" href={contactHref}>Propor apoio <span aria-hidden="true">↗</span></a></article>
+      </div>
+    </section>
+
+    <section id="contato" class="contact section-shell section-block" data-reveal>
+      <div class="contact-panel"><img class="contact-grid" src={svg('grid.svg')} alt="" width="1133" height="1133" loading="lazy" /><img class="contact-trophy" src={svg('trophy.svg')} alt="" width="890" height="890" loading="lazy" /><div><p class="kicker kicker-cyan">MEDIA / CONTACT</p><h2>Quer cobrir,<br /><span>divulgar ou apoiar?</span></h2><p>Fale com a organização sobre cobertura jornalística, entrevistas, matérias, rádio, TV, portais, páginas locais, creators e apoio de mídia.</p><div class="contact-links"><a href={event.instagramUrl} target="_blank" rel="noreferrer">Instagram <strong>{event.instagram}</strong> <span aria-hidden="true">↗</span></a><a href={contactHref}>Falar com a organização <strong>canal oficial</strong> <span aria-hidden="true">↗</span></a></div></div></div>
+    </section>
+
+    <section class="location section-shell section-block" data-reveal>
+      <div class="location-mark"><img src={svg('coin.svg')} alt="" width="1132" height="1132" loading="lazy" /></div>
+      <div><p class="kicker kicker-red">MARQUE NA AGENDA</p><h2>{event.dates}<br /><span>em Bauru.</span></h2><p>{event.venue}<br />{event.address}</p></div>
+      <a class="button button-primary" href={event.ticketUrl} target="_blank" rel="noreferrer">Quero participar <span aria-hidden="true">↗</span></a>
     </section>
   </main>
 
   <footer class="site-footer section-shell">
-    <div class="footer-brand"><span class="wordmark-mark" aria-hidden="true">FG</span><span>FAMILY GAME<br /><small>FESTIVAL</small></span></div>
+    <a class="footer-brand" href="#inicio" aria-label="Voltar ao início"><img src="/assets/logo.svg" alt="Family Game Festival" width="420" height="316" /></a>
     <p>Jogar junto sempre faz mais sentido.</p>
     <p class="footer-note">© 2026 Family Game · Bauru, SP</p>
   </footer>
@@ -173,18 +213,31 @@ const experience = [
   <script>
     const toggle = document.querySelector('.menu-toggle');
     const nav = document.querySelector('#site-nav');
+    const closeMenu = () => {
+      toggle?.setAttribute('aria-expanded', 'false');
+      nav?.classList.remove('is-open');
+    };
 
     toggle?.addEventListener('click', () => {
       const isOpen = toggle.getAttribute('aria-expanded') === 'true';
       toggle.setAttribute('aria-expanded', String(!isOpen));
       nav?.classList.toggle('is-open', !isOpen);
     });
+    nav?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
 
-    nav?.querySelectorAll('a').forEach((link) => {
-      link.addEventListener('click', () => {
-        toggle?.setAttribute('aria-expanded', 'false');
-        nav.classList.remove('is-open');
-      });
-    });
+    document.documentElement.classList.add('js');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if ('IntersectionObserver' in window && !prefersReducedMotion) {
+      document.documentElement.classList.add('motion-ready');
+      const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('[data-reveal]').forEach((element) => revealObserver.observe(element));
+    }
   </script>
 </BaseLayout>
