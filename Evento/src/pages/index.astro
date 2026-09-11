@@ -43,7 +43,7 @@ const initialArt = getTournamentArt(initialTournament);
           <div class="event-facts" aria-label="Informações principais do evento">
             <div><strong>19—20</strong><span>setembro de 2026</span></div>
             <div><strong>SORRI</strong><span>Bauru · Arena Tauste</span></div>
-            <div><strong>14 / 16 / 18H</strong><span>horários dos campeonatos</span></div>
+            <div><strong>{event.hours}</strong><span>horário do evento</span></div>
           </div>
         </div>
 
@@ -68,7 +68,7 @@ const initialArt = getTournamentArt(initialTournament);
       <div class="container signal-grid">
         <div><span class="signal-icon">DATA</span><span><strong>19 e 20 de setembro</strong><small>sábado e domingo · 2026</small></span></div>
         <div><span class="signal-icon">LOCAL</span><span><strong>SORRI Bauru</strong><small>Arena Tauste · Av. Nações Unidas, 53-40</small></span></div>
-        <div><span class="signal-icon">HORA</span><span><strong>14h · 16h · 18h</strong><small>horários dos campeonatos</small></span></div>
+        <div><span class="signal-icon">HORA</span><span><strong>{event.hours}</strong><small>horário do festival</small></span></div>
       </div>
     </section>
 
@@ -317,7 +317,7 @@ const initialArt = getTournamentArt(initialTournament);
     <section class="section contact-section" id="contato">
       <div class="container contact-grid">
         <div><p class="eyebrow eyebrow-pink">Fale com a organização</p><h2>Vamos colocar sua ideia em jogo?</h2><p>Para ingressos, expositores, patrocínio, imprensa e outras dúvidas, envie uma mensagem pelas redes oficiais do evento.</p><a class="button button-yellow" href={event.instagramUrl} target="_blank" rel="noreferrer">Chamar no Instagram <span aria-hidden="true">↗</span></a></div>
-        <div class="location-card"><div class="location-icon"><img src="/assets/svg/cursor.svg" alt="" aria-hidden="true" /></div><p class="card-eyebrow">Onde acontece</p><h3>{event.venue}</h3><p>{event.address}</p><a class="text-link" href="https://www.google.com/maps/search/?api=1&query=SORRI+Bauru+Arena+Tauste" target="_blank" rel="noreferrer">Abrir no mapa <span aria-hidden="true">↗</span></a><div class="location-tags"><span>19/09 · sábado</span><span>20/09 · domingo</span></div></div>
+        <div class="location-card"><div class="location-icon"><img src="/assets/svg/cursor.svg" alt="" aria-hidden="true" /></div><p class="card-eyebrow">Onde acontece</p><h3>{event.venue}</h3><p>{event.address}</p><a class="text-link" href="https://www.google.com/maps/search/?api=1&query=SORRI+Bauru+Arena+Tauste" target="_blank" rel="noreferrer">Abrir no mapa <span aria-hidden="true">↗</span></a><div class="location-tags"><span>19/09 · sábado</span><span>20/09 · domingo</span><span>{event.hours}</span></div></div>
       </div>
     </section>
   </main>

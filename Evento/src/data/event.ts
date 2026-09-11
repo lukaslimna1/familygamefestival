@@ -3,6 +3,7 @@ export const event = {
   edition: '1ª edição',
   dates: '19 e 20 de setembro de 2026',
   dateShort: '19—20 SET 2026',
+  hours: '11h—21h',
   dayOne: '19/09 · sábado',
   dayTwo: '20/09 · domingo',
   venue: 'SORRI Bauru · Arena Tauste',
