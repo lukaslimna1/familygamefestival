@@ -64,7 +64,8 @@ export const tournaments = [
   { title: 'Mortal Kombat 1', time: '14h', accent: 'red', prize: 'R$ 1.000', detail: '20/09 · domingo' },
   { title: 'Street Fighter 6', time: '16h', accent: 'cyan', prize: 'R$ 1.000', detail: '20/09 · domingo' },
   { title: 'Tekken 8', time: '18h', accent: 'pink', prize: 'R$ 1.000', detail: '20/09 · domingo' },
-  { title: 'Campeonato Just Dance 2026', time: '19/09', accent: 'yellow', prize: '', detail: 'sábado · seletiva valendo 1 vaga para o Nacional' }
+  { title: 'Campeonato Just Dance 2026', time: '19/09', accent: 'yellow', prize: '', detail: 'sábado · seletiva valendo 1 vaga para o Nacional' },
+  { title: 'Campeonato de Top Gear', time: '—', accent: 'red', prize: '', detail: 'campeonato retrô' }
 ] as const;
 
 export const gameArt = [
@@ -91,6 +92,12 @@ export const gameArt = [
     image: 'https://staticctf.ubisoft.com/J3yJr34U2pZ2Ieem48Dwy9uqj5PNUQTn/5l2jwO39hbiuxP6YflvAMz/08e8183e56b5be38032f9a563a9387c6/JD26-logo-header.png',
     alt: 'Logo oficial de Just Dance 2026',
     accent: 'yellow'
+  },
+  {
+    title: 'Top Gear',
+    image: 'https://images.launchbox-app.com/d7c80b5e-dc9c-4539-ae2e-3d192ca4e563.jpg',
+    alt: 'Capa clássica de Top Gear para Super Nintendo',
+    accent: 'red'
   }
 ] as const;
 
