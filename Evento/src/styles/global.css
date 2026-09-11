@@ -403,7 +403,7 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .realization-feature { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 390px); align-items: center; gap: 36px; margin-bottom: 28px; padding: 30px 34px; color: var(--ink); border: 1px solid var(--line-light); border-top: 5px solid var(--yellow); background: rgba(255,255,255,.38); }
 .realization-feature-copy h3 { margin: 0 0 17px; font-size: clamp(3rem, 6vw, 6.3rem); line-height: .82; }
 .realization-feature-copy .realization-pill { display: inline-flex; }
-.realization-logo-frame { display: grid; place-items: center; width: min(100%, 390px); aspect-ratio: 1; min-height: 0; padding: 18px; background: #fff; border: 1px solid var(--line-light); }
+.realization-logo-frame { display: grid; place-items: center; width: min(100%, 390px); aspect-ratio: 1; min-height: 0; padding: 18px; background: transparent; border: 0; }
 .realization-logo-frame img { width: 100%; height: 100%; padding: 10px; object-fit: contain; }
 .realization-pill, .hierarchy-partner-pill { display: inline-flex; align-items: center; justify-content: center; width: max-content; padding: 7px 11px; color: var(--yellow); border: 1px solid currentColor; font-size: 10px; font-weight: 700; letter-spacing: .1em; line-height: 1; text-transform: uppercase; }
 .hierarchy-pyramid { display: flex; flex-direction: column; align-items: center; gap: 27px; }
@@ -416,7 +416,7 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .hierarchy-logo-grid { display: flex; width: 100%; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 16px; }
 .hierarchy-logo-card { display: flex; flex-direction: column; align-items: center; gap: 11px; width: min(100%, 300px); min-width: 0; padding: 0; color: inherit; border: 0; background: transparent; transition: transform .25s ease, filter .25s ease; }
 .hierarchy-logo-card:hover, .hierarchy-logo-card:focus-visible { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 13px 0 color-mix(in srgb, var(--accent) 20%, transparent); }
-.hierarchy-logo-frame { display: grid; place-items: center; width: 100%; aspect-ratio: 1; height: auto; flex: 0 0 auto; overflow: hidden; color: var(--navy); background: #fff; border: 1px solid var(--line-light); }
+.hierarchy-logo-frame { display: grid; place-items: center; width: 100%; aspect-ratio: 1; height: auto; flex: 0 0 auto; overflow: hidden; color: var(--navy); background: transparent; border: 0; }
 .hierarchy-logo-frame img { width: 100%; height: 100%; max-width: 100%; max-height: 100%; padding: 16px; object-fit: contain; }
 .hierarchy-logo-fallback { color: var(--accent); font-family: var(--display); font-size: 30px; font-weight: 900; }
 .hierarchy-logo-caption { display: flex; flex-direction: column; align-items: center; gap: 7px; min-width: 0; padding: 9px 13px 10px; border: 1px solid var(--line-light); background: rgba(255,255,255,.28); }
@@ -432,8 +432,8 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .merchant-panel { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 28px; margin-top: 39px; padding: 30px 28px; color: #fff; border: 1px solid var(--line-dark); background: var(--navy-2); }
 .merchant-panel-copy h3 { margin: 0 0 9px; color: #fff; font-size: clamp(2.1rem, 3.7vw, 3.5rem); }
 .merchant-panel-copy > p:last-child { max-width: 390px; margin: 0; color: rgba(255,255,255,.63); font-size: 13px; line-height: 1.45; }
-.merchant-logo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); align-content: center; gap: 12px; }
-.merchant-logo-card { display: grid; width: min(100%, 300px); aspect-ratio: 1; min-height: 0; place-items: center; justify-self: center; padding: 12px; border: 1px solid var(--line-dark); background: rgba(255,255,255,.025); transition: transform .28s ease, border-color .28s ease, box-shadow .28s ease, background .28s ease; }
+.merchant-logo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); align-content: center; gap: 12px; }
+.merchant-logo-card { display: grid; width: min(100%, 150px); aspect-ratio: 1; min-height: 0; place-items: center; justify-self: center; padding: 8px; border: 1px solid var(--line-dark); background: rgba(255,255,255,.025); transition: transform .28s ease, border-color .28s ease, box-shadow .28s ease, background .28s ease; }
 .merchant-logo-card:hover, .merchant-logo-card:focus-visible { transform: translateY(-7px) scale(1.04); border-color: var(--cyan); background: rgba(25,198,242,.08); box-shadow: 0 15px 0 rgba(25,198,242,.12); }
 .merchant-logo-frame { display: grid; width: 100%; aspect-ratio: 1; height: auto; place-items: center; overflow: hidden; background: #fff; border: 1px solid var(--line-light); }
 .merchant-logo-frame img { width: 100%; height: 100%; padding: 18px; object-fit: contain; }
@@ -444,12 +444,22 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .sponsor-home-heading h2 { color: #fff; }
 .sponsor-home-heading h2 em { display: block; color: var(--cyan); font-style: normal; }
 .sponsor-home-heading .heading-note { max-width: 415px; }
-.sponsor-home-section .realization-feature { color: #fff; border-color: var(--line-dark); background: rgba(255,255,255,.035); }
-.sponsor-home-section .realization-logo-frame { background: #fff; border-color: var(--line-dark); }
+.sponsor-home-section .realization-feature { color: #fff; border: 0; background: transparent; }
+.sponsor-home-section .realization-logo-frame { background: transparent; border: 0; }
 .sponsor-home-section .hierarchy-logo-card { color: #fff; }
 .sponsor-home-section .hierarchy-logo-card strong { color: #fff; }
-.sponsor-home-section .hierarchy-logo-frame, .sponsor-home-section .merchant-logo-frame { background: #fff; border-color: var(--line-dark); }
+.sponsor-home-section .hierarchy-logo-frame { background: transparent; border: 0; }
+.sponsor-home-section .merchant-logo-frame { background: #fff; border-color: var(--line-dark); }
 .sponsor-home-section .hierarchy-logo-caption { border-color: var(--line-dark); background: rgba(255,255,255,.025); }
+.sponsor-carousel-band { width: 100vw; margin: 11px 0 0; margin-left: calc(50% - 50vw); padding: 22px 0; overflow: hidden; background: #fff; }
+.sponsor-carousel-viewport { width: 100%; overflow: hidden; }
+.sponsor-carousel-track { --carousel-gap: clamp(28px, 5vw, 76px); display: flex; width: max-content; align-items: center; gap: var(--carousel-gap); padding-inline: var(--carousel-gap); animation: sponsor-marquee 28s linear infinite; will-change: transform; }
+.sponsor-carousel-item { display: grid; width: clamp(150px, 18vw, 225px); height: 92px; flex: 0 0 auto; place-items: center; padding: 4px; background: transparent; }
+.sponsor-carousel-item img { width: 100%; height: 100%; padding: 0; object-fit: contain; }
+.sponsor-carousel-item:focus-visible { outline: 3px solid var(--cyan); outline-offset: 5px; }
+@keyframes sponsor-marquee { from { transform: translateX(0); } to { transform: translateX(calc(-50% - (var(--carousel-gap) / 2))); } }
+@media (prefers-reduced-motion: reduce) { .sponsor-carousel-track { animation: none; } }
+.sponsor-home-section .sponsor-carousel-band { margin-top: 4px; }
 .sponsor-inline-cta { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 28px; margin-top: 43px; padding: 25px 30px; overflow: hidden; border: 1px solid var(--line-dark); border-left: 4px solid var(--yellow); background: rgba(255,255,255,.035); }
 .sponsor-inline-cta-copy { position: relative; z-index: 1; flex: 1; padding-right: 0; }
 .sponsor-inline-cta-copy h3 { max-width: 560px; margin: 0; color: #fff; font-size: clamp(2.2rem, 4vw, 3.8rem); line-height: .9; }
@@ -517,12 +527,15 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .contact-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(290px, .75fr); align-items: center; gap: 90px; }
 .contact-grid h2 { max-width: 570px; margin-bottom: 22px; }
 .contact-grid > div:first-child > p:not(.eyebrow) { max-width: 500px; margin-bottom: 29px; color: rgba(255,255,255,.79); }
+.contact-section .eyebrow-pink { color: var(--navy); }
 .location-card { padding: 28px 30px; color: var(--ink); background: var(--paper); }
 .location-icon { display: grid; place-items: center; width: 50px; height: 50px; margin-bottom: 26px; background: var(--cyan); }
 .location-icon img { width: 29px; height: 29px; object-fit: contain; }
 .location-card .card-eyebrow { color: var(--red); }
 .location-card h3 { font-size: 33px; }
 .location-card p:not(.card-eyebrow) { margin-bottom: 19px; color: var(--muted); font-size: 14px; }
+.location-map { aspect-ratio: 16 / 9; margin: 24px 0 21px; overflow: hidden; border: 1px solid var(--line-light); background: var(--paper-2); }
+.location-map iframe { display: block; width: 100%; height: 100%; border: 0; }
 .location-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 27px; padding-top: 18px; border-top: 1px solid var(--line-light); }
 .location-tags span { padding: 6px 8px; color: var(--navy); background: var(--yellow); font-size: 10px; font-weight: 700; text-transform: uppercase; }
 
@@ -749,7 +762,7 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
   .hierarchy-note { align-items: flex-start; text-align: left; }
   .merchant-panel { padding: 21px 16px; }
   .merchant-logo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .merchant-logo-card { width: 100%; aspect-ratio: 1; min-width: 0; padding: 8px; }
+  .merchant-logo-card { width: min(100%, 150px); aspect-ratio: 1; min-width: 0; padding: 8px; }
   .merchant-logo-frame { width: 100%; aspect-ratio: 1; height: auto; }
   .sponsor-inline-cta { gap: 21px; padding: 22px 18px; }
   .sponsor-inline-cta-copy { padding-right: 0; }

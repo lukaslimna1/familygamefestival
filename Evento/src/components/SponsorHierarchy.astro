@@ -3,6 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { partners } from '../data/event';
 
+interface Props {
+  carousel?: boolean;
+}
+
+const { carousel = false } = Astro.props;
+
 const logoDirectory = path.join(process.cwd(), 'public', 'assets', 'logos', 'parceiros');
 const logoCandidates: Record<string, string[]> = {
   'Family Games': ['Family Games Festival.svg', 'family-games.svg', 'family-games.png', 'family-games-logo.svg'],
@@ -28,6 +34,12 @@ const hierarchyTiers = [
   { key: 'support', title: 'Apoio', partners: supportPartners }
 ] as const;
 const activeHierarchyTiers = hierarchyTiers.filter((tier) => tier.partners.length > 0);
+const carouselPartners = partners
+  .filter((partner) => partner.level !== 'Realização')
+  .map((partner) => ({ partner, logo: getLogo(partner.name) }))
+  .filter((entry) => entry.logo);
+const carouselItems = [...carouselPartners, ...carouselPartners];
+const displayLevel = (level: string) => level === 'Power-up' ? 'Power Up' : level;
 ---
 
 <div class="sponsor-hierarchy">
@@ -38,22 +50,39 @@ const activeHierarchyTiers = hierarchyTiers.filter((tier) => tier.partners.lengt
     </article>
   )}
 
-  <div class="hierarchy-pyramid">
-    {activeHierarchyTiers.map((tier) => (
-      <article class={`hierarchy-tier hierarchy-tier-${tier.key}`}>
-        <div class="hierarchy-logo-grid">
-          {tier.partners.map((partner) => (
-            <a class="hierarchy-logo-card" href={partner.href || undefined} target={partner.href ? '_blank' : undefined} rel={partner.href ? 'noreferrer' : undefined} aria-label={`Ver ${partner.name}`}>
-              <span class="hierarchy-logo-frame">
-                {getLogo(partner.name) ? <img src={getLogo(partner.name)} alt={`Logo ${partner.name}`} /> : <span class="hierarchy-logo-fallback" aria-hidden="true">{partner.name.slice(0, 1)}</span>}
-              </span>
-              <span class="hierarchy-logo-caption"><strong>{partner.name}</strong><small class="hierarchy-partner-pill">{tier.title}</small></span>
-            </a>
-          ))}
+  {carousel ? (
+    <section class="sponsor-carousel-band" aria-label="Patrocinadores e apoiadores confirmados">
+      <div class="sponsor-carousel-viewport">
+        <div class="sponsor-carousel-track">
+          {carouselItems.map(({ partner, logo }, index) => {
+            const duplicate = index >= carouselPartners.length;
+            return (
+              <a class="sponsor-carousel-item" href={partner.href || undefined} target={partner.href ? '_blank' : undefined} rel={partner.href ? 'noreferrer' : undefined} aria-label={`${partner.name} · ${displayLevel(partner.level)}`} title={`${partner.name} · ${displayLevel(partner.level)}`} aria-hidden={duplicate ? 'true' : undefined} tabindex={duplicate ? -1 : undefined}>
+                <img src={logo} alt="" />
+              </a>
+            );
+          })}
         </div>
-      </article>
-    ))}
-  </div>
+      </div>
+    </section>
+  ) : (
+    <div class="hierarchy-pyramid">
+      {activeHierarchyTiers.map((tier) => (
+        <article class={`hierarchy-tier hierarchy-tier-${tier.key}`}>
+          <div class="hierarchy-logo-grid">
+            {tier.partners.map((partner) => (
+              <a class="hierarchy-logo-card" href={partner.href || undefined} target={partner.href ? '_blank' : undefined} rel={partner.href ? 'noreferrer' : undefined} aria-label={`Ver ${partner.name}`}>
+                <span class="hierarchy-logo-frame">
+                  {getLogo(partner.name) ? <img src={getLogo(partner.name)} alt={`Logo ${partner.name}`} /> : <span class="hierarchy-logo-fallback" aria-hidden="true">{partner.name.slice(0, 1)}</span>}
+                </span>
+                <span class="hierarchy-logo-caption"><strong>{partner.name}</strong><small class="hierarchy-partner-pill">{tier.title}</small></span>
+              </a>
+            ))}
+          </div>
+        </article>
+      ))}
+    </div>
+  )}
 
   <slot name="after-hierarchy" />
 
