@@ -5,10 +5,11 @@
 ## Conteúdo
 
 - `Usar/Cores e Tipografia/` — paleta de cores, elementos gráficos e recomendações tipográficas.
-- `Usar/Elementos Graficos/` — dez ícones PNG para interface, destaque e composição visual.
+- `Usar/Elementos Graficos/` — quinze elementos gráficos em PNG e quinze versões em SVG para interface, destaque e composição visual.
 - `Usar/Mascote/PNG/` — seis poses do mascote em PNG.
 - `Usar/Mascote/SVG/` — seis poses do mascote em vetor.
 - `Usar/Mascote/Mascotes.ai` — arquivo-fonte editável do mascote.
+- `Usar/Logo/` — logo oficial em PNG e SVG.
 - `Referencias existentes/Base/` — referências visuais, peças anteriores e portfólio do festival.
 
 ## Direção visual
@@ -27,4 +28,4 @@ O conteúdo deste repositório é material de trabalho e deve permanecer privado
 
 ## Aplicação web
 
-A Landing Page está sendo construída com Astro em modo estático, usando HTML semântico, CSS nativo e JavaScript leve. A mesma estrutura foi pensada para futuramente gerar a versão PDF por impressão/renderização da página.
+A Landing Page fica em `Evento/` e está sendo construída com Astro em modo estático, usando HTML semântico, CSS nativo e JavaScript leve. A mesma estrutura foi pensada para futuramente gerar a versão PDF por impressão/renderização da página.
