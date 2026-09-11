@@ -138,7 +138,7 @@ const initialArt = getTournamentArt(initialTournament);
 
         <div class="tournament-showcase" data-tournament-showcase>
           <article class={`tournament-preview preview-${initialTournament.accent}`}>
-            <div class="tournament-preview-media">
+            <div class="tournament-preview-media" style={`--art-image: url("${initialArt.image}")`}>
               <img class={`tournament-preview-image preview-fit-${initialArt.fit}`} src={initialArt.image} alt={initialArt.alt} data-preview-image loading="eager" />
               <div class="tournament-preview-overlay"></div>
               <span class="preview-overline">DESTAQUE EM FOCO</span>
@@ -181,7 +181,7 @@ const initialArt = getTournamentArt(initialTournament);
                     data-accent={entry.tournament.accent}
                     aria-label={`Ver detalhes de ${entry.tournament.title}`}
                   >
-                    <span class="competition-card-art"><img class={`competition-art-fit-${entry.art.fit}`} src={entry.art.image} alt="" aria-hidden="true" loading="lazy" /></span>
+                    <span class="competition-card-art" style={`--art-image: url("${entry.art.image}")`}><img class={`competition-art-fit-${entry.art.fit}`} src={entry.art.image} alt="" aria-hidden="true" loading="lazy" /></span>
                     <span class="competition-card-copy"><small>{entry.tournament.category}</small><strong>{entry.tournament.title}</strong><span>{entry.tournament.date}{entry.tournament.time ? ` · ${entry.tournament.time}` : ''}</span></span>
                     <span class="competition-card-prize"><small>PRÊMIO</small><strong>{entry.tournament.prize}</strong></span>
                   </button>
@@ -214,7 +214,7 @@ const initialArt = getTournamentArt(initialTournament);
                       aria-label={`Ver detalhes de ${entry.tournament.title}`}
                     >
                       <span class="competition-card-number">0{index + 1}</span>
-                      <span class="competition-card-art"><img class={`competition-art-fit-${entry.art.fit}`} src={entry.art.image} alt="" aria-hidden="true" loading="lazy" /></span>
+                      <span class="competition-card-art" style={`--art-image: url("${entry.art.image}")`}><img class={`competition-art-fit-${entry.art.fit}`} src={entry.art.image} alt="" aria-hidden="true" loading="lazy" /></span>
                       <span class="competition-card-copy"><small>{entry.tournament.category}</small><strong>{entry.tournament.title}</strong><span>{entry.tournament.date}{entry.tournament.time ? ` · ${entry.tournament.time}` : ''}</span></span>
                       <span class="competition-card-prize"><small>PRÊMIO</small><strong>{entry.tournament.prize}</strong></span>
                     </button>
@@ -345,6 +345,7 @@ const initialArt = getTournamentArt(initialTournament);
     const tournamentShowcase = document.querySelector('[data-tournament-showcase]');
     const tournamentPreview = tournamentShowcase?.querySelector('.tournament-preview');
     const previewImage = tournamentShowcase?.querySelector('[data-preview-image]');
+    const previewMedia = tournamentShowcase?.querySelector('.tournament-preview-media');
     const previewCategory = tournamentShowcase?.querySelector('[data-preview-category]');
     const previewTitle = tournamentShowcase?.querySelector('[data-preview-title]');
     const previewDetail = tournamentShowcase?.querySelector('[data-preview-detail]');
@@ -356,13 +357,14 @@ const initialArt = getTournamentArt(initialTournament);
 
     const setTournamentPreview = (card) => {
       const data = card.dataset;
-      if (!data.title || !data.image || !previewImage || !tournamentPreview) return;
+      if (!data.title || !data.image || !previewImage || !previewMedia || !tournamentPreview) return;
 
       tournamentCards.forEach((item) => item.classList.remove('is-active'));
       card.classList.add('is-active');
       previewImage.className = `tournament-preview-image preview-fit-${data.fit || 'cover'}`;
       previewImage.setAttribute('src', data.image);
       previewImage.setAttribute('alt', data.alt || '');
+      previewMedia.style.setProperty('--art-image', `url("${data.image}")`);
       previewCategory.textContent = data.category || '';
       previewTitle.textContent = data.title;
       previewDetail.textContent = data.detail || '';
