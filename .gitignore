@@ -15,3 +15,6 @@ Desktop.ini
 # Arquivos de editor
 .vscode/
 .idea/
+
+.vercel
+.env*

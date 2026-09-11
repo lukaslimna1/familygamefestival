@@ -1,8 +1,15 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { event, navItems, guests, attractions, tournaments, gameArt, experiences, tickets, partners } from '../data/event';
+import { event, navItems, guests, attractions, tournaments, tournamentGroups, gameArt, experiences, tickets, competitorTickets, partners } from '../data/event';
 
-const getGameArt = (title: string) => gameArt.find((game) => title.includes(game.title));
+const getTournamentArt = (tournament: (typeof tournaments)[number]) => gameArt.find((game) => tournament.title.includes(game.title)) ?? gameArt[0];
+const initialTournament = tournaments[0];
+const featuredEntries = tournaments.filter((tournament) => tournament.featured).map((tournament) => ({ tournament, art: getTournamentArt(tournament) }));
+const groupedEntries = tournamentGroups.map((group) => ({ ...group, entries: group.ids.map((id) => {
+  const tournament = tournaments.find((item) => item.id === id)!;
+  return { tournament, art: getTournamentArt(tournament) };
+}) }));
+const initialArt = getTournamentArt(initialTournament);
 ---
 
 <BaseLayout>
@@ -35,7 +42,8 @@ const getGameArt = (title: string) => gameArt.find((game) => title.includes(game
           </div>
           <div class="event-facts" aria-label="Informações principais do evento">
             <div><strong>19—20</strong><span>setembro de 2026</span></div>
-            <div><strong>Bauru</strong><span>SORRI · Arena Tauste</span></div>
+            <div><strong>SORRI</strong><span>Bauru · Arena Tauste</span></div>
+            <div><strong>14 / 16 / 18H</strong><span>horários dos campeonatos</span></div>
           </div>
         </div>
 
@@ -58,9 +66,9 @@ const getGameArt = (title: string) => gameArt.find((game) => title.includes(game
 
     <section class="signal-strip" aria-label="Resumo do evento">
       <div class="container signal-grid">
-        <div><span class="signal-icon">01</span><span><strong>Dois dias</strong><small>de cultura gamer</small></span></div>
-        <div><span class="signal-icon">02</span><span><strong>Até R$ 1.000</strong><small>premiações em dinheiro</small></span></div>
-        <div><span class="signal-icon">03</span><span><strong>Impacto local</strong><small>parte da arrecadação para a SORRI</small></span></div>
+        <div><span class="signal-icon">DATA</span><span><strong>19 e 20 de setembro</strong><small>sábado e domingo · 2026</small></span></div>
+        <div><span class="signal-icon">LOCAL</span><span><strong>SORRI Bauru</strong><small>Arena Tauste · Av. Nações Unidas, 53-40</small></span></div>
+        <div><span class="signal-icon">HORA</span><span><strong>14h · 16h · 18h</strong><small>horários dos campeonatos</small></span></div>
       </div>
     </section>
 
@@ -124,31 +132,97 @@ const getGameArt = (title: string) => gameArt.find((game) => title.includes(game
     <section class="section section-navy tournaments-section" id="campeonatos">
       <div class="container">
         <div class="section-heading heading-row">
-          <div><p class="eyebrow eyebrow-yellow">Modo competitivo</p><h2>Entre na arena. Saia campeão.</h2></div>
+          <div><p class="eyebrow eyebrow-yellow">Programação competitiva</p><h2>Escolha seu campeonato.</h2></div>
+          <p class="heading-note heading-note-light">Cosplay e Just Dance ganham o destaque do palco. Passe o mouse — ou use Tab — nos cards para trocar a imagem e os detalhes ao lado.</p>
         </div>
-        <div class="tournament-layout">
-          <div class="tournament-feature">
-            <img src="/assets/svg/trophy.svg" alt="" aria-hidden="true" />
-            <p class="card-eyebrow">PREMIAÇÃO PRINCIPAL</p>
-            <strong>R$ 1.000</strong>
-            <p>Mortal Kombat 1, Street Fighter 6 e Tekken 8.</p>
-            <div class="feature-secondary"><p class="card-eyebrow">OUTROS CAMPEONATOS</p><strong>R$ 100</strong><p>FC 26, eFootball e Top Gear 1.</p></div>
-            <span class="feature-corner">VS</span>
-          </div>
-          <div class="tournament-list">
-            {tournaments.map((tournament, index) => (
-              <article class={`tournament-row row-${tournament.accent}`}>
-                <span class="tournament-number">0{index + 1}</span>
-                <img class={`tournament-art tournament-art-${tournament.accent}`} src={getGameArt(tournament.title)?.image ?? ''} alt="" aria-hidden="true" loading="lazy" />
-                <div><h3>{tournament.title}</h3><p>{tournament.detail}{tournament.prize ? ` · campeão leva ${tournament.prize}` : ''}</p></div>
-                {tournament.time && <time>{tournament.time}</time>}
-              </article>
+
+        <div class="tournament-showcase" data-tournament-showcase>
+          <article class={`tournament-preview preview-${initialTournament.accent}`}>
+            <div class="tournament-preview-media">
+              <img class={`tournament-preview-image preview-fit-${initialArt.fit}`} src={initialArt.image} alt={initialArt.alt} data-preview-image loading="eager" />
+              <div class="tournament-preview-overlay"></div>
+              <span class="preview-overline">DESTAQUE EM FOCO</span>
+              <span class="preview-corner">FGF / 26</span>
+              <span class="preview-arrow" aria-hidden="true">↗</span>
+            </div>
+            <div class="tournament-preview-content">
+              <p class="card-eyebrow" data-preview-category>{initialTournament.category}</p>
+              <h3 data-preview-title>{initialTournament.title}</h3>
+              <p class="preview-detail" data-preview-detail>{initialTournament.detail}</p>
+              <div class="preview-facts">
+                <div class="preview-fact"><span>DATA</span><strong data-preview-date>{initialTournament.date}</strong></div>
+                <div class="preview-fact" data-preview-time-fact hidden={!initialTournament.time}><span>HORÁRIO</span><strong data-preview-time>{initialTournament.time || '—'}</strong></div>
+                <div class="preview-fact"><span>PREMIAÇÃO</span><strong data-preview-prize>{initialTournament.prize}</strong></div>
+              </div>
+            </div>
+          </article>
+
+          <div class="competition-directory">
+            <div class="competition-group competition-special-group">
+              <div class="competition-group-heading">
+                <div><p class="card-eyebrow">Destaques do palco</p><h3>Cosplay e dança</h3></div>
+                <span>2 atrações</span>
+              </div>
+              <div class="special-competition-grid">
+                {featuredEntries.map((entry, index) => (
+                  <button
+                    class={`competition-card competition-card-featured competition-card-${entry.tournament.accent} ${index === 0 ? 'is-active' : ''}`}
+                    type="button"
+                    data-tournament-card
+                    data-title={entry.tournament.title}
+                    data-category={entry.tournament.category}
+                    data-date={entry.tournament.date}
+                    data-time={entry.tournament.time}
+                    data-prize={entry.tournament.prize}
+                    data-detail={entry.tournament.detail}
+                    data-image={entry.art.image}
+                    data-alt={entry.art.alt}
+                    data-fit={entry.art.fit}
+                    data-accent={entry.tournament.accent}
+                    aria-label={`Ver detalhes de ${entry.tournament.title}`}
+                  >
+                    <span class="competition-card-art"><img class={`competition-art-fit-${entry.art.fit}`} src={entry.art.image} alt="" aria-hidden="true" loading="lazy" /></span>
+                    <span class="competition-card-copy"><small>{entry.tournament.category}</small><strong>{entry.tournament.title}</strong><span>{entry.tournament.date}{entry.tournament.time ? ` · ${entry.tournament.time}` : ''}</span></span>
+                    <span class="competition-card-prize"><small>PRÊMIO</small><strong>{entry.tournament.prize}</strong></span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {groupedEntries.map((group) => (
+              <div class={`competition-group competition-group-${group.accent}`}>
+                <div class="competition-group-heading">
+                  <div><p class="card-eyebrow">{group.kicker}</p><h3>{group.title}</h3></div>
+                  <span>{group.entries.length} disputas</span>
+                </div>
+                <div class="competition-group-list">
+                  {group.entries.map((entry, index) => (
+                    <button
+                      class={`competition-card competition-card-${entry.tournament.accent}`}
+                      type="button"
+                      data-tournament-card
+                      data-title={entry.tournament.title}
+                      data-category={entry.tournament.category}
+                      data-date={entry.tournament.date}
+                      data-time={entry.tournament.time}
+                      data-prize={entry.tournament.prize}
+                      data-detail={entry.tournament.detail}
+                      data-image={entry.art.image}
+                      data-alt={entry.art.alt}
+                      data-fit={entry.art.fit}
+                      data-accent={entry.tournament.accent}
+                      aria-label={`Ver detalhes de ${entry.tournament.title}`}
+                    >
+                      <span class="competition-card-number">0{index + 1}</span>
+                      <span class="competition-card-art"><img class={`competition-art-fit-${entry.art.fit}`} src={entry.art.image} alt="" aria-hidden="true" loading="lazy" /></span>
+                      <span class="competition-card-copy"><small>{entry.tournament.category}</small><strong>{entry.tournament.title}</strong><span>{entry.tournament.date}{entry.tournament.time ? ` · ${entry.tournament.time}` : ''}</span></span>
+                      <span class="competition-card-prize"><small>PRÊMIO</small><strong>{entry.tournament.prize}</strong></span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
-        </div>
-        <div class="cosplay-banner">
-          <div><p class="eyebrow eyebrow-pink">Também vale o look</p><h3>Concurso Cosplay · R$ 1.000 em prêmio</h3><p>20/09 · domingo · 16h</p></div>
-          <a class="button button-outline-light" href="#ingressos">Ver ingressos <span aria-hidden="true">↓</span></a>
         </div>
       </div>
     </section>
@@ -188,13 +262,48 @@ const getGameArt = (title: string) => gameArt.find((game) => title.includes(game
             </article>
           ))}
         </div>
+
+        <div class="vip-highlight">
+          <div class="vip-diamond" aria-hidden="true">VIP<br /><span>◆</span></div>
+          <div class="vip-copy"><p class="eyebrow eyebrow-yellow">Edição limitada</p><h3>VIP Diamante Family Game</h3><p>Somente 100 unidades.</p></div>
+          <ul class="vip-benefits">
+            <li><strong>2 dias</strong> de festival</li>
+            <li><strong>1 hora antes</strong> da abertura oficial</li>
+            <li><strong>Entrada prioritária</strong> e credencial VIP exclusiva</li>
+            <li><strong>3 brindes</strong> exclusivos Family Game</li>
+          </ul>
+          <p class="vip-warning">Não inclui inscrição nos campeonatos.</p>
+          <a class="button button-yellow" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar VIP <span aria-hidden="true">↗</span></a>
+        </div>
+
+        <div class="competitor-tickets">
+          <div class="competitor-heading">
+            <div><p class="eyebrow eyebrow-pink">Inscrições competitivas</p><h3>Ingressos de competidor.</h3></div>
+            <p>Uma inscrição específica para entrar na disputa. Cada card já traz data, horário, taxa, parcelamento e premiação.</p>
+          </div>
+          <div class="competitor-ticket-grid">
+            {competitorTickets.map((ticket) => (
+              <article class={`competitor-ticket-card ticket-${ticket.accent}`}>
+                <div class="competitor-ticket-top"><span class="competitor-ticket-icon" aria-hidden="true">{ticket.icon}</span><span class="competitor-ticket-label">COMPETIDOR</span></div>
+                <h4>{ticket.name}</h4>
+                <p class="competitor-ticket-schedule">{ticket.schedule}</p>
+                <div class="competitor-ticket-price"><strong>{ticket.price}</strong><span>{ticket.fee}</span></div>
+                <p class="competitor-ticket-installments">{ticket.installments}</p>
+                <p class="competitor-ticket-prize"><span>PREMIAÇÃO</span>{ticket.prize}</p>
+                <p class="competitor-ticket-note">{ticket.note}</p>
+                <a class="text-link text-link-light" href={event.ticketUrl} target="_blank" rel="noreferrer">Inscrever-se <span aria-hidden="true">↗</span></a>
+              </article>
+            ))}
+          </div>
+        </div>
+
         <div class="ticket-footer"><p><strong>Quer jogar os dois dias?</strong> O VIP dá acesso completo ao festival, com entrada uma hora antes e benefícios exclusivos.</p><a class="button button-yellow" href={event.ticketUrl} target="_blank" rel="noreferrer">Garantir meu ingresso <span aria-hidden="true">↗</span></a></div>
       </div>
     </section>
 
     <section class="section section-light partner-section" id="expositores">
       <div class="container split-section">
-        <div class="split-copy"><p class="eyebrow eyebrow-red">Com quem fazemos</p><h2>Marcas e criadores fazem parte da fase.</h2><p>O Family Game Festival conecta o público de Bauru a quem movimenta a cultura gamer e geek. Conheça quem já está confirmado.</p></div>
+        <div class="split-copy"><p class="eyebrow eyebrow-red">Quem faz acontecer</p><h2>Marcas, criadores e apoios fazem parte da fase.</h2><p>O Family Game Festival conecta o público de Bauru a quem movimenta a cultura gamer e geek. Conheça quem já está confirmado.</p></div>
         <div class="partner-list">
           {partners.map((partner) => (
             <article class={`partner-card partner-${partner.accent}`}><span class="partner-mark">{partner.name.slice(0, 1)}</span><div><h3>{partner.name}</h3><p>{partner.status}</p><small>{partner.handle}</small></div>{partner.href ? <a href={partner.href} target="_blank" rel="noreferrer" aria-label={`Ver ${partner.name} no Instagram`}>↗</a> : <span class="partner-pending">apoio</span>}</article>
@@ -232,5 +341,42 @@ const getGameArt = (title: string) => gameArt.find((game) => title.includes(game
       header?.classList.remove('menu-open');
       menuToggle?.setAttribute('aria-expanded', 'false');
     }));
+
+    const tournamentShowcase = document.querySelector('[data-tournament-showcase]');
+    const tournamentPreview = tournamentShowcase?.querySelector('.tournament-preview');
+    const previewImage = tournamentShowcase?.querySelector('[data-preview-image]');
+    const previewCategory = tournamentShowcase?.querySelector('[data-preview-category]');
+    const previewTitle = tournamentShowcase?.querySelector('[data-preview-title]');
+    const previewDetail = tournamentShowcase?.querySelector('[data-preview-detail]');
+    const previewDate = tournamentShowcase?.querySelector('[data-preview-date]');
+    const previewTime = tournamentShowcase?.querySelector('[data-preview-time]');
+    const previewTimeFact = tournamentShowcase?.querySelector('[data-preview-time-fact]');
+    const previewPrize = tournamentShowcase?.querySelector('[data-preview-prize]');
+    const tournamentCards = tournamentShowcase?.querySelectorAll('[data-tournament-card]') ?? [];
+
+    const setTournamentPreview = (card) => {
+      const data = card.dataset;
+      if (!data.title || !data.image || !previewImage || !tournamentPreview) return;
+
+      tournamentCards.forEach((item) => item.classList.remove('is-active'));
+      card.classList.add('is-active');
+      previewImage.className = `tournament-preview-image preview-fit-${data.fit || 'cover'}`;
+      previewImage.setAttribute('src', data.image);
+      previewImage.setAttribute('alt', data.alt || '');
+      previewCategory.textContent = data.category || '';
+      previewTitle.textContent = data.title;
+      previewDetail.textContent = data.detail || '';
+      previewDate.textContent = data.date || '';
+      previewTime.textContent = data.time || '—';
+      previewTimeFact.hidden = !data.time;
+      previewPrize.textContent = data.prize || '—';
+      tournamentPreview.className = `tournament-preview preview-${data.accent || 'yellow'}`;
+    };
+
+    tournamentCards.forEach((card) => {
+      card.addEventListener('mouseenter', () => setTournamentPreview(card));
+      card.addEventListener('focus', () => setTournamentPreview(card));
+      card.addEventListener('click', () => setTournamentPreview(card));
+    });
   </script>
 </BaseLayout>
