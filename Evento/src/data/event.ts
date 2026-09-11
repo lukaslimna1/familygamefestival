@@ -13,7 +13,8 @@ export const event = {
   ticketUrl: 'https://www.eventiza.com.br/evento/family-game-festival',
   whatsapp: {
     exhibitors: 'https://wa.me/5514991152263?text=Ol%C3%A1%2C%20quero%20saber%20como%20participar%20como%20expositor%20no%20Family%20Game%20Festival.',
-    sponsors: 'https://wa.me/5514991152263?text=Ol%C3%A1%2C%20quero%20receber%20mais%20informa%C3%A7%C3%B5es%20sobre%20como%20patrocinar%20o%20Family%20Game%20Festival.'
+    sponsors: 'https://wa.me/5514991152263?text=Ol%C3%A1%2C%20quero%20receber%20mais%20informa%C3%A7%C3%B5es%20sobre%20como%20patrocinar%20o%20Family%20Game%20Festival.',
+    press: 'https://wa.me/5514991152263?text=Ol%C3%A1%2C%20sou%20da%20imprensa%20e%20quero%20receber%20o%20Press%20Kit%20do%20Family%20Game%20Festival.'
   },
   experienceLine: 'A primeira edição nasce apoiada por mais de 13 anos de experiência em arenas gamers, campeonatos e eventos voltados ao público geek.',
   socialImpact: 'Parte da arrecadação será revertida para a SORRI Bauru.',
