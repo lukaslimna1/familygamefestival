@@ -3,11 +3,32 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { event, navItems } from '../data/event';
 
 const navLinks = navItems.map((item) => ({ ...item, href: item.href.startsWith('#') ? `/${item.href}` : item.href }));
+const proposalPdf = '/assets/docs/proposta-comercial-expositores.pdf';
+const structureItems = [
+  { label: 'Espaço modular', title: '3 × 3 m por unidade', text: 'Contrate mais de um espaço e amplie sua operação conforme disponibilidade.' },
+  { label: 'Circulação', title: 'Todo mundo passa por aqui', text: 'Os espaços ficam na mesma área de circulação do público do festival.' },
+  { label: 'Ambiente', title: 'Coberto e protegido', text: 'Arena protegida de chuva, vento e exposição direta ao sol.' },
+  { label: 'Infraestrutura', title: 'Energia e estacionamento', text: 'Pontos de energia elétrica e estacionamento disponíveis para lojistas.' }
+] as const;
+const includedItems = [
+  { number: '01', title: '2 credenciais', text: 'Duas identificações gratuitas de expositor para a equipe da loja.', accent: 'cyan' },
+  { number: '02', title: 'Alimentação', text: 'Almoço, lanche e bebida para duas pessoas nos dois dias.', accent: 'yellow' },
+  { number: '03', title: 'Energia', text: 'Pontos de energia elétrica disponíveis para a operação.', accent: 'pink' },
+  { number: '04', title: 'Estacionamento', text: 'Estacionamento disponível para lojistas e expositores.', accent: 'red' },
+  { number: '05', title: 'Espaço coberto', text: 'Ambiente fechado e protegido durante todo o festival.', accent: 'cyan' },
+  { number: '06', title: 'Segurança', text: 'Equipe de segurança presente durante o funcionamento do evento.', accent: 'yellow' }
+] as const;
+const productCategories = ['Moda geek', 'Colecionáveis', 'Games', 'Impressão 3D', 'Artesanato', 'Decoração', 'Tecnologia', 'Cultura pop'];
+const promotionItems = [
+  { title: 'Site oficial', text: 'Presença em uma área dedicada aos lojistas e expositores participantes.', accent: 'cyan' },
+  { title: 'Redes sociais', text: 'Divulgação individual da loja e publicações conjuntas com os expositores confirmados.', accent: 'yellow' },
+  { title: 'Menção no palco', text: 'Os lojistas participantes serão mencionados durante a programação do festival.', accent: 'pink' }
+] as const;
 ---
 
 <BaseLayout
-  title="Expositores e lojistas | Family Game Festival"
-  description="Veja como levar sua loja ou marca para a arena do Family Game Festival 2026."
+  title="Proposta comercial para expositores | Family Game Festival"
+  description="Conheça a proposta comercial para lojistas e expositores do Family Game Festival 2026."
   canonical="https://familygamefestival.vercel.app/expositores"
 >
   <header class="site-header">
@@ -22,27 +43,60 @@ const navLinks = navItems.map((item) => ({ ...item, href: item.href.startsWith('
   </header>
 
   <main>
-    <section class="sponsor-guide-hero exhibitor-guide-hero">
-      <div class="container sponsor-guide-hero-grid">
+    <section class="sponsor-guide-hero exhibitor-guide-hero exhibitor-proposal-hero">
+      <div class="container exhibitor-proposal-hero-grid">
         <div>
-          <p class="eyebrow eyebrow-cyan">Expositores & lojistas · Family Game Festival 2026</p>
-          <h1>Leve sua marca <em>para dentro do jogo.</em></h1>
-          <p>Monte sua presença na Arena Tauste e encontre um público que gosta de games, cultura geek e experiências ao vivo.</p>
-          <div class="sponsor-page-actions"><a class="button button-yellow" href={event.whatsapp.exhibitors} target="_blank" rel="noreferrer">Quero ser expositor <span aria-hidden="true">↗</span></a><a class="button button-outline-light" href="/#expositores">Voltar ao festival <span aria-hidden="true">↩</span></a></div>
+          <p class="eyebrow eyebrow-cyan">Proposta comercial · espaços para expositores</p>
+          <h1>Sua loja <em>entra no jogo.</em></h1>
+          <p>Dois dias para vender, apresentar sua marca e fazer parte da experiência presencial do Family Game Festival.</p>
+          <div class="exhibitor-proposal-eventline"><span>19 + 20 SET 2026</span><span>11H ÀS 21H</span><span>ARENA TAUSTE · SORRI BAURU</span></div>
+          <div class="sponsor-page-actions"><a class="button button-yellow" href={proposalPdf} target="_blank" rel="noreferrer">Abrir proposta completa <span aria-hidden="true">↗</span></a><a class="button button-outline-light" href="/#expositores">Voltar ao festival <span aria-hidden="true">↩</span></a></div>
         </div>
-        <div class="exhibitor-guide-mark"><span class="eyebrow eyebrow-yellow">Presença confirmada</span><img src="/assets/logos/parceiros/Edge%203D%20Studio.webp" alt="Logo Edge 3D Studio" /><span>Uma das lojas que você encontra na arena.</span></div>
+        <div class="exhibitor-proposal-price-card">
+          <p class="eyebrow eyebrow-yellow">Espaço comercial</p>
+          <p class="exhibitor-proposal-price-label">3 × 3 m · dois dias</p>
+          <div class="exhibitor-proposal-price"><span>R$</span><strong>900</strong></div>
+          <p class="exhibitor-proposal-price-caption">Participação nos dois dias de evento</p>
+          <div class="exhibitor-proposal-payment"><div><strong>R$ 300</strong><span>na reserva</span></div><div><strong>R$ 600</strong><span>no dia do evento</span></div></div>
+          <p class="exhibitor-proposal-no-commission">Sem comissão sobre suas vendas.</p>
+        </div>
       </div>
     </section>
 
-    <section class="section section-light exhibitor-guide-section">
-      <div class="container exhibitor-guide-grid">
-        <div><p class="eyebrow eyebrow-red">Sua loja na arena</p><h2>Faça parte da experiência.</h2><p>Expositores e lojistas entram em uma área própria, com suas logos em destaque no site e presença junto do público do festival.</p></div>
-        <div class="exhibitor-guide-list"><div><span>01</span><strong>Converse com a organização</strong><p>Receba os formatos e a disponibilidade de espaço.</p></div><div><span>02</span><strong>Escolha sua presença</strong><p>Leve produtos, serviços, ativações ou itens colecionáveis.</p></div><div><span>03</span><strong>Entre no mapa da arena</strong><p>Sua logo passa a fazer parte da lista oficial de lojistas.</p></div></div>
+    <section class="section section-light exhibitor-proposal-structure">
+      <div class="container">
+        <div class="section-heading exhibitor-proposal-heading"><p class="eyebrow eyebrow-red">Seu espaço no festival</p><h2>Monte sua operação com liberdade.</h2></div>
+        <div class="exhibitor-proposal-structure-grid">
+          <div class="exhibitor-proposal-structure-copy"><p>Todos os expositores ficam dentro da mesma área comercial e podem montar a operação de acordo com a sua marca, respeitando as orientações do local.</p><a class="text-link" href={proposalPdf} target="_blank" rel="noreferrer">Ler a proposta em PDF <span aria-hidden="true">↗</span></a></div>
+          <div class="exhibitor-proposal-spec-grid">{structureItems.map((item, index) => <article><span>{String(index + 1).padStart(2, '0')}</span><p>{item.label}</p><h3>{item.title}</h3><small>{item.text}</small></article>)}</div>
+        </div>
       </div>
     </section>
 
-    <section class="section exhibitor-guide-contact">
-      <div class="container exhibitor-guide-contact-grid"><div><p class="eyebrow eyebrow-yellow">Fale com o Juruna</p><h2>Quer reservar seu espaço?</h2><p>Envie uma mensagem pelo WhatsApp e receba as informações para participar como expositor ou lojista.</p></div><a class="button button-yellow" href={event.whatsapp.exhibitors} target="_blank" rel="noreferrer">Falar no WhatsApp <span aria-hidden="true">↗</span></a></div>
+    <section class="section section-navy exhibitor-proposal-included">
+      <div class="container">
+        <div class="section-heading exhibitor-proposal-heading"><p class="eyebrow eyebrow-cyan">O que está incluído</p><h2>Base pronta para operar.</h2><p class="heading-note heading-note-light">O pacote já chega com o essencial para sua loja funcionar durante os dois dias.</p></div>
+        <div class="exhibitor-proposal-included-grid">{includedItems.map((item) => <article class={`exhibitor-proposal-included-card proposal-accent-${item.accent}`}><span>{item.number}</span><h3>{item.title}</h3><p>{item.text}</p></article>)}</div>
+      </div>
+    </section>
+
+    <section class="section section-light exhibitor-proposal-products">
+      <div class="container exhibitor-proposal-products-grid">
+        <div><p class="eyebrow eyebrow-yellow">Produtos e montagem</p><h2>Venda do seu jeito.</h2><p>Leve produtos ligados ao universo geek e monte sua presença dentro do espaço contratado.</p></div>
+        <div class="exhibitor-proposal-products-board"><p class="card-eyebrow">O que combina com o festival</p><div class="exhibitor-proposal-tags">{productCategories.map((category) => <span>{category}</span>)}</div><div class="exhibitor-proposal-rules"><div><strong>Estrutura própria</strong><span>Banners, painéis, araras, prateleiras, televisores, iluminação e expositores podem ser utilizados.</span></div><div><strong>Alimentos e bebidas</strong><span>A comercialização deve ser conversada e autorizada previamente pela organização.</span></div><div><strong>Exclusividade</strong><span>Condições específicas de categoria podem ser alinhadas durante a contratação.</span></div></div></div>
+      </div>
+    </section>
+
+    <section class="section section-navy exhibitor-proposal-promotion">
+      <div class="container">
+        <div class="section-heading exhibitor-proposal-heading"><p class="eyebrow eyebrow-pink">Divulgação da sua loja</p><h2>Sua loja não fica só no estande.</h2><p class="heading-note heading-note-light">A contratação também inclui presença na comunicação oficial do Family Game Festival.</p></div>
+        <div class="exhibitor-proposal-promotion-grid">{promotionItems.map((item, index) => <article class={`proposal-promotion-card proposal-accent-${item.accent}`}><span>0{index + 1}</span><h3>{item.title}</h3><p>{item.text}</p></article>)}</div>
+        <p class="exhibitor-proposal-logo-note"><strong>Material necessário:</strong> envie o logotipo na melhor qualidade possível, preferencialmente com fundo transparente.</p>
+      </div>
+    </section>
+
+    <section class="section exhibitor-guide-contact exhibitor-proposal-final">
+      <div class="container exhibitor-proposal-final-grid"><div><p class="eyebrow eyebrow-yellow">Vagas limitadas para expositores</p><h2>Reserve sua loja dentro do festival.</h2><p>Reserva até 15/09/2026, enquanto houver vagas disponíveis. Fale diretamente com o Juruna para receber os próximos passos.</p></div><div class="exhibitor-proposal-final-actions"><a class="button button-yellow" href={event.whatsapp.exhibitors} target="_blank" rel="noreferrer">Falar com o Juruna <span aria-hidden="true">↗</span></a><a class="text-link text-link-light" href={proposalPdf} target="_blank" rel="noreferrer">Abrir proposta completa <span aria-hidden="true">↗</span></a></div></div>
     </section>
   </main>
 
