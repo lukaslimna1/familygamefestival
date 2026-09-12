@@ -52,7 +52,7 @@ export const guests = [
     instagramUrl: 'https://www.instagram.com/raul_schlosser/',
     role: 'Painel de dublagem',
     accent: 'pink',
-    image: '/assets/atraction/Raul Schlosser 01.png',
+    image: '/assets/atraction/Raul Schlosser 02.png',
     description: 'Dublador brasileiro de Jiraiya, Wolverine, Luigi, Cell e outros personagens queridos pelo público.',
     highlight: 'Painel, fotos, autógrafos e interação com o público · 19/09'
   }
