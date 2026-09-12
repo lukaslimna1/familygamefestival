@@ -58,8 +58,8 @@ const displayLevel = (level: string) => level === 'Power-up' ? 'Power Up' : leve
             const duplicate = index >= carouselPartners.length;
             return (
               <a class={`sponsor-carousel-item sponsor-carousel-${partner.accent} ${partner.name === 'Edge 3D Studio' ? 'sponsor-carousel-edge' : ''}`} href={partner.href || undefined} target={partner.href ? '_blank' : undefined} rel={partner.href ? 'noreferrer' : undefined} aria-label={`${partner.name} · ${displayLevel(partner.level)}`} title={`${partner.name} · ${displayLevel(partner.level)}`} aria-hidden={duplicate ? 'true' : undefined} tabindex={duplicate ? -1 : undefined}>
-                <span class="sponsor-carousel-pill">{displayLevel(partner.level)}</span>
                 <span class="sponsor-carousel-logo"><img src={logo} alt={`Logo ${partner.name}`} /></span>
+                <span class="sponsor-carousel-pill">{displayLevel(partner.level)}</span>
               </a>
             );
           })}

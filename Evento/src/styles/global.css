@@ -533,17 +533,18 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .sponsor-carousel-band { width: 100%; margin: 11px 0 0; padding: 22px 0; overflow: hidden; background: #fff; }
 .sponsor-carousel-viewport { width: 100%; overflow: hidden; }
 .sponsor-carousel-track { --carousel-gap: clamp(28px, 5vw, 76px); display: flex; width: max-content; align-items: stretch; gap: var(--carousel-gap); padding-inline: var(--carousel-gap); animation: sponsor-marquee 28s linear infinite; will-change: transform; }
-.sponsor-carousel-item { --carousel-accent: var(--cyan); display: grid; width: clamp(170px, 18vw, 225px); height: 132px; flex: 0 0 auto; grid-template-rows: 22px minmax(0, 1fr); place-items: center; gap: 8px; padding: 5px 8px 8px; background: transparent; }
+.sponsor-carousel-item { --carousel-accent: var(--cyan); display: grid; width: clamp(170px, 18vw, 225px); height: 154px; flex: 0 0 auto; grid-template-rows: minmax(0, 1fr) 18px; place-items: center; gap: 4px; padding: 8px 8px 5px; background: transparent; }
 .sponsor-carousel-yellow { --carousel-accent: var(--yellow); }
 .sponsor-carousel-cyan { --carousel-accent: var(--cyan); }
 .sponsor-carousel-pink { --carousel-accent: var(--pink); }
-.sponsor-carousel-pill { display: inline-flex; align-items: center; justify-content: center; min-height: 21px; padding: 4px 9px; color: var(--navy); background: var(--carousel-accent); font-size: 9px; font-weight: 800; letter-spacing: .1em; line-height: 1; text-transform: uppercase; white-space: nowrap; }
-.sponsor-carousel-logo { display: grid; width: 100%; min-height: 0; place-items: center; overflow: visible; }
-.sponsor-carousel-logo img { display: block; width: auto; height: auto; max-width: 84%; max-height: 74px; padding: 0; object-fit: contain; }
-.sponsor-carousel-edge .sponsor-carousel-logo img { max-width: 76%; max-height: 64px; }
+.sponsor-carousel-pill { display: inline-flex; align-items: center; justify-content: center; min-height: 18px; height: 18px; padding: 3px 8px; border: 1px solid rgba(8,20,37,.12); border-radius: 999px; color: var(--navy); background: var(--carousel-accent); box-shadow: 0 4px 11px rgba(8,20,37,.18); font-size: 8px; font-weight: 800; letter-spacing: .1em; line-height: 1; text-transform: uppercase; white-space: nowrap; animation: sponsor-pill-heartbeat 3.2s ease-in-out infinite; }
+.sponsor-carousel-logo { display: grid; width: 100%; min-height: 0; place-items: center; align-self: center; overflow: visible; }
+.sponsor-carousel-logo img { display: block; width: auto; height: auto; max-width: 90%; max-height: 96px; padding: 0; object-fit: contain; }
+.sponsor-carousel-edge .sponsor-carousel-logo img { max-width: 88%; max-height: 86px; }
 .sponsor-carousel-item:focus-visible { outline: 3px solid var(--cyan); outline-offset: 5px; }
 @keyframes sponsor-marquee { from { transform: translateX(0); } to { transform: translateX(calc(-50% - (var(--carousel-gap) / 2))); } }
-@media (prefers-reduced-motion: reduce) { .sponsor-carousel-track { animation: none; } }
+@keyframes sponsor-pill-heartbeat { 0%, 68%, 100% { transform: scale(1); } 74% { transform: scale(1.07); } 80% { transform: scale(1); } 86% { transform: scale(1.045); } 92% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .sponsor-carousel-track, .sponsor-carousel-pill { animation: none; } }
 .sponsor-home-section .sponsor-carousel-band { margin-top: 4px; }
 .sponsor-inline-cta { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 28px; margin-top: 43px; padding: 25px 30px; overflow: hidden; border: 1px solid var(--line-dark); border-left: 4px solid var(--yellow); background: rgba(255,255,255,.035); }
 .sponsor-inline-cta-copy { position: relative; z-index: 1; flex: 1; padding-right: 0; }
