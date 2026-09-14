@@ -1,4 +1,6 @@
 ---
+import { existsSync, readdirSync } from 'node:fs';
+import { basename, extname, join } from 'node:path';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SponsorHierarchy from '../components/SponsorHierarchy.astro';
 import { event, navItems, guests, attractions, tournaments, tournamentGroups, gameArt, experiences, tickets, competitorTickets } from '../data/event';
@@ -11,6 +13,17 @@ const groupedEntries = tournamentGroups.map((group) => ({ ...group, entries: gro
   return { tournament, art: getTournamentArt(tournament) };
 }) }));
 const initialArt = getTournamentArt(initialTournament);
+const guestVideoDirectory = join(process.cwd(), 'public/assets/videos');
+const guestVideos = existsSync(guestVideoDirectory)
+  ? readdirSync(guestVideoDirectory, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && /\.(mp4|webm|mov|m4v)$/i.test(entry.name))
+      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+      .map((entry) => {
+        const extension = extname(entry.name).toLowerCase();
+        const title = basename(entry.name, extension).replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+        return { filename: entry.name, title: title || 'Vídeo do convidado', sourceType: extension === '.webm' ? 'video/webm' : extension === '.mov' ? 'video/quicktime' : 'video/mp4' };
+      })
+  : [];
 ---
 
 <BaseLayout>
@@ -148,6 +161,43 @@ const initialArt = getTournamentArt(initialTournament);
             </article>
           ))}
         </div>
+
+        <section class="guest-videos-section" id="videos" aria-labelledby="guest-videos-title">
+          <div class="section-heading heading-row section-heading-with-mascot">
+            <div><p class="eyebrow eyebrow-cyan">Conteúdo dos convidados</p><h2 id="guest-videos-title">Vídeos que entram em cena.</h2></div>
+            <p class="heading-note heading-note-light">Recados, convites, bastidores e apresentações dos convidados do Family Game Festival.</p>
+            <img class="section-mascot section-mascot-here" src="/assets/mascots/5 - Pose Convidando.svg" alt="" aria-hidden="true" />
+          </div>
+
+          {guestVideos.length > 0 ? (
+            <div class="guest-video-grid">
+              {guestVideos.map((video) => (
+                <article class="guest-video-card">
+                  <div class="guest-video-media">
+                    <video controls preload="metadata">
+                      <source src={`/assets/videos/${encodeURIComponent(video.filename)}`} type={video.sourceType} />
+                      Seu navegador não consegue reproduzir este vídeo.
+                    </video>
+                  </div>
+                  <div class="guest-video-content">
+                    <p class="card-eyebrow">Vídeo do convidado</p>
+                    <h3>{video.title}</h3>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div class="guest-video-empty">
+              <div class="guest-video-empty-icon" aria-hidden="true">▶</div>
+              <div>
+                <p class="eyebrow eyebrow-cyan">Área preparada</p>
+                <h3>Os vídeos dos convidados vão aparecer aqui.</h3>
+                <p>Assim que os vídeos forem adicionados à pasta do evento, eles serão exibidos nesta área automaticamente.</p>
+              </div>
+              <span class="guest-video-path">/assets/videos</span>
+            </div>
+          )}
+        </section>
       </div>
     </section>
 

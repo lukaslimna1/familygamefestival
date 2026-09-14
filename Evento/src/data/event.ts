@@ -26,6 +26,7 @@ export const event = {
 export const navItems = [
   { label: 'Início', href: '#inicio' },
   { label: 'Atrações', href: '#atracoes' },
+  { label: 'Vídeos', href: '#videos' },
   { label: 'Campeonatos', href: '#campeonatos' },
   { label: 'Ingressos', href: '#ingressos' },
   { label: 'Patrocinadores', href: '#patrocinadores' },
