@@ -139,8 +139,8 @@ export const gameArt = [
   },
   {
     title: 'Naruto Storm 4',
-    image: '/assets/flyers/naruto-storm-4-cover.jpg',
-    alt: 'Capa de Naruto Shippuden: Ultimate Ninja Storm 4 para PS4',
+    image: '/assets/flyers/NARUTO USAR ESSA.jpg',
+    alt: 'Capa de Naruto Shippuden: Ultimate Ninja Storm 4',
     accent: 'yellow',
     fit: 'contain'
   },
