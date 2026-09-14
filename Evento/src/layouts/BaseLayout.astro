@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { event } from '../data/event';
+import Analytics from '@vercel/analytics/astro';
 
 interface Props {
   title?: string;
@@ -56,6 +57,7 @@ const jsonLd = {
     <meta name="twitter:description" content={description} />
     <title>{title}</title>
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <Analytics />
   </head>
   <body>
     <slot />
