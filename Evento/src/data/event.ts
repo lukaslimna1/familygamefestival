@@ -55,11 +55,22 @@ export const guests = [
     image: '/assets/atraction/Raul Schlosser 02.png',
     description: 'Dublador brasileiro de Jiraiya, Wolverine, Luigi, Cell e outros personagens queridos pelo público.',
     highlight: 'Painel, fotos, autógrafos e interação com o público · 19/09'
+  },
+  {
+    name: 'Héliades Cosplay',
+    slug: 'heliades',
+    handle: '@heliadescosplay',
+    instagramUrl: 'https://www.instagram.com/heliadescosplay/',
+    role: 'Jurada do Concurso Cosplay',
+    accent: 'yellow',
+    image: '/assets/atraction/Heliades Cosplay.png',
+    description: 'Jurada convidada para avaliar o Concurso Cosplay do Family Game Festival.',
+    highlight: 'Concurso Cosplay · 20/09'
   }
 ] as const;
 
 export const attractions = [
-  { eyebrow: 'COMPITA', title: 'Arena de campeonatos', text: 'Mortal Kombat 1, Street Fighter 6, Tekken 8, FC 26, eFootball e Top Gear 1.', icon: 'trophy.svg', accent: 'red' },
+  { eyebrow: 'COMPITA', title: 'Arena de campeonatos', text: 'Mortal Kombat 1, Street Fighter 6, Tekken 8, Naruto Storm 4, FC 26, eFootball e Top Gear 1.', icon: 'trophy.svg', accent: 'red' },
   { eyebrow: 'DANCE MODE', title: 'Just Dance 2026', text: 'Uma seletiva especial no dia 19/09 valendo vaga para o Nacional de Just Dance 2026.', icon: 'controller.svg', accent: 'cyan' },
   { eyebrow: 'COSPLAY', title: 'Concurso Cosplay', text: 'Solte a criatividade com temas de games, anime, mangá, filmes, séries, quadrinhos e cultura geek.', icon: 'crown.svg', accent: 'pink' },
   { eyebrow: 'COMUNIDADE', title: 'Random Play Dance', text: 'K-pop no centro do festival: a música toca, a roda abre e quem souber a coreografia entra para dançar.', icon: 'star.svg', accent: 'yellow' }
@@ -71,13 +82,14 @@ export const tournaments = [
   { id: 'mortal-kombat-1', category: 'Fight Games', title: 'Mortal Kombat 1', time: '14h00', date: '20', accent: 'red', prize: 'R$ 1.000', detail: 'Vagas limitadas.' },
   { id: 'street-fighter-6', category: 'Fight Games', title: 'Street Fighter 6', time: '18h00', date: '20', accent: 'cyan', prize: 'R$ 1.000', detail: 'Vagas limitadas.' },
   { id: 'tekken-8', category: 'Fight Games', title: 'Tekken 8', time: '16h00', date: '20', accent: 'pink', prize: 'R$ 1.000', detail: 'Vagas limitadas.' },
+  { id: 'naruto-storm-4', category: 'Fight Games', title: 'Naruto Storm 4', time: '14h00', date: '20', accent: 'yellow', prize: 'R$ 100', detail: 'PS4 · Single Elimination · Inscrição via PIX.' },
   { id: 'fc-26', category: 'Esport Games', title: 'FC 26', time: '', date: '19 e 20', accent: 'cyan', prize: 'R$ 100', detail: 'Inscrição R$ 30 · vagas limitadas.' },
   { id: 'efootball', category: 'Esport Games', title: 'eFootball', time: '', date: '19 e 20', accent: 'yellow', prize: 'R$ 100', detail: 'Inscrição R$ 30 · vagas limitadas.' },
   { id: 'top-gear-1', category: 'Retrô Games', title: 'Top Gear 1', time: '', date: '19 e 20', accent: 'red', prize: 'R$ 100', detail: 'Inscrição R$ 30 · vagas limitadas.' }
 ] as const;
 
 export const tournamentGroups = [
-  { title: 'Fight Games', kicker: 'FIGHT GAMES', accent: 'red', ids: ['mortal-kombat-1', 'street-fighter-6', 'tekken-8'] },
+  { title: 'Fight Games', kicker: 'FIGHT GAMES', accent: 'red', ids: ['mortal-kombat-1', 'street-fighter-6', 'tekken-8', 'naruto-storm-4'] },
   { title: 'Esport Games', kicker: 'ESPORT GAMES', accent: 'cyan', ids: ['fc-26', 'efootball'] },
   { title: 'Retrô Games', kicker: 'RETRÔ GAMES', accent: 'yellow', ids: ['top-gear-1'] }
 ] as const;
@@ -85,52 +97,59 @@ export const tournamentGroups = [
 export const gameArt = [
   {
     title: 'Mortal Kombat 1',
-    image: 'https://mortalkombatgamessupport.wbgames.com/hc/article_attachments/32814706772371',
-    alt: 'Arte oficial de Mortal Kombat 1',
+    image: '/assets/flyers/mortal-kombat-1-cover.png',
+    alt: 'Capa de Mortal Kombat 1',
     accent: 'red',
     fit: 'cover'
   },
   {
     title: 'Street Fighter 6',
-    image: 'https://img-eshop.cdn.nintendo.net/i/0d7ec0b23a532e3d3ebb8c8a1f8287703d57212b71c97286c954220f1320dba7.jpg',
-    alt: 'Arte oficial de Street Fighter 6',
+    image: '/assets/flyers/street-fighter-6-cover.png',
+    alt: 'Capa de Street Fighter 6',
     accent: 'cyan',
     fit: 'cover'
   },
   {
     title: 'Tekken 8',
-    image: 'https://us-east-1-bandai.graphassets.com/AXzioIclSWilEjFtsMJPwz/cm8xnqwr6jlkt07lccbz2dcqa',
-    alt: 'Arte oficial de Tekken 8',
+    image: '/assets/flyers/tekken-8-cover.png',
+    alt: 'Capa de Tekken 8',
     accent: 'pink',
     fit: 'cover'
   },
   {
     title: 'Just Dance 2026',
-    image: 'https://staticctf.ubisoft.com/J3yJr34U2pZ2Ieem48Dwy9uqj5PNUQTn/5l2jwO39hbiuxP6YflvAMz/08e8183e56b5be38032f9a563a9387c6/JD26-logo-header.png',
-    alt: 'Logo oficial de Just Dance 2026',
+    image: 'https://staticctf.ubisoft.com/J3yJr34U2pZ2Ieem48Dwy9uqj5PNUQTn/4Nwp82G3p7gEI2XPbr8z3A/d92177cd6dac0da4602e1f7264e866a6/jd26-boxshot.jpg',
+    alt: 'Capa de Just Dance 2026',
     accent: 'yellow',
     fit: 'contain'
   },
   {
     title: 'FC 26',
-    image: 'https://drop-assets.ea.com/images/6g5Yie1DUeAS4zbSBADAr0/0aee1e0e6d4c371042db4ad7b521e377/EAS_FC26_WGE_KeyArt-no-copy-16x9.jpg?im=AspectCrop%3D%2816%2C9%29%2CxPosition%3D0.5%2CyPosition%3D0.5',
-    alt: 'Arte oficial de EA SPORTS FC 26',
+    image: 'https://image.api.playstation.com/vulcan/ap/rnd/202606/0422/30afecf5deecc449b0290aa843cfe179b3977b388e8e4e9b.png',
+    alt: 'Capa oficial de EA SPORTS FC 26 Standard Edition',
     accent: 'cyan',
-    fit: 'cover'
+    fit: 'contain'
   },
   {
     title: 'eFootball',
-    image: '/assets/game-art/efootball-konami.png',
-    alt: 'Logo oficial de eFootball da KONAMI',
+    image: '/assets/flyers/efootball-26-cover.png',
+    alt: 'Arte de eFootball 26',
+    accent: 'yellow',
+    fit: 'cover'
+  },
+  {
+    title: 'Naruto Storm 4',
+    image: '/assets/flyers/naruto-storm-4-cover.jpg',
+    alt: 'Capa de Naruto Shippuden: Ultimate Ninja Storm 4 para PS4',
     accent: 'yellow',
     fit: 'contain'
   },
   {
     title: 'Top Gear',
-    image: 'https://images.launchbox-app.com/d7c80b5e-dc9c-4539-ae2e-3d192ca4e563.jpg',
-    alt: 'Capa clássica de Top Gear para Super Nintendo',
+    image: 'https://images.launchbox-app.com//97538188-65b0-4e08-8870-316a07cad1d1.jpg',
+    alt: 'Capa original de Top Gear para Super Nintendo',
     accent: 'red',
-    fit: 'cover'
+    fit: 'contain'
   },
   {
     title: 'Cosplay',
@@ -158,6 +177,7 @@ export const competitorTickets = [
   { name: 'Tekken 8', icon: '👊', price: 'R$ 60,00', fee: '+ R$ 5,10 de taxa', installments: 'em até 12x de R$ 6,66', schedule: '20 · 16h00', prize: 'R$ 1.000', note: 'Premiação de R$ 1.000 para o campeão. Vagas limitadas.', accent: 'pink' },
   { name: 'Mortal Kombat 1', icon: '⚔️', price: 'R$ 60,00', fee: '+ R$ 5,10 de taxa', installments: 'em até 12x de R$ 6,66', schedule: '20 · 14h00', prize: 'R$ 1.000', note: 'Premiação de R$ 1.000 para o campeão. Vagas limitadas.', accent: 'red' },
   { name: 'Street Fighter 6', icon: '🥊', price: 'R$ 60,00', fee: '+ R$ 5,10 de taxa', installments: 'em até 12x de R$ 6,66', schedule: '20 · 18h00', prize: 'R$ 1.000', note: 'Premiação de R$ 1.000 para o campeão. Vagas limitadas.', accent: 'cyan' },
+  { name: 'Naruto Storm 4', icon: '🍥', price: 'R$ 30,00', fee: 'Pagamento via PIX', installments: 'PS4 · Single Elimination', schedule: '20 · 14h00', prize: 'R$ 100', note: 'Inscrições online; presencial com valor maior. familygameeventos@gmail.com', accent: 'yellow' },
   { name: 'Concurso Cosplay', icon: '🎭', price: 'R$ 60,00', fee: '+ R$ 5,10 de taxa', installments: 'em até 12x de R$ 6,66', schedule: '20 · 16h00', prize: 'R$ 1.000', note: 'Participação sujeita ao regulamento oficial e limite de vagas.', accent: 'yellow' }
 ] as const;
 
@@ -190,7 +210,7 @@ export const directSponsorOptions = [
     kicker: '1 parceiro por competição',
     amount: 'R$ 1.500',
     detail: 'Patrocínio direto de um campeonato, com associação à disputa, ao troféu e à premiação.',
-    items: ['Cosplay', 'Just Dance', 'Mortal Kombat 1', 'Street Fighter 6', 'Tekken 8', 'FC 26', 'eFootball', 'Top Gear 1'],
+    items: ['Cosplay', 'Just Dance', 'Mortal Kombat 1', 'Street Fighter 6', 'Tekken 8', 'Naruto Storm 4', 'FC 26', 'eFootball', 'Top Gear 1'],
     accent: 'red'
   },
   {
