@@ -44,6 +44,14 @@ export function getAdminConfig() {
   );
 }
 
+export function getRegistrationAccessSecret() {
+  return requireEnvironment(
+    requiredText.min(32),
+    getEnvironmentVariable('REGISTRATION_ACCESS_SECRET'),
+    'Configuração de acesso às inscrições incompleta: REGISTRATION_ACCESS_SECRET deve ter ao menos 32 caracteres.'
+  );
+}
+
 export function getGoogleOAuthConfig() {
   return requireEnvironment(
     z.object({

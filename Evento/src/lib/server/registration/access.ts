@@ -1,15 +1,12 @@
 import { jwtVerify, SignJWT } from 'jose';
-import { getAdminConfig } from '../config/env';
+import { getRegistrationAccessSecret } from '../config/env';
 import {
   PUBLIC_REGISTRATION_ACCESS_COOKIE,
   PUBLIC_REGISTRATION_ACCESS_TTL_SECONDS
 } from './config';
 
 function getAccessSecret() {
-  const configured = process.env.PUBLIC_REGISTRATION_ACCESS_SECRET
-    ?? (import.meta.env as Record<string, string | undefined>).PUBLIC_REGISTRATION_ACCESS_SECRET
-    ?? getAdminConfig().sessionSecret;
-  return new TextEncoder().encode(configured);
+  return new TextEncoder().encode(getRegistrationAccessSecret());
 }
 
 export async function createPublicRegistrationAccessToken(registrationId: string, publicCode: string) {

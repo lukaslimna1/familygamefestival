@@ -16,6 +16,10 @@ pasta existente `Family Game Festival 2026`; o código não cria uma nova raiz.
 Para os scripts e para o servidor Astro, mantenha `TURSO_DATABASE_URL` e
 `TURSO_AUTH_TOKEN` no `Evento/.env.local`. O projeto usa uma única base Turso;
 o isolamento do trabalho acontece pelas branches Git.
+Para o acesso do participante à área de atualização, mantenha também
+`REGISTRATION_ACCESS_SECRET` no `.env.local`. Ele é um segredo server-side
+separado da sessão administrativa e nunca deve ser prefixado com `PUBLIC_`,
+enviado ao navegador ou incluído em HTML.
 
 O OAuth server-side local usa esta URI de callback:
 
@@ -82,7 +86,9 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'
 
 Copie o resultado somente para `ADMIN_SESSION_SECRET` no
 `Evento/.env.local`. Não coloque esse valor no Git, em HTML, no frontend ou em
-logs. `ADMIN_SESSION_TTL_SECONDS` é opcional e, quando omitida, usa 8 horas.
+logs. Gere outro valor aleatório de 32 bytes para `REGISTRATION_ACCESS_SECRET`;
+não reutilize o segredo administrativo. `ADMIN_SESSION_TTL_SECONDS` é opcional
+e, quando omitida, usa 8 horas.
 
 Depois de aplicar as migrações, crie cada administrador individualmente no
 terminal interativo:
