@@ -1,0 +1,62 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import { event } from '../../data/event';
+import { registrationRoutes } from '../../lib/registration';
+---
+
+<BaseLayout
+  title={`Inscrição realizada | ${event.name}`}
+  description="Confira o código da sua inscrição no Family Game Festival 2026."
+  canonical={`https://familygamefestival.vercel.app${registrationRoutes.access}`}
+>
+  <SiteHeader current="Campeonatos" />
+  <main class="registration-page success-page">
+    <div class="container success-layout">
+      <section class="success-card" aria-labelledby="success-title">
+        <p class="eyebrow eyebrow-cyan">Inscrição realizada</p>
+        <h1 id="success-title">Deu certo<span>.</span></h1>
+        <p class="success-intro">Sua inscrição foi registrada no sistema oficial do Family Game Festival.</p>
+        <div class="success-code-panel">
+          <span>CÓDIGO DA INSCRIÇÃO</span>
+          <strong data-success-code>—</strong>
+          <button class="button button-yellow" type="button" data-copy-registration>Copiar código <span aria-hidden="true">↗</span></button>
+          <p data-copy-feedback aria-live="polite"></p>
+        </div>
+        <p class="success-save-note">Guarde este código. Você precisará dele junto com seu CPF para consultar ou atualizar sua inscrição.</p>
+        <p class="success-save-note">Recomendamos salvar este código ou tirar uma captura desta tela.</p>
+        <p class="success-sync-note" data-success-sync hidden>O cadastro foi salvo, mas a sincronização de arquivos continuará em processamento.</p>
+        <div class="success-actions">
+          <a class="button button-outline-light" href={registrationRoutes.access}>Acessar minha inscrição <span aria-hidden="true">↗</span></a>
+          <a class="registration-secondary-link" href="/#campeonatos">Voltar aos campeonatos</a>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container footer-top"><a class="brand" href="/"><img src="/assets/logo.svg" alt="Family Game Festival" /></a><p>Games, cultura geek e impacto local.<br />Bauru · 19—20 setembro 2026</p><a class="button button-yellow button-small" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a></div>
+    <div class="container footer-bottom"><span>© 2026 Family Game Festival</span><a href={event.instagramUrl} target="_blank" rel="noreferrer">{event.instagram}</a><span>{event.socialImpact}</span><span class="footer-credit">Desenvolvido pela <a href="https://www.instagram.com/usealterstate/" target="_blank" rel="noreferrer">ALTERSTATE</a></span></div>
+  </footer>
+</BaseLayout>
+
+<script>
+  const codeElement = document.querySelector<HTMLElement>('[data-success-code]');
+  const copyButton = document.querySelector<HTMLButtonElement>('[data-copy-registration]');
+  const copyFeedback = document.querySelector<HTMLElement>('[data-copy-feedback]');
+  const syncNote = document.querySelector<HTMLElement>('[data-success-sync]');
+  const code = new URLSearchParams(window.location.search).get('code')?.trim().toUpperCase() || '';
+  const sync = new URLSearchParams(window.location.search).get('sync');
+
+  if (codeElement) codeElement.textContent = code || 'Código indisponível';
+  if (syncNote) syncNote.hidden = sync !== 'pending';
+  if (copyButton) copyButton.disabled = !code;
+  copyButton?.addEventListener('click', async () => {
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      if (copyFeedback) copyFeedback.textContent = 'Código copiado.';
+    } catch {
+      if (copyFeedback) copyFeedback.textContent = 'Não foi possível copiar automaticamente. Selecione o código acima.';
+    }
+  });
+</script>

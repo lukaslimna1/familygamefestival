@@ -3,7 +3,7 @@ export const regulations = {
     id: 'cosplay',
     title: 'Regulamento Oficial — Concurso Cosplay',
     subtitle: 'Family Game Festival 2026 • Apresentação Cosplay Individual',
-    pageUrl: '/regulamentos/concurso-cosplay',
+    pageUrl: '/campeonatos/cosplay',
     pdfFile: 'Regulamento Oficial — Concurso Cosplay _ Family Game Festival 2026.pdf'
   },
   gamesGeneral: {

@@ -1,0 +1,257 @@
+---
+import AudioUploader from './AudioUploader.astro';
+import ConsentFields from './ConsentFields.astro';
+import CosplayFields from './CosplayFields.astro';
+import GuardianFields from './GuardianFields.astro';
+import ParticipantFields from './ParticipantFields.astro';
+import ReferenceUploader from './ReferenceUploader.astro';
+import SocialFields from './SocialFields.astro';
+
+interface Props {
+  entry: any;
+}
+
+const { entry } = Astro.props;
+const { tournament, schedule, regulation, generalRegulation } = entry;
+const isCosplay = tournament.id === 'cosplay';
+const regulationLink = regulation?.pageUrl || generalRegulation?.pageUrl || entry.pageUrl;
+const responsibleStep = isCosplay ? '06' : '03';
+const consentStep = isCosplay ? '07' : '04';
+---
+
+<section class="registration-page" data-registration-page>
+  <div class="container registration-hero">
+    <div class="registration-hero-copy">
+      <a class="registration-back-link" href={entry.pageUrl}>← Voltar para o campeonato</a>
+      <p class="eyebrow eyebrow-yellow">Inscrições {isCosplay ? 'de cosplay' : 'do campeonato'}</p>
+      <h1>Inscreva-se em <span>{tournament.title}</span>.</h1>
+      <p class="registration-hero-description">Preencha seus dados com calma. Ao enviar, suas informações serão registradas no sistema oficial do Family Game Festival.</p>
+    </div>
+    <div class="registration-status-card" data-registration-status="loading" data-registration-status-card data-registration-competition={tournament.id}>
+      <span class="registration-status-dot" aria-hidden="true"></span>
+      <div>
+        <small>STATUS DA INSCRIÇÃO</small>
+        <strong data-registration-status-title>Consultando disponibilidade…</strong>
+        <span data-registration-status-open hidden></span>
+        <span data-registration-status-closed hidden></span>
+        <span data-registration-status-availability></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container registration-layout">
+    <form class="registration-form" data-registration-form data-registration-competition={tournament.id} novalidate>
+      <div class="registration-form-head">
+        <div>
+          <p class="eyebrow eyebrow-cyan">Formulário de participação</p>
+          <h2>Seus dados, sua participação.</h2>
+        </div>
+        <div class="registration-progress" aria-label="Progresso do preenchimento">
+          <div class="registration-progress-meta"><span>Progresso</span><strong data-progress-label>0%</strong></div>
+          <div class="registration-progress-track"><span data-progress-bar></span></div>
+        </div>
+      </div>
+
+      <div class="registration-section" id="personal">
+        <div class="registration-section-heading"><span>01</span><div><p class="eyebrow eyebrow-yellow">Dados obrigatórios</p><h3>Quem vai participar?</h3></div></div>
+        <ParticipantFields />
+      </div>
+
+      <div class="registration-section" id="social">
+        <div class="registration-section-heading"><span>02</span><div><p class="eyebrow eyebrow-cyan">Opcional</p><h3>Onde encontrar você?</h3></div></div>
+        <SocialFields />
+      </div>
+
+      {isCosplay && <CosplayFields />}
+      {isCosplay && <ReferenceUploader />}
+      {isCosplay && <AudioUploader />}
+
+      <GuardianFields step={responsibleStep} competitionId={tournament.id} />
+      <ConsentFields step={consentStep} regulationLink={regulationLink} />
+
+      <div class="registration-form-actions">
+        <button class="button button-yellow" type="submit" data-submit-registration>Enviar inscrição <span aria-hidden="true">↗</span></button>
+      </div>
+      <p class="registration-submit-feedback" data-submit-feedback aria-live="polite"></p>
+    </form>
+
+    <aside class="registration-aside">
+      <div class="registration-aside-card registration-aside-sticky">
+        <p class="eyebrow eyebrow-cyan">Sua inscrição</p>
+        <h2>{tournament.title}</h2>
+        <dl>
+          <div><dt>DATA</dt><dd>{schedule.date}/2026</dd></div>
+          <div><dt>HORÁRIO</dt><dd>{schedule.time}</dd></div>
+          <div><dt>LOCAL</dt><dd>Arena Tauste · Bauru</dd></div>
+        </dl>
+        <a class="registration-aside-regulation" href={regulationLink}>Ler o regulamento antes <span aria-hidden="true">↗</span></a>
+      </div>
+      {!entry.registrationFree && entry.registrationUrl && (
+        <div class="registration-ticket-callout">
+          <p class="eyebrow eyebrow-yellow">Ainda não comprou seu ingresso?</p>
+          <h3>Inscrição e ingresso são etapas diferentes.</h3>
+          <p>Para participar do evento e desta competição, compre o ingresso competidor conforme as regras da modalidade.</p>
+          <a class="registration-ticket-link" href={entry.registrationUrl} target="_blank" rel="noreferrer">Comprar ingresso competidor <span aria-hidden="true">↗</span></a>
+        </div>
+      )}
+    </aside>
+  </div>
+</section>
+
+<script>
+  import { buildRegistrationPayload, getRegistrationApi, isMinorDate, postRegistrationForm, RegistrationApiError } from '../lib/registration-api';
+
+  const registrationForms = document.querySelectorAll<HTMLFormElement>('[data-registration-form]');
+
+  registrationForms.forEach((form) => {
+    const competitionId = form.dataset.registrationCompetition || '';
+    const isCosplay = competitionId === 'cosplay';
+    const birthDate = form.querySelector<HTMLInputElement>('[data-birth-date]');
+    const responsibleSection = form.querySelector<HTMLElement>('[data-responsible-section]');
+    const responsibleFields = form.querySelectorAll<HTMLInputElement>('[data-responsible-required]');
+    const authorizationFields = form.querySelectorAll<HTMLInputElement>('[data-responsible-authorization]');
+    const progressBar = form.querySelector<HTMLElement>('[data-progress-bar]');
+    const progressLabel = form.querySelector<HTMLElement>('[data-progress-label]');
+    const submitButton = form.querySelector<HTMLButtonElement>('[data-submit-registration]');
+    const submitFeedback = form.querySelector<HTMLElement>('[data-submit-feedback]');
+    const statusCard = form.closest('[data-registration-page]')?.querySelector<HTMLElement>('[data-registration-status-card]');
+    const statusTitle = statusCard?.querySelector<HTMLElement>('[data-registration-status-title]');
+    const statusOpen = statusCard?.querySelector<HTMLElement>('[data-registration-status-open]');
+    const statusClosed = statusCard?.querySelector<HTMLElement>('[data-registration-status-closed]');
+    const statusAvailability = statusCard?.querySelector<HTMLElement>('[data-registration-status-availability]');
+    let statusLoaded = false;
+    let statusUnavailable = false;
+    let onlineOpen = false;
+    let full = false;
+
+    const updateProgress = () => {
+      const requiredFields = [...form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('input[required], select[required], textarea[required]')]
+        .filter((field) => !field.disabled && !field.closest('[hidden]'));
+      const completed = requiredFields.filter((field) => field instanceof HTMLInputElement && field.type === 'checkbox' ? field.checked : field.value.trim() !== '').length;
+      const percentage = requiredFields.length ? Math.round((completed / requiredFields.length) * 100) : 0;
+      if (progressBar) progressBar.style.width = `${percentage}%`;
+      if (progressLabel) progressLabel.textContent = `${percentage}%`;
+    };
+
+    const updateSubmitAvailability = () => {
+      if (submitButton && !submitButton.dataset.submitting) submitButton.disabled = !statusLoaded || statusUnavailable || !onlineOpen || full;
+    };
+
+    const updateResponsible = () => {
+      const minor = isMinorDate(birthDate?.value);
+      if (responsibleSection) responsibleSection.hidden = !minor;
+      responsibleFields.forEach((field) => {
+        field.required = minor;
+        field.disabled = !minor;
+      });
+      authorizationFields.forEach((field) => {
+        field.disabled = !minor || field.dataset.currentAuthorization === 'true';
+      });
+      updateProgress();
+    };
+
+    const loadStatus = async () => {
+      if (!competitionId) return;
+      if (statusCard) statusCard.dataset.registrationStatus = 'loading';
+      try {
+        const result = await getRegistrationApi<{ registration: { registered: number; capacity: number; remaining: number; full: boolean; onlineOpen: boolean; deadlineLabel: string; onlineMessage: string } }>(`inscricoes/${encodeURIComponent(competitionId)}/status`);
+        const registration = result.registration;
+        statusLoaded = true;
+        statusUnavailable = false;
+        onlineOpen = registration.onlineOpen;
+        full = registration.full;
+        const isClosed = full || !onlineOpen;
+        if (statusCard) {
+          statusCard.dataset.registrationStatus = isClosed ? 'closed' : 'open';
+          statusCard.classList.toggle('is-closed', isClosed);
+        }
+        if (statusTitle) statusTitle.textContent = full ? 'Vagas esgotadas' : onlineOpen ? 'Inscrições abertas' : 'Online encerrada';
+        if (statusOpen) {
+          statusOpen.hidden = isClosed;
+          statusOpen.textContent = registration.onlineMessage;
+        }
+        if (statusClosed) {
+          statusClosed.hidden = !isClosed;
+          statusClosed.textContent = full
+            ? 'O limite desta competição foi atingido. Consulte a organização sobre a possibilidade de inscrição presencial.'
+            : `${registration.onlineMessage} Consulte a organização sobre a inscrição presencial.`;
+        }
+        if (statusAvailability) statusAvailability.textContent = `${registration.registered}/${registration.capacity} inscritos · ${registration.remaining} vagas restantes`;
+      } catch {
+        statusLoaded = true;
+        statusUnavailable = true;
+        onlineOpen = false;
+        full = false;
+        if (statusCard) {
+          statusCard.dataset.registrationStatus = 'unavailable';
+          statusCard.classList.remove('is-closed');
+        }
+        if (statusTitle) statusTitle.textContent = 'Disponibilidade indisponível';
+        if (statusOpen) statusOpen.hidden = true;
+        if (statusClosed) {
+          statusClosed.hidden = false;
+          statusClosed.textContent = 'Não foi possível consultar o sistema oficial. Tente novamente em instantes.';
+        }
+        if (statusAvailability) statusAvailability.textContent = '';
+      }
+      updateSubmitAvailability();
+    };
+
+    birthDate?.addEventListener('change', updateResponsible);
+    form.addEventListener('input', updateProgress);
+    form.addEventListener('change', updateProgress);
+    updateResponsible();
+    updateSubmitAvailability();
+    void loadStatus();
+    window.setInterval(() => void loadStatus(), 30000);
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      form.dataset.validationVisible = 'true';
+      if (!statusLoaded || statusUnavailable) {
+        if (submitFeedback) submitFeedback.textContent = 'Aguarde a confirmação de disponibilidade da competição e tente novamente.';
+        return;
+      }
+      if (!onlineOpen || full) {
+        if (submitFeedback) submitFeedback.textContent = full
+          ? 'As vagas desta competição foram preenchidas. Consulte a organização sobre a inscrição presencial.'
+          : 'As inscrições online foram encerradas. Consulte a organização sobre a inscrição presencial.';
+        return;
+      }
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        if (submitFeedback) submitFeedback.textContent = 'Confira os campos obrigatórios antes de enviar.';
+        return;
+      }
+      if (submitButton) {
+        submitButton.dataset.submitting = 'true';
+        submitButton.disabled = true;
+        submitButton.innerHTML = 'Enviando inscrição…';
+      }
+      if (submitFeedback) submitFeedback.textContent = 'Registrando sua inscrição no sistema oficial…';
+      try {
+        const result = await postRegistrationForm<{ registrationId: string; publicCode: string; competitionId: string; driveSyncStatus: string }>(
+          `inscricoes/${encodeURIComponent(competitionId)}`,
+          buildRegistrationPayload(form, competitionId, isCosplay)
+        );
+        const successUrl = new URL('/inscricao/sucesso', window.location.origin);
+        successUrl.searchParams.set('code', result.publicCode);
+        successUrl.searchParams.set('competition', result.competitionId);
+        if (result.driveSyncStatus !== 'synced') successUrl.searchParams.set('sync', 'pending');
+        window.location.assign(successUrl.toString());
+      } catch (error) {
+        if (submitButton) {
+          delete submitButton.dataset.submitting;
+          submitButton.disabled = false;
+          submitButton.innerHTML = 'Enviar inscrição <span aria-hidden="true">↗</span>';
+        }
+        if (submitFeedback) {
+          if (error instanceof RegistrationApiError && error.code === 'full') submitFeedback.textContent = 'As vagas desta competição foram preenchidas. Consulte a organização sobre a inscrição presencial.';
+          else if (error instanceof RegistrationApiError && error.code === 'duplicate') submitFeedback.textContent = 'Este CPF já possui uma inscrição nesta competição. Use o acesso do participante para consultar ou atualizar seus dados.';
+          else submitFeedback.textContent = error instanceof RegistrationApiError ? error.message : 'Não foi possível enviar a inscrição agora. Tente novamente.';
+        }
+        await loadStatus();
+      }
+    });
+  });
+</script>

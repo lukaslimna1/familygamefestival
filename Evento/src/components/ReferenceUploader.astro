@@ -1,0 +1,191 @@
+<div class="registration-section" id="references">
+  <div class="registration-section-heading"><span>04</span><div><p class="eyebrow eyebrow-yellow">Material de apoio</p><h3>Referências do participante.</h3></div></div>
+  <p class="registration-helper">Adicione até 5 imagens ou PDFs de referência. A seleção é progressiva: novos arquivos entram na lista sem substituir os anteriores.</p>
+  <div class="registration-file-manager" data-reference-uploader>
+    <input hidden type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" multiple data-reference-input />
+    <input hidden type="file" name="referenceFiles" accept=".jpg,.jpeg,.png,.webp,.pdf" multiple data-reference-submit-input />
+    <div class="registration-upload-panel">
+      <div><strong>Envie suas referências</strong><span>JPG, JPEG, PNG, WEBP ou PDF · máximo de 5 arquivos</span></div>
+      <button class="button button-outline-light" type="button" data-add-reference>Adicionar referência <span aria-hidden="true">＋</span></button>
+    </div>
+    <div class="registration-file-count" data-reference-count>0 de 5 arquivos selecionados</div>
+    <ul class="registration-file-list" data-reference-list></ul>
+    <p class="registration-inline-feedback" data-reference-feedback aria-live="polite"></p>
+  </div>
+
+  <div class="registration-links-manager">
+    <div class="registration-subheading"><strong>Links de referência</strong><span>Adicione nome e URL separadamente.</span></div>
+    <div data-reference-links>
+      <div class="registration-link-row" data-reference-link-row>
+        <input name="referenceLinkName[]" type="text" placeholder="Nome do link" aria-label="Nome do link de referência" />
+        <input name="referenceLink[]" type="url" placeholder="https://" aria-label="URL de referência" />
+        <button class="registration-text-button is-danger" type="button" data-remove-reference-link>× Remover</button>
+      </div>
+    </div>
+    <button class="registration-add-link" type="button" data-add-reference-link>+ Adicionar outro link</button>
+  </div>
+</div>
+
+<script>
+  const referenceExtensions = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
+
+  document.querySelectorAll<HTMLElement>('[data-reference-uploader]').forEach((root) => {
+    const input = root.querySelector<HTMLInputElement>('[data-reference-input]');
+    const submitInput = root.querySelector<HTMLInputElement>('[data-reference-submit-input]');
+    const list = root.querySelector<HTMLUListElement>('[data-reference-list]');
+    const feedback = root.querySelector<HTMLElement>('[data-reference-feedback]');
+    const count = root.querySelector<HTMLElement>('[data-reference-count]');
+    const addButton = root.querySelector<HTMLButtonElement>('[data-add-reference]');
+    if (!input || !submitInput || !list || !addButton) return;
+
+    const files: File[] = [];
+    const previewUrls = new Map<string, string>();
+    const keyFor = (file: File) => `${file.name.toLowerCase()}-${file.size}-${file.lastModified}`;
+    const formatBytes = (bytes: number) => {
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    };
+    const isImage = (file: File) => ['jpg', 'jpeg', 'png', 'webp'].includes(file.name.split('.').pop()?.toLowerCase() || '');
+    const isAllowed = (file: File) => referenceExtensions.includes(file.name.split('.').pop()?.toLowerCase() || '');
+
+    const syncSubmitInput = () => {
+      const transfer = new DataTransfer();
+      files.forEach((file) => transfer.items.add(file));
+      submitInput.files = transfer.files;
+    };
+
+    const updateCount = () => {
+      if (count) count.textContent = `${files.length} de 5 arquivos selecionados`;
+      addButton.disabled = files.length >= 5;
+      addButton.setAttribute('aria-label', files.length >= 5 ? 'Limite de 5 referências atingido' : 'Adicionar referência');
+    };
+
+    const makePreview = (file: File) => {
+      const preview = document.createElement('div');
+      preview.className = 'registration-file-preview';
+      if (isImage(file)) {
+        const key = keyFor(file);
+        const url = previewUrls.get(key) || URL.createObjectURL(file);
+        previewUrls.set(key, url);
+        const image = document.createElement('img');
+        image.src = url;
+        image.alt = `Prévia de ${file.name}`;
+        preview.append(image);
+      } else {
+        preview.classList.add('is-pdf');
+        preview.textContent = 'PDF';
+      }
+      return preview;
+    };
+
+    const render = () => {
+      list.replaceChildren();
+      files.forEach((file, index) => {
+        const item = document.createElement('li');
+        item.className = 'registration-file-item';
+        const visual = makePreview(file);
+        const details = document.createElement('div');
+        details.className = 'registration-file-details';
+        const name = document.createElement('strong');
+        name.textContent = file.name;
+        const meta = document.createElement('span');
+        meta.textContent = formatBytes(file.size);
+        details.append(name, meta);
+        const actions = document.createElement('div');
+        actions.className = 'registration-item-actions';
+        const replace = document.createElement('button');
+        replace.className = 'registration-text-button';
+        replace.type = 'button';
+        replace.textContent = 'Substituir';
+        replace.addEventListener('click', () => {
+          const replacementInput = document.createElement('input');
+          replacementInput.type = 'file';
+          replacementInput.accept = '.jpg,.jpeg,.png,.webp,.pdf';
+          replacementInput.addEventListener('change', () => {
+            const replacement = replacementInput.files?.[0];
+            if (!replacement) return;
+            if (!isAllowed(replacement)) {
+              if (feedback) feedback.textContent = 'Use JPG, JPEG, PNG, WEBP ou PDF.';
+              return;
+            }
+            const duplicate = files.some((existing, existingIndex) => existingIndex !== index && keyFor(existing) === keyFor(replacement));
+            if (duplicate) {
+              if (feedback) feedback.textContent = 'Esse arquivo já foi adicionado.';
+              return;
+            }
+            const oldKey = keyFor(files[index]);
+            if (previewUrls.has(oldKey)) {
+              URL.revokeObjectURL(previewUrls.get(oldKey) || '');
+              previewUrls.delete(oldKey);
+            }
+            files[index] = replacement;
+            if (feedback) feedback.textContent = '';
+            render();
+          });
+          replacementInput.click();
+        });
+        const remove = document.createElement('button');
+        remove.className = 'registration-text-button is-danger';
+        remove.type = 'button';
+        remove.textContent = '× Remover';
+        remove.addEventListener('click', () => {
+          const key = keyFor(file);
+          if (previewUrls.has(key)) URL.revokeObjectURL(previewUrls.get(key) || '');
+          previewUrls.delete(key);
+          files.splice(index, 1);
+          if (feedback) feedback.textContent = '';
+          render();
+          updateCount();
+        });
+        actions.append(replace, remove);
+        item.append(visual, details, actions);
+        list.append(item);
+      });
+      syncSubmitInput();
+      updateCount();
+    };
+
+    const addFiles = (incoming: FileList | File[]) => {
+      const selected = [...incoming];
+      const invalid = selected.filter((file) => !isAllowed(file));
+      const duplicates = selected.filter((file) => isAllowed(file) && files.some((existing) => keyFor(existing) === keyFor(file)));
+      const available = selected.filter((file) => isAllowed(file) && !files.some((existing) => keyFor(existing) === keyFor(file)));
+      const room = Math.max(0, 5 - files.length);
+      files.push(...available.slice(0, room));
+      if (feedback) {
+        if (invalid.length) feedback.textContent = 'Alguns arquivos foram ignorados. Use JPG, JPEG, PNG, WEBP ou PDF.';
+        else if (duplicates.length) feedback.textContent = 'Arquivos repetidos foram ignorados.';
+        else if (available.length > room) feedback.textContent = 'Você pode manter no máximo 5 arquivos de referência.';
+        else feedback.textContent = '';
+      }
+      input.value = '';
+      syncSubmitInput();
+      render();
+    };
+
+    addButton.addEventListener('click', () => input.click());
+    input.addEventListener('change', () => { if (input.files) addFiles(input.files); });
+    render();
+  });
+
+  document.querySelectorAll<HTMLElement>('[data-reference-links]').forEach((linksContainer) => {
+    const addButton = linksContainer.parentElement?.querySelector<HTMLButtonElement>('[data-add-reference-link]');
+    addButton?.addEventListener('click', () => {
+      const template = linksContainer.querySelector<HTMLElement>('[data-reference-link-row]');
+      if (!template) return;
+      const row = template.cloneNode(true);
+      if (!(row instanceof HTMLElement)) return;
+      row.querySelectorAll<HTMLInputElement>('input').forEach((input) => { input.value = ''; });
+      row.querySelector('[data-remove-reference-link]')?.addEventListener('click', () => row.remove());
+      linksContainer.append(row);
+      row.querySelector<HTMLInputElement>('input')?.focus();
+    });
+    linksContainer.querySelector('[data-remove-reference-link]')?.addEventListener('click', (event) => {
+      const button = event.currentTarget;
+      if (!(button instanceof HTMLElement)) return;
+      const row = button.closest('[data-reference-link-row]');
+      if (row && linksContainer.querySelectorAll('[data-reference-link-row]').length > 1) row.remove();
+    });
+  });
+</script>

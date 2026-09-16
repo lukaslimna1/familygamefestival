@@ -1,0 +1,267 @@
+<div class="registration-location registration-field-full" data-location-selector>
+  <div class="registration-location-field">
+    <div class="registration-field">
+      <label for="state-combobox">Estado <span aria-hidden="true">*</span></label>
+      <div class="registration-combobox" data-location-combobox="state">
+        <input class="registration-combobox-trigger" id="state-combobox" name="state" type="text" placeholder="Selecione o estado" autocomplete="address-level1" readonly required role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="state-options" data-location-state-value disabled />
+        <span class="registration-combobox-chevron" aria-hidden="true">⌄</span>
+        <div class="registration-combobox-panel" data-location-state-panel hidden>
+          <div class="registration-combobox-search-wrap">
+            <span aria-hidden="true">⌕</span>
+            <input id="state-search" type="search" placeholder="Pesquisar estado ou UF..." autocomplete="off" aria-label="Pesquisar estado ou UF" data-location-state-search disabled />
+          </div>
+          <div class="registration-combobox-options" id="state-options" role="listbox" aria-label="Estados" data-location-state-options></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="registration-location-field">
+    <div class="registration-field">
+      <label for="city-combobox">Cidade <span aria-hidden="true">*</span></label>
+      <div class="registration-combobox" data-location-combobox="city">
+        <input class="registration-combobox-trigger" id="city-combobox" name="city" type="text" placeholder="Selecione a cidade" autocomplete="address-level2" readonly required role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="city-options" data-location-city-value disabled />
+        <span class="registration-combobox-chevron" aria-hidden="true">⌄</span>
+        <div class="registration-combobox-panel" data-location-city-panel hidden>
+          <div class="registration-combobox-search-wrap">
+            <span aria-hidden="true">⌕</span>
+            <input id="city-search" type="search" placeholder="Pesquisar cidade..." autocomplete="off" aria-label="Pesquisar cidade" data-location-city-search disabled />
+          </div>
+          <div class="registration-combobox-options" id="city-options" role="listbox" aria-label="Cidades" data-location-city-options></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <input type="hidden" name="stateUf" data-location-state-uf />
+  <input type="hidden" name="stateName" data-location-state-name />
+  <input type="hidden" name="stateIbgeId" data-location-state-id />
+  <input type="hidden" name="cityIbgeId" data-location-city-id />
+  <div class="registration-location-status" role="status" aria-live="polite" data-location-status></div>
+  <button class="registration-text-button registration-location-retry" type="button" data-location-retry hidden>Tentar novamente</button>
+</div>
+
+<script>
+  type IbgeState = { id: number; sigla: string; nome: string };
+  type IbgeCity = { id: number; nome: string };
+  const statesEndpoint = 'https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome';
+  const normalizeSearch = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  const locationSelectors = document.querySelectorAll<HTMLElement>('[data-location-selector]');
+
+  locationSelectors.forEach((root) => {
+    const stateCombo = root.querySelector<HTMLElement>('[data-location-combobox="state"]');
+    const stateValue = root.querySelector<HTMLInputElement>('[data-location-state-value]');
+    const stateSearch = root.querySelector<HTMLInputElement>('[data-location-state-search]');
+    const statePanel = root.querySelector<HTMLElement>('[data-location-state-panel]');
+    const stateOptions = root.querySelector<HTMLElement>('[data-location-state-options]');
+    const cityCombo = root.querySelector<HTMLElement>('[data-location-combobox="city"]');
+    const cityValue = root.querySelector<HTMLInputElement>('[data-location-city-value]');
+    const citySearch = root.querySelector<HTMLInputElement>('[data-location-city-search]');
+    const cityPanel = root.querySelector<HTMLElement>('[data-location-city-panel]');
+    const cityOptions = root.querySelector<HTMLElement>('[data-location-city-options]');
+    const stateUfInput = root.querySelector<HTMLInputElement>('[data-location-state-uf]');
+    const stateNameInput = root.querySelector<HTMLInputElement>('[data-location-state-name]');
+    const stateIdInput = root.querySelector<HTMLInputElement>('[data-location-state-id]');
+    const cityIdInput = root.querySelector<HTMLInputElement>('[data-location-city-id]');
+    const status = root.querySelector<HTMLElement>('[data-location-status]');
+    const retryButton = root.querySelector<HTMLButtonElement>('[data-location-retry]');
+
+    if (!stateCombo || !stateValue || !stateSearch || !statePanel || !stateOptions || !cityCombo || !cityValue || !citySearch || !cityPanel || !cityOptions) return;
+
+    let states: IbgeState[] = [];
+    let cities: IbgeCity[] = [];
+
+    const setStatus = (message: string, isError = false) => {
+      if (status) {
+        status.textContent = message;
+        status.classList.toggle('is-error', isError);
+      }
+      if (retryButton) retryButton.hidden = !isError;
+    };
+
+    const setExpanded = (combo: HTMLElement, panel: HTMLElement, expanded: boolean) => {
+      combo.classList.toggle('is-open', expanded);
+      panel.hidden = !expanded;
+      const trigger = combo.querySelector<HTMLInputElement>('[role="combobox"]');
+      trigger?.setAttribute('aria-expanded', String(expanded));
+    };
+
+    const closeAll = () => {
+      setExpanded(stateCombo, statePanel, false);
+      setExpanded(cityCombo, cityPanel, false);
+    };
+
+    const resetCity = () => {
+      cities = [];
+      cityValue.value = '';
+      cityValue.disabled = true;
+      citySearch.value = '';
+      citySearch.disabled = true;
+      cityOptions.replaceChildren();
+      if (cityIdInput) cityIdInput.value = '';
+    };
+
+    const focusOption = (container: HTMLElement, index: number) => {
+      const options = [...container.querySelectorAll<HTMLElement>('[role="option"]:not([aria-disabled="true"])')];
+      if (!options.length) return;
+      options[Math.max(0, Math.min(index, options.length - 1))]?.focus();
+    };
+
+    const bindOptionKeyboard = (option: HTMLElement, container: HTMLElement, select: () => void) => {
+      option.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowDown') { event.preventDefault(); focusOption(container, [...container.querySelectorAll('[role="option"]')].indexOf(option) + 1); }
+        if (event.key === 'ArrowUp') { event.preventDefault(); focusOption(container, [...container.querySelectorAll('[role="option"]')].indexOf(option) - 1); }
+        if (event.key === 'Home') { event.preventDefault(); focusOption(container, 0); }
+        if (event.key === 'End') { event.preventDefault(); focusOption(container, container.querySelectorAll('[role="option"]').length - 1); }
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select(); }
+        if (event.key === 'Escape') { event.preventDefault(); closeAll(); }
+      });
+    };
+
+    const renderStates = () => {
+      const term = normalizeSearch(stateSearch.value);
+      const filtered = states.filter((state) => !term || normalizeSearch(`${state.nome} ${state.sigla}`).includes(term));
+      stateOptions.replaceChildren();
+      if (!filtered.length) {
+        const empty = document.createElement('div');
+        empty.className = 'registration-combobox-empty';
+        empty.textContent = 'Nenhum estado encontrado.';
+        empty.setAttribute('role', 'option');
+        empty.setAttribute('aria-disabled', 'true');
+        stateOptions.append(empty);
+        return;
+      }
+      filtered.forEach((state) => {
+        const option = document.createElement('button');
+        option.type = 'button';
+        option.className = 'registration-combobox-option';
+        option.setAttribute('role', 'option');
+        option.setAttribute('aria-selected', String(stateUfInput?.value === state.sigla));
+        option.dataset.value = state.sigla;
+        option.textContent = `${state.nome} (${state.sigla})`;
+        const choose = () => {
+          stateValue.value = `${state.nome} (${state.sigla})`;
+          if (stateUfInput) stateUfInput.value = state.sigla;
+          if (stateNameInput) stateNameInput.value = state.nome;
+          if (stateIdInput) stateIdInput.value = String(state.id);
+          closeAll();
+          resetCity();
+          void loadCities(state.sigla);
+        };
+        option.addEventListener('click', choose);
+        bindOptionKeyboard(option, stateOptions, choose);
+        stateOptions.append(option);
+      });
+    };
+
+    const renderCities = () => {
+      const term = normalizeSearch(citySearch.value);
+      const filtered = cities.filter((city) => !term || normalizeSearch(city.nome).includes(term));
+      cityOptions.replaceChildren();
+      if (!filtered.length) {
+        const empty = document.createElement('div');
+        empty.className = 'registration-combobox-empty';
+        empty.textContent = 'Nenhuma cidade encontrada.';
+        empty.setAttribute('role', 'option');
+        empty.setAttribute('aria-disabled', 'true');
+        cityOptions.append(empty);
+        return;
+      }
+      filtered.forEach((city) => {
+        const option = document.createElement('button');
+        option.type = 'button';
+        option.className = 'registration-combobox-option';
+        option.setAttribute('role', 'option');
+        option.setAttribute('aria-selected', String(cityValue.value === city.nome));
+        option.dataset.value = city.nome;
+        option.textContent = city.nome;
+        const choose = () => {
+          cityValue.value = city.nome;
+          if (cityIdInput) cityIdInput.value = String(city.id);
+          closeAll();
+        };
+        option.addEventListener('click', choose);
+        bindOptionKeyboard(option, cityOptions, choose);
+        cityOptions.append(option);
+      });
+    };
+
+    const openCombo = (combo: HTMLElement, panel: HTMLElement, search: HTMLInputElement, render: () => void) => {
+      if (combo === stateCombo && stateValue.disabled) return;
+      if (combo === cityCombo && cityValue.disabled) return;
+      const isOpen = !panel.hidden;
+      closeAll();
+      if (isOpen) return;
+      render();
+      setExpanded(combo, panel, true);
+      window.setTimeout(() => search.focus(), 0);
+    };
+
+    const bindComboTrigger = (combo: HTMLElement, trigger: HTMLInputElement, panel: HTMLElement, search: HTMLInputElement, render: () => void) => {
+      trigger.addEventListener('click', () => openCombo(combo, panel, search, render));
+      trigger.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') { event.preventDefault(); openCombo(combo, panel, search, render); }
+        if (event.key === 'Escape') { event.preventDefault(); closeAll(); }
+      });
+      search.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowDown') { event.preventDefault(); focusOption(combo === stateCombo ? stateOptions : cityOptions, 0); }
+        if (event.key === 'Escape') { event.preventDefault(); closeAll(); trigger.focus(); }
+      });
+    };
+
+    const loadStates = async () => {
+      stateValue.disabled = true;
+      stateSearch.disabled = true;
+      stateValue.value = '';
+      stateUfInput && (stateUfInput.value = '');
+      stateNameInput && (stateNameInput.value = '');
+      stateIdInput && (stateIdInput.value = '');
+      stateOptions.replaceChildren();
+      resetCity();
+      setStatus('Carregando estados oficiais do IBGE…');
+      try {
+        const response = await fetch(statesEndpoint);
+        if (!response.ok) throw new Error('states-request-failed');
+        states = (await response.json() as IbgeState[]).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+        stateValue.disabled = false;
+        stateSearch.disabled = false;
+        renderStates();
+        setStatus('Estados carregados. Clique no campo para pesquisar ou selecionar.');
+      } catch {
+        states = [];
+        stateValue.value = 'Não foi possível carregar os estados';
+        stateValue.disabled = true;
+        setStatus('Não foi possível carregar os estados agora.', true);
+      }
+    };
+
+    const loadCities = async (uf: string) => {
+      cityValue.disabled = true;
+      citySearch.disabled = true;
+      cityValue.value = '';
+      citySearch.value = '';
+      cityOptions.replaceChildren();
+      setStatus('Carregando cidades oficiais do IBGE…');
+      try {
+        const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${encodeURIComponent(uf)}/municipios`);
+        if (!response.ok) throw new Error('cities-request-failed');
+        cities = (await response.json() as IbgeCity[]).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+        cityValue.disabled = false;
+        citySearch.disabled = false;
+        renderCities();
+        setStatus('Cidades carregadas. Clique no campo para pesquisar ou selecionar.');
+      } catch {
+        resetCity();
+        setStatus('Não foi possível carregar as cidades. Tente novamente.', true);
+      }
+    };
+
+    bindComboTrigger(stateCombo, stateValue, statePanel, stateSearch, renderStates);
+    bindComboTrigger(cityCombo, cityValue, cityPanel, citySearch, renderCities);
+    stateSearch.addEventListener('input', renderStates);
+    citySearch.addEventListener('input', renderCities);
+    retryButton?.addEventListener('click', () => void loadStates());
+    document.addEventListener('click', (event) => {
+      if (event.target instanceof Node && !root.contains(event.target)) closeAll();
+    });
+    void loadStates();
+  });
+</script>

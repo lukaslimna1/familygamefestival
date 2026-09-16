@@ -35,10 +35,10 @@ const getLogo = (name: string) => {
 const realizationPartner = partners.find((partner) => partner.level === 'Realização');
 const supportPartners = partners.filter((partner) => partner.level === 'Apoio');
 const hierarchyTiers = [
-  { key: 'legend', title: 'Legend', partners: partners.filter((partner) => partner.level === 'Legend') },
-  { key: 'champion', title: 'Champion', partners: partners.filter((partner) => partner.level === 'Champion') },
+  { key: 'legend', title: 'Legend', partners: partners.filter((partner) => String(partner.level) === 'Legend') },
+  { key: 'champion', title: 'Champion', partners: partners.filter((partner) => String(partner.level) === 'Champion') },
   { key: 'power', title: 'Power Up', partners: partners.filter((partner) => partner.level === 'Power-up') },
-  { key: 'player', title: 'Player', partners: partners.filter((partner) => partner.level === 'Player') },
+  { key: 'player', title: 'Player', partners: partners.filter((partner) => String(partner.level) === 'Player') },
   { key: 'support', title: 'Apoio', partners: supportPartners }
 ] as const;
 const activeHierarchyTiers = hierarchyTiers.filter((tier) => tier.partners.length > 0);

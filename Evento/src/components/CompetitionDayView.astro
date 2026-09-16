@@ -26,14 +26,14 @@ const prefix = home ? 'home' : 'page';
   </header>
 
   <div class="competition-day-groups">
-    {day.groups.map((group) => (
+    {day.groups.map((group: any) => (
       <section class={`competition-group competition-group-${group.accent}`}>
         <div class="competition-group-heading">
           <div><p class="card-eyebrow">{group.kicker}</p><h4>{group.title}</h4></div>
           <span>{group.entries.length} {group.entries.length === 1 ? 'disputa' : 'disputas'}</span>
         </div>
         <div class="competition-card-grid">
-          {group.entries.map((entry) => <CompetitionCard entry={entry} />)}
+          {group.entries.map((entry: any) => <CompetitionCard entry={entry} />)}
         </div>
       </section>
     ))}
@@ -42,7 +42,7 @@ const prefix = home ? 'home' : 'page';
   {day.panels.length > 0 && (
     <div class="competition-day-panels">
       <p class="card-eyebrow">Além dos campeonatos</p>
-      {day.panels.map((panel) => (
+      {day.panels.map((panel: any) => (
         <article class="competition-panel">
           <time>{panel.time}</time>
           <div><span>{panel.category}</span><h4>{panel.title}</h4></div>

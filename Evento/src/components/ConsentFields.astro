@@ -1,0 +1,19 @@
+---
+interface Props {
+  step: string;
+  regulationLink: string;
+}
+
+import { imageUseConsentText } from '../lib/registration';
+
+const { step, regulationLink } = Astro.props;
+---
+
+<div class="registration-section" id="acceptances">
+  <div class="registration-section-heading"><span>{step}</span><div><p class="eyebrow eyebrow-yellow">Antes de enviar</p><h3>Confirme as regras.</h3></div></div>
+  <div class="registration-acceptances">
+    <label class="registration-check"><input type="checkbox" name="acceptRules" required /><span>Li e aceito o <a href={regulationLink}>regulamento aplicável a esta inscrição</a>. <b>*</b></span></label>
+    <label class="registration-check"><input type="checkbox" name="acceptImageUse" required /><span>{imageUseConsentText} <b>*</b></span></label>
+  </div>
+  <p class="registration-helper">Campos com <b>*</b> são obrigatórios. A confirmação oficial e o código da inscrição serão exibidos após o envio.</p>
+</div>

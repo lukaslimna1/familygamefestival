@@ -1,0 +1,20 @@
+---
+import AdditionalSocialLinks from './AdditionalSocialLinks.astro';
+---
+
+<p class="registration-helper">Todos os campos são opcionais. No Instagram e no TikTok, você pode informar apenas <strong>@usuario</strong>; no Facebook, cole o link do perfil.</p>
+<div class="registration-grid">
+  <div class="registration-field">
+    <label for="instagram">Instagram</label>
+    <input id="instagram" name="instagram" type="text" placeholder="@usuario" autocomplete="off" />
+  </div>
+  <div class="registration-field">
+    <label for="tiktok">TikTok</label>
+    <input id="tiktok" name="tiktok" type="text" placeholder="@usuario" autocomplete="off" />
+  </div>
+  <div class="registration-field registration-field-full">
+    <label for="facebook">Facebook</label>
+    <input id="facebook" name="facebook" type="url" placeholder="Link do perfil" autocomplete="url" />
+  </div>
+  <AdditionalSocialLinks />
+</div>

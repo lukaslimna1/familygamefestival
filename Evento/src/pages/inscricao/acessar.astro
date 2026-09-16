@@ -1,0 +1,83 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import { event } from '../../data/event';
+import { registrationRoutes } from '../../lib/registration';
+---
+
+<BaseLayout
+  title={`Já sou inscrito | ${event.name}`}
+  description="Acesse sua inscrição do Family Game Festival 2026 usando o código e o CPF."
+  canonical={`https://familygamefestival.vercel.app${registrationRoutes.access}`}
+>
+  <SiteHeader current="Campeonatos" />
+  <main class="registration-page access-page">
+    <div class="container access-layout">
+      <section class="access-intro">
+        <a class="registration-back-link" href="/#campeonatos">← Voltar para campeonatos</a>
+        <p class="eyebrow eyebrow-cyan">Área do participante</p>
+        <h1>Já sou inscrito<span>.</span></h1>
+        <p>Consulte, complete ou atualize sua inscrição usando o código recebido e o CPF do participante.</p>
+        <div class="access-context" data-access-context hidden></div>
+      </section>
+
+      <section class="access-card" aria-labelledby="access-title">
+        <div class="access-card-top"><span class="access-card-icon" aria-hidden="true">↗</span><span>ACESSAR INSCRIÇÃO</span></div>
+        <h2 id="access-title">Encontre sua inscrição.</h2>
+        <p>Digite o código da inscrição e o CPF informado no cadastro.</p>
+        <form data-registration-access novalidate>
+          <div class="registration-field"><label for="access-code">Código da inscrição <span aria-hidden="true">*</span></label><input id="access-code" name="publicCode" type="text" autocomplete="off" placeholder="Ex.: COS-7A3F9C" required /></div>
+          <div class="registration-field"><label for="access-cpf">CPF do participante <span aria-hidden="true">*</span></label><input id="access-cpf" name="cpf" type="text" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" required /></div>
+          <button class="button button-yellow" type="submit" data-access-submit>Acessar minha inscrição <span aria-hidden="true">↗</span></button>
+          <p class="registration-submit-feedback" data-access-feedback aria-live="polite"></p>
+        </form>
+        <p class="access-demo-note">Use o código recebido após a inscrição junto com o CPF informado no cadastro. O e-mail é opcional e não é necessário para recuperar o acesso.</p>
+      </section>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container footer-top"><a class="brand" href="/"><img src="/assets/logo.svg" alt="Family Game Festival" /></a><p>Games, cultura geek e impacto local.<br />Bauru · 19—20 setembro 2026</p><a class="button button-yellow button-small" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a></div>
+    <div class="container footer-bottom"><span>© 2026 Family Game Festival</span><a href={event.instagramUrl} target="_blank" rel="noreferrer">{event.instagram}</a><span>{event.socialImpact}</span><span class="footer-credit">Desenvolvido pela <a href="https://www.instagram.com/usealterstate/" target="_blank" rel="noreferrer">ALTERSTATE</a></span></div>
+  </footer>
+</BaseLayout>
+
+<script>
+  import { postRegistrationForm, RegistrationApiError } from '../../lib/registration-api';
+
+  const accessForm = document.querySelector('[data-registration-access]');
+  const accessContext = document.querySelector('[data-access-context]');
+  const accessFeedback = document.querySelector('[data-access-feedback]');
+  const accessSubmit = document.querySelector('[data-access-submit]');
+
+  if (accessContext instanceof HTMLElement) {
+    const competition = new URLSearchParams(window.location.search).get('competition');
+    if (competition) {
+      accessContext.hidden = false;
+      accessContext.textContent = `Acesso iniciado a partir de: ${competition.replaceAll('-', ' ')}`;
+    }
+  }
+
+  accessForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!(accessForm instanceof HTMLFormElement)) return;
+    const code = accessForm.querySelector<HTMLInputElement>('[name="publicCode"]')?.value.trim().toUpperCase();
+    const cpf = accessForm.querySelector<HTMLInputElement>('[name="cpf"]')?.value.replace(/\D/g, '');
+    if (!code || !cpf || cpf.length !== 11) {
+      if (accessFeedback) accessFeedback.textContent = 'Confira o código e informe um CPF com 11 dígitos.';
+      return;
+    }
+    if (accessSubmit instanceof HTMLButtonElement) { accessSubmit.disabled = true; accessSubmit.innerHTML = 'Verificando…'; }
+    if (accessFeedback) accessFeedback.textContent = 'Consultando sua inscrição…';
+    const payload = new FormData();
+    payload.append('publicCode', code);
+    payload.append('cpf', cpf);
+    try {
+      const result = await postRegistrationForm<{ authenticated: boolean; redirect: string }>('/inscricao/acessar', payload);
+      if (accessFeedback) accessFeedback.textContent = 'Inscrição encontrada. Abrindo sua inscrição…';
+      window.location.assign(result.redirect || '/inscricao/minha');
+    } catch (error) {
+      if (accessSubmit instanceof HTMLButtonElement) { accessSubmit.disabled = false; accessSubmit.innerHTML = 'Acessar minha inscrição <span aria-hidden="true">↗</span>'; }
+      if (accessFeedback) accessFeedback.textContent = error instanceof RegistrationApiError ? error.message : 'Não foi possível consultar sua inscrição agora.';
+    }
+  });
+</script>
