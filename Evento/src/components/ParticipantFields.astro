@@ -1,0 +1,27 @@
+---
+import LocationSelector from './LocationSelector.astro';
+---
+
+<div class="registration-grid">
+  <div class="registration-field registration-field-full">
+    <label for="full-name">Nome completo <span aria-hidden="true">*</span></label>
+    <input id="full-name" name="fullName" type="text" autocomplete="name" placeholder="Digite seu nome completo" required />
+  </div>
+  <div class="registration-field">
+    <label for="birth-date">Data de nascimento <span aria-hidden="true">*</span></label>
+    <input id="birth-date" name="birthDate" type="date" autocomplete="bday" required data-birth-date />
+  </div>
+  <div class="registration-field">
+    <label for="cpf">CPF <span aria-hidden="true">*</span></label>
+    <input id="cpf" name="cpf" type="text" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" required data-cpf />
+  </div>
+  <div class="registration-field">
+    <label for="phone">Telefone / WhatsApp <span class="registration-optional">(opcional)</span></label>
+    <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="(14) 99999-9999" />
+  </div>
+  <div class="registration-field">
+    <label for="email">E-mail <span class="registration-optional">(opcional)</span></label>
+    <input id="email" name="email" type="email" autocomplete="email" placeholder="voce@email.com" />
+  </div>
+  <LocationSelector />
+</div>

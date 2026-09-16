@@ -1,0 +1,509 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import { event } from '../../data/event';
+import { registrationRoutes } from '../../lib/registration';
+---
+
+<BaseLayout
+  title={`Minha inscrição | ${event.name}`}
+  description="Consulte e atualize os dados da sua inscrição no Family Game Festival 2026."
+  canonical={`https://familygamefestival.vercel.app${registrationRoutes.mine}`}
+>
+  <SiteHeader current="Campeonatos" />
+  <main class="registration-page management-page">
+    <div class="container management-layout" data-management-root>
+      <section class="management-heading">
+        <a class="registration-back-link" href={registrationRoutes.access}>← Voltar para acesso</a>
+        <p class="eyebrow eyebrow-cyan">Área do participante</p>
+        <div class="management-heading-row">
+          <div><h1>Minha inscrição<span>.</span></h1><p>Revise seus dados e mantenha sua participação atualizada.</p></div>
+          <div class="management-heading-actions"><span class="management-status" data-management-status>Carregando</span><button class="registration-text-button" type="button" data-management-logout>Sair</button></div>
+        </div>
+      </section>
+
+      <p class="registration-submit-feedback management-page-feedback" data-management-page-feedback aria-live="polite"></p>
+      <div class="management-loading" data-management-loading>Consultando sua inscrição no sistema oficial…</div>
+
+      <section class="management-summary" data-management-summary hidden>
+        <div><span class="eyebrow eyebrow-pink">Código da inscrição</span><strong data-summary-code>—</strong><small data-summary-competition>—</small></div>
+        <div><span>ÚLTIMA ATUALIZAÇÃO</span><strong data-summary-updated>—</strong><small>Dados consultados no sistema oficial</small></div>
+        <div><span>STATUS</span><strong class="management-open-status" data-summary-status>—</strong><small data-summary-status-note>—</small></div>
+      </section>
+
+      <form class="management-form" data-management-form hidden>
+        <section class="management-card">
+          <div class="management-card-heading"><div><p class="eyebrow eyebrow-yellow">Dados protegidos</p><h2>Dados pessoais.</h2></div><span class="management-lock">🔒 Somente leitura</span></div>
+          <p class="registration-helper">Para sua segurança, dados de identificação e contato ficam bloqueados depois do primeiro cadastro.</p>
+          <div class="registration-grid">
+            <div class="registration-field"><label for="mine-name">Nome completo</label><input id="mine-name" readonly /></div>
+            <div class="registration-field"><label for="mine-birth">Data de nascimento</label><input id="mine-birth" readonly /></div>
+            <div class="registration-field"><label for="mine-cpf">CPF</label><input id="mine-cpf" readonly /></div>
+            <div class="registration-field"><label for="mine-phone">Telefone / WhatsApp</label><input id="mine-phone" readonly /></div>
+            <div class="registration-field"><label for="mine-email">E-mail</label><input id="mine-email" readonly /></div>
+            <div class="registration-field"><label for="mine-city">Cidade</label><input id="mine-city" readonly /></div>
+            <div class="registration-field"><label for="mine-state">Estado / UF</label><input id="mine-state" readonly /></div>
+          </div>
+        </section>
+
+        <section class="management-card">
+          <div class="management-card-heading"><div><p class="eyebrow eyebrow-cyan">Editável</p><h2>Redes sociais.</h2></div><span class="management-editable">Você pode editar</span></div>
+          <div class="registration-grid">
+            <div class="registration-field"><label for="mine-instagram">Instagram</label><input id="mine-instagram" name="instagram" placeholder="@usuario ou link do perfil" /></div>
+            <div class="registration-field"><label for="mine-tiktok">TikTok</label><input id="mine-tiktok" name="tiktok" placeholder="@usuario ou link do perfil" /></div>
+            <div class="registration-field registration-field-full"><label for="mine-facebook">Facebook</label><input id="mine-facebook" name="facebook" placeholder="Link do perfil" /></div>
+          </div>
+          <div class="management-socials" data-management-socials>
+            <div class="registration-subheading"><strong>Outras redes</strong><span>Preserve o nome e o link de cada plataforma.</span></div>
+            <div data-management-social-list></div>
+            <button type="button" class="registration-add-link" data-add-management-social>+ Adicionar outra rede</button>
+          </div>
+        </section>
+
+        <section class="management-card" data-management-cosplay hidden>
+          <div class="management-card-heading"><div><p class="eyebrow eyebrow-pink">Editável</p><h2>Minha apresentação.</h2></div><span class="management-editable">Você pode editar</span></div>
+          <div class="registration-grid">
+            <div class="registration-field"><label for="mine-stage-name">Nome artístico</label><input id="mine-stage-name" name="stageName" /></div>
+            <div class="registration-field"><label for="mine-call-name">Nome para chamada no palco</label><input id="mine-call-name" name="stageCallName" /></div>
+            <div class="registration-field"><label for="mine-character">Personagem</label><input id="mine-character" name="characterName" /></div>
+            <div class="registration-field"><label for="mine-franchise">Obra / franquia</label><input id="mine-franchise" name="sourceWork" /></div>
+            <div class="registration-field registration-field-full"><label for="mine-description">Descrição do personagem</label><textarea id="mine-description" name="cosplayDescription" rows="4"></textarea></div>
+            <div class="registration-field registration-field-full"><label for="mine-presentation">Descrição da apresentação</label><textarea id="mine-presentation" name="presentationDescription" rows="4"></textarea></div>
+            <div class="registration-field registration-field-full"><label for="mine-presentation-notes">Observações da apresentação</label><textarea id="mine-presentation-notes" name="presentationNotes" rows="3"></textarea></div>
+            <div class="registration-field registration-field-full"><label for="mine-technical-notes">Observações técnicas</label><textarea id="mine-technical-notes" name="technicalNotes" rows="3"></textarea></div>
+            <div class="registration-field registration-field-full"><label for="mine-judge-notes">Observações para os jurados</label><textarea id="mine-judge-notes" name="judgeNotes" rows="3"></textarea></div>
+            <div class="registration-field registration-field-full"><label for="mine-music-title">Título do áudio</label><input id="mine-music-title" name="musicTitle" /></div>
+          </div>
+          <div class="management-links-manager">
+            <div class="registration-subheading"><strong>Links de referência</strong><span>Adicione nome e URL separadamente.</span></div>
+            <div data-management-reference-links></div>
+            <button type="button" class="registration-add-link" data-add-management-reference-link>+ Adicionar outro link</button>
+          </div>
+        </section>
+
+        <section class="management-card" data-management-files-card hidden>
+          <div class="management-card-heading"><div><p class="eyebrow eyebrow-yellow">Editável</p><h2>Arquivos e referências.</h2></div><span class="management-editable">Adicionar, substituir ou remover</span></div>
+          <div class="management-resource-list" data-management-files></div>
+          <div class="management-file-actions">
+            <input hidden type="file" data-management-upload-input />
+            <button type="button" class="registration-add-link" data-add-management-reference>+ Adicionar referência</button>
+            <button type="button" class="registration-add-link" data-add-management-audio>+ Adicionar áudio</button>
+          </div>
+          <p class="registration-inline-feedback" data-management-file-feedback aria-live="polite"></p>
+        </section>
+
+        <section class="management-card">
+          <div class="management-card-heading"><div><p class="eyebrow eyebrow-cyan">Acompanhamento</p><h2>Responsável e confirmações.</h2></div><span class="management-lock">🔒 Dados registrados</span></div>
+          <div class="management-minor-status" data-management-authorization-status>Consultando a autorização do responsável…</div>
+          <div class="management-authorization-actions" data-management-authorization-actions hidden>
+            <div class="registration-subheading"><strong>Documentos da autorização</strong><span>Escolha a forma mais conveniente para concluir.</span></div>
+            <div class="management-authorization-links">
+              <a class="registration-text-button" data-authorization-filled target="_blank" rel="noreferrer">Baixar preenchida</a>
+              <a class="registration-text-button" data-authorization-blank target="_blank" rel="noreferrer">Baixar em branco</a>
+              <a class="registration-text-button" data-authorization-editable target="_blank" rel="noreferrer">Baixar editável</a>
+            </div>
+            <input hidden type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" data-authorization-upload-input />
+            <div class="management-authorization-buttons">
+              <button type="button" class="button button-outline-light" data-upload-authorization>Enviar autorização assinada</button>
+              <button type="button" class="registration-text-button" data-physical-authorization>Entregarei presencialmente</button>
+            </div>
+          </div>
+          <div class="management-acceptances" data-management-acceptances></div>
+        </section>
+
+        <div class="management-form-actions"><button class="button button-yellow" type="submit" data-management-submit>Salvar alterações <span aria-hidden="true">↗</span></button><span class="registration-submit-feedback" data-management-feedback aria-live="polite"></span></div>
+      </form>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container footer-top"><a class="brand" href="/"><img src="/assets/logo.svg" alt="Family Game Festival" /></a><p>Games, cultura geek e impacto local.<br />Bauru · 19—20 setembro 2026</p><a class="button button-yellow button-small" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a></div>
+    <div class="container footer-bottom"><span>© 2026 Family Game Festival</span><a href={event.instagramUrl} target="_blank" rel="noreferrer">{event.instagram}</a><span>{event.socialImpact}</span><span class="footer-credit">Desenvolvido pela <a href="https://www.instagram.com/usealterstate/" target="_blank" rel="noreferrer">ALTERSTATE</a></span></div>
+  </footer>
+</BaseLayout>
+
+<script>
+  import { buildManagementPayload, getRegistrationApi, parseOtherSocials, postRegistrationAction, postRegistrationForm, registrationApiUrl, RegistrationApiError } from '../../lib/registration-api';
+  import { registrationRoutes } from '../../lib/registration';
+
+  type RegistrationData = {
+    registration: { registrationId: string; publicCode: string; status: string; eventAccessIncluded: boolean; submittedAt: string; updatedAt: string };
+    participant: { fullName: string; cpf: string; phone: string | null; email: string | null; dateOfBirth: string; city: string; state: string; instagram: string | null; tiktok: string | null; facebook: string | null; otherSocials: string | null };
+    competition: { id: string; title: string; category: string; eventDay: string; eventDate: string; startTime: string };
+    guardian: { fullName: string; cpf: string; phone: string; email: string; relationship: string } | null;
+    minorAuthorization: { version: number; competitionIds: string[]; status: string; generatedFileId: string | null; signedDriveFileId: string | null; deliveryType: string | null; coversCurrentCompetition: boolean } | null;
+    cosplay: { stageName: string | null; stageCallName: string; characterName: string; sourceWork: string; cosplayDescription: string | null; presentationDescription: string | null; presentationNotes: string | null; technicalNotes: string | null; judgeNotes: string | null; musicTitle: string | null } | null;
+    links: Array<{ id: string; label: string; url: string }>;
+    consents: Array<{ type: string; granted: boolean; policyVersion: string; grantedAt: string }>;
+    files: Array<{ id: string; fileType: string; originalName: string; mimeType: string; sizeBytes: number; authorizationVersion: number | null; syncStatus: string; createdAt: string; updatedAt: string }>;
+  };
+
+  const managementForm = document.querySelector<HTMLFormElement>('[data-management-form]');
+  const loading = document.querySelector<HTMLElement>('[data-management-loading]');
+  const summary = document.querySelector<HTMLElement>('[data-management-summary]');
+  const pageFeedback = document.querySelector<HTMLElement>('[data-management-page-feedback]');
+  const status = document.querySelector<HTMLElement>('[data-management-status]');
+  const feedback = document.querySelector<HTMLElement>('[data-management-feedback]');
+  const submit = document.querySelector<HTMLButtonElement>('[data-management-submit]');
+  const fileFeedback = document.querySelector<HTMLElement>('[data-management-file-feedback]');
+  const socialList = document.querySelector<HTMLElement>('[data-management-social-list]');
+  const uploadInput = document.querySelector<HTMLInputElement>('[data-management-upload-input]');
+  const authorizationUploadInput = document.querySelector<HTMLInputElement>('[data-authorization-upload-input]');
+  let currentData: RegistrationData | null = null;
+  let pendingFileType: 'cosplay_reference' | 'cosplay_audio' | null = null;
+  let replacementFileId: string | null = null;
+
+  const textField = (id: string) => document.querySelector<HTMLInputElement | HTMLTextAreaElement>(`#${id}`);
+  const setValue = (id: string, value: string | null | undefined) => { const field = textField(id); if (field) field.value = value || ''; };
+  const formatDate = (value: string | undefined) => value ? new Intl.DateTimeFormat('pt-BR').format(new Date(`${value}T12:00:00`)) : '—';
+  const formatDateTime = (value: string | undefined) => value ? new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value)) : '—';
+  const formatBytes = (bytes: number) => bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  const fileLabel = (type: string) => ({ cosplay_reference: 'Referência', cosplay_audio: 'Áudio', guardian_authorization_signed: 'Autorização assinada', guardian_authorization: 'Autorização preenchida', registration_sheet: 'Ficha da inscrição' } as Record<string, string>)[type] || 'Arquivo';
+  const statusLabel = (value: string) => ({ submitted: 'Em análise', pending: 'Pendente', approved: 'Confirmada', rejected: 'Revisar dados' } as Record<string, string>)[value] || value.replaceAll('_', ' ');
+  const setPageFeedback = (message: string) => { if (pageFeedback) pageFeedback.textContent = message; };
+
+  const addSocialRow = (label = '', url = '') => {
+    if (!socialList) return;
+    const row = document.createElement('div');
+    row.className = 'registration-additional-social-row';
+    row.dataset.managementSocialRow = '';
+    const labelInput = document.createElement('input');
+    labelInput.type = 'text';
+    labelInput.placeholder = 'Nome da rede / plataforma';
+    labelInput.value = label;
+    labelInput.dataset.socialLabel = '';
+    labelInput.setAttribute('aria-label', 'Nome da rede social');
+    const urlInput = document.createElement('input');
+    urlInput.type = 'url';
+    urlInput.placeholder = 'Link do perfil';
+    urlInput.value = url;
+    urlInput.dataset.socialUrl = '';
+    urlInput.setAttribute('aria-label', 'Link da rede social');
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'registration-text-button is-danger';
+    remove.textContent = '× Remover';
+    remove.addEventListener('click', () => row.remove());
+    row.append(labelInput, urlInput, remove);
+    socialList.append(row);
+  };
+
+  const renderLinks = (links: RegistrationData['links']) => {
+    const container = managementForm?.querySelector<HTMLElement>('[data-management-reference-links]');
+    if (!container) return;
+    container.replaceChildren();
+    const rows = links.length ? links : [{ id: '', label: '', url: '' }];
+    rows.forEach((link) => {
+      const row = document.createElement('div');
+      row.className = 'registration-link-row';
+      const label = document.createElement('input');
+      label.name = 'referenceLinkLabel';
+      label.placeholder = 'Nome do link';
+      label.value = link.label;
+      const url = document.createElement('input');
+      url.name = 'referenceLinkUrl';
+      url.type = 'url';
+      url.placeholder = 'https://';
+      url.value = link.url;
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'registration-text-button is-danger';
+      remove.textContent = '× Remover';
+      remove.addEventListener('click', () => { if (container.querySelectorAll('.registration-link-row').length > 1) row.remove(); });
+      row.append(label, url, remove);
+      container.append(row);
+    });
+  };
+
+  const renderFiles = (data: RegistrationData) => {
+    const container = document.querySelector<HTMLElement>('[data-management-files]');
+    if (!container) return;
+    container.replaceChildren();
+    if (!data.files.length) {
+      const empty = document.createElement('p');
+      empty.className = 'registration-helper';
+      empty.textContent = 'Nenhum arquivo enviado ainda.';
+      container.append(empty);
+      return;
+    }
+    data.files.forEach((file) => {
+      const row = document.createElement('div');
+      row.className = 'management-resource-row';
+      const icon = document.createElement('span');
+      icon.className = 'management-resource-icon';
+      icon.textContent = file.fileType === 'cosplay_audio' ? '♪' : file.fileType.includes('authorization') ? 'AUT' : file.fileType === 'registration_sheet' ? 'PDF' : 'IMG';
+      const details = document.createElement('div');
+      const name = document.createElement('strong');
+      name.textContent = file.originalName;
+      const meta = document.createElement('small');
+      meta.textContent = `${fileLabel(file.fileType)} · ${formatBytes(file.sizeBytes)} · ${file.syncStatus === 'synced' ? 'sincronizado' : 'processando'}`;
+      details.append(name, meta);
+      const actions = document.createElement('div');
+      actions.className = 'registration-item-actions';
+      if (file.fileType !== 'registration_sheet' && file.fileType !== 'guardian_authorization') {
+        const view = document.createElement('a');
+        view.className = 'registration-text-button';
+        view.href = registrationApiUrl(`inscricao/arquivo/${encodeURIComponent(file.id)}`);
+        view.target = '_blank';
+        view.rel = 'noreferrer';
+        view.textContent = 'Visualizar';
+        actions.append(view);
+        if (file.fileType === 'cosplay_reference' || file.fileType === 'cosplay_audio') {
+          const replace = document.createElement('button');
+          replace.type = 'button';
+          replace.className = 'registration-text-button';
+          replace.textContent = 'Substituir';
+          replace.addEventListener('click', () => {
+            pendingFileType = file.fileType === 'cosplay_audio' ? 'cosplay_audio' : 'cosplay_reference';
+            replacementFileId = file.id;
+            if (uploadInput) {
+              uploadInput.multiple = false;
+              uploadInput.accept = pendingFileType === 'cosplay_audio' ? '.mp3,.m4a,.wav,audio/mpeg,audio/x-m4a,audio/wav' : '.jpg,.jpeg,.png,.webp,.pdf';
+              uploadInput.click();
+            }
+          });
+          actions.append(replace);
+        }
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'registration-text-button is-danger';
+        remove.textContent = '× Remover';
+        remove.addEventListener('click', () => void deleteFile(file.id));
+        actions.append(remove);
+      }
+      row.append(icon, details, actions);
+      container.append(row);
+    });
+  };
+
+  const renderAuthorization = (data: RegistrationData) => {
+    const authorizationStatus = document.querySelector<HTMLElement>('[data-management-authorization-status]');
+    const actions = document.querySelector<HTMLElement>('[data-management-authorization-actions]');
+    const filled = document.querySelector<HTMLAnchorElement>('[data-authorization-filled]');
+    const blank = document.querySelector<HTMLAnchorElement>('[data-authorization-blank]');
+    const editable = document.querySelector<HTMLAnchorElement>('[data-authorization-editable]');
+    const acceptances = document.querySelector<HTMLElement>('[data-management-acceptances]');
+    if (!authorizationStatus || !actions) return;
+    if (!data.guardian || !data.minorAuthorization) {
+      authorizationStatus.replaceChildren();
+      const title = document.createElement('strong');
+      title.textContent = 'Participante maior de idade';
+      const description = document.createElement('span');
+      description.textContent = 'Autorização de responsável não se aplica a esta inscrição.';
+      authorizationStatus.append(title, description);
+      actions.hidden = true;
+    } else {
+      const auth = data.minorAuthorization;
+      const signed = auth.status === 'uploaded' || auth.status === 'received';
+      const covered = signed && auth.coversCurrentCompetition;
+      authorizationStatus.replaceChildren();
+      const title = document.createElement('strong');
+      title.textContent = covered ? 'Autorização do responsável já válida para esta competição.' : auth.status === 'physical_pending' ? 'Entrega presencial registrada.' : 'Autorização pendente.';
+      const description = document.createElement('span');
+      description.textContent = covered ? `Versão ${auth.version} · esta autorização também cobre ${auth.competitionIds.length} competição(ões).` : auth.status === 'physical_pending' ? `A organização aguardará o documento presencial da versão ${auth.version}.` : `Versão ${auth.version} · baixe, assine e envie o documento ou escolha a entrega presencial.`;
+      authorizationStatus.append(title, description);
+      actions.hidden = covered;
+      const base = registrationApiUrl('inscricao/autorizacao');
+      if (filled) filled.href = `${base}?format=filled`;
+      if (blank) blank.href = `${base}?format=blank`;
+      if (editable) editable.href = `${base}?format=editable`;
+    }
+    if (acceptances) {
+      acceptances.replaceChildren();
+      data.consents.filter((consent) => consent.granted).forEach((consent) => {
+        const item = document.createElement('span');
+        item.textContent = `✓ ${consent.type === 'image_use' ? 'Uso de imagem aceito' : consent.type === 'pendrive_backup' ? 'Cópia de segurança do áudio aceita' : 'Regulamento aplicável aceito'}`;
+        acceptances.append(item);
+      });
+      const date = document.createElement('small');
+      date.textContent = `Confirmações registradas em ${formatDateTime(data.consents[0]?.grantedAt)}`;
+      acceptances.append(date);
+    }
+  };
+
+  const populate = (data: RegistrationData) => {
+    currentData = data;
+    if (loading) loading.hidden = true;
+    if (summary) summary.hidden = false;
+    if (managementForm) managementForm.hidden = false;
+    if (status) status.textContent = statusLabel(data.registration.status).toUpperCase();
+    const code = document.querySelector<HTMLElement>('[data-summary-code]');
+    const competition = document.querySelector<HTMLElement>('[data-summary-competition]');
+    const updated = document.querySelector<HTMLElement>('[data-summary-updated]');
+    const summaryStatus = document.querySelector<HTMLElement>('[data-summary-status]');
+    const statusNote = document.querySelector<HTMLElement>('[data-summary-status-note]');
+    if (code) code.textContent = data.registration.publicCode;
+    if (competition) competition.textContent = `${data.competition.title} · ${data.competition.eventDay}`;
+    if (updated) updated.textContent = formatDateTime(data.registration.updatedAt);
+    if (summaryStatus) summaryStatus.textContent = statusLabel(data.registration.status);
+    if (statusNote) statusNote.textContent = 'Você ainda pode atualizar os dados permitidos';
+    setValue('mine-name', data.participant.fullName);
+    setValue('mine-birth', formatDate(data.participant.dateOfBirth));
+    setValue('mine-cpf', data.participant.cpf);
+    setValue('mine-phone', data.participant.phone);
+    setValue('mine-email', data.participant.email);
+    setValue('mine-city', data.participant.city);
+    setValue('mine-state', data.participant.state);
+    setValue('mine-instagram', data.participant.instagram);
+    setValue('mine-tiktok', data.participant.tiktok);
+    setValue('mine-facebook', data.participant.facebook);
+    if (socialList) {
+      socialList.replaceChildren();
+      const socials = parseOtherSocials(data.participant.otherSocials);
+      (socials.length ? socials : [{ label: '', url: '' }]).forEach((social) => addSocialRow(social.label, social.url));
+    }
+    const cosplayCard = document.querySelector<HTMLElement>('[data-management-cosplay]');
+    const filesCard = document.querySelector<HTMLElement>('[data-management-files-card]');
+    if (cosplayCard) cosplayCard.hidden = !data.cosplay;
+    if (filesCard) filesCard.hidden = !data.cosplay;
+    if (data.cosplay) {
+      setValue('mine-stage-name', data.cosplay.stageName);
+      setValue('mine-call-name', data.cosplay.stageCallName);
+      setValue('mine-character', data.cosplay.characterName);
+      setValue('mine-franchise', data.cosplay.sourceWork);
+      setValue('mine-description', data.cosplay.cosplayDescription);
+      setValue('mine-presentation', data.cosplay.presentationDescription);
+      setValue('mine-presentation-notes', data.cosplay.presentationNotes);
+      setValue('mine-technical-notes', data.cosplay.technicalNotes);
+      setValue('mine-judge-notes', data.cosplay.judgeNotes);
+      setValue('mine-music-title', data.cosplay.musicTitle);
+      renderFiles(data);
+    }
+    renderAuthorization(data);
+    renderLinks(data.links);
+  };
+
+  const loadData = async () => {
+    try {
+      const result = await getRegistrationApi<RegistrationData>('inscricao/minha');
+      populate(result);
+      const query = new URLSearchParams(window.location.search);
+      if (query.get('saved') === '1') setPageFeedback('Alterações salvas no sistema oficial.');
+      if (query.get('file') === '1') setPageFeedback('Arquivo atualizado no sistema oficial.');
+      if (query.get('error') === 'closed') setPageFeedback('O prazo para alterações online foi encerrado.');
+      if (query.get('error') === 'file') setPageFeedback('Não foi possível atualizar o arquivo. Confira o formato e tente novamente.');
+    } catch (error) {
+      if (error instanceof RegistrationApiError && error.code === 'unauthorized') {
+        window.location.assign(`${registrationRoutes.access}?error=invalid`);
+        return;
+      }
+      if (loading) loading.textContent = error instanceof RegistrationApiError ? error.message : 'Não foi possível consultar sua inscrição agora.';
+    }
+  };
+
+  const deleteFile = async (fileId: string) => {
+    const form = new FormData();
+    form.append('action', 'delete');
+    if (fileFeedback) fileFeedback.textContent = 'Removendo arquivo…';
+    try {
+      await postRegistrationAction(`inscricao/arquivo/${encodeURIComponent(fileId)}`, form);
+      if (fileFeedback) fileFeedback.textContent = 'Arquivo removido.';
+      await loadData();
+    } catch {
+      if (fileFeedback) fileFeedback.textContent = 'Não foi possível remover o arquivo.';
+    }
+  };
+
+  const uploadFile = async (fileType: 'cosplay_reference' | 'cosplay_audio', file: File, replaceId?: string | null) => {
+    if (replaceId) await deleteFile(replaceId);
+    const form = new FormData();
+    form.append('fileType', fileType);
+    form.append('file', file, file.name);
+    const label = fileType === 'cosplay_audio' ? 'áudio' : 'referência';
+    if (fileFeedback) fileFeedback.textContent = `Enviando ${label}…`;
+    try {
+      await postRegistrationAction('inscricao/arquivo', form);
+      if (fileFeedback) fileFeedback.textContent = `${label[0].toUpperCase()}${label.slice(1)} enviado(a) com sucesso.`;
+      await loadData();
+    } catch {
+      if (fileFeedback) fileFeedback.textContent = `Não foi possível enviar o ${label}.`;
+    }
+  };
+
+  document.querySelector('[data-add-management-social]')?.addEventListener('click', () => addSocialRow());
+  document.querySelector('[data-add-management-reference-link]')?.addEventListener('click', () => {
+    const container = managementForm?.querySelector<HTMLElement>('[data-management-reference-links]');
+    if (!container) return;
+    const row = document.createElement('div');
+    row.className = 'registration-link-row';
+    const label = document.createElement('input');
+    label.name = 'referenceLinkLabel';
+    label.placeholder = 'Nome do link';
+    const url = document.createElement('input');
+    url.name = 'referenceLinkUrl';
+    url.type = 'url';
+    url.placeholder = 'https://';
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'registration-text-button is-danger';
+    remove.textContent = '× Remover';
+    remove.addEventListener('click', () => row.remove());
+    row.append(label, url, remove);
+    container.append(row);
+    label.focus();
+  });
+  document.querySelector('[data-add-management-reference]')?.addEventListener('click', () => { pendingFileType = 'cosplay_reference'; replacementFileId = null; if (uploadInput) { uploadInput.multiple = false; uploadInput.accept = '.jpg,.jpeg,.png,.webp,.pdf'; uploadInput.click(); } });
+  document.querySelector('[data-add-management-audio]')?.addEventListener('click', () => { pendingFileType = 'cosplay_audio'; replacementFileId = null; if (uploadInput) { uploadInput.multiple = false; uploadInput.accept = '.mp3,.m4a,.wav,audio/mpeg,audio/x-m4a,audio/wav'; uploadInput.click(); } });
+  uploadInput?.addEventListener('change', async () => {
+    if (!pendingFileType || !uploadInput.files?.[0]) return;
+    const file = uploadInput.files[0];
+    await uploadFile(pendingFileType, file, replacementFileId);
+    pendingFileType = null;
+    replacementFileId = null;
+    uploadInput.value = '';
+  });
+
+  document.querySelector('[data-upload-authorization]')?.addEventListener('click', () => authorizationUploadInput?.click());
+  authorizationUploadInput?.addEventListener('change', async () => {
+    const file = authorizationUploadInput.files?.[0];
+    if (!file) return;
+    const form = new FormData();
+    form.append('fileType', 'guardian_authorization_signed');
+    form.append('file', file, file.name);
+    setPageFeedback('Enviando autorização assinada…');
+    try {
+      await postRegistrationAction('inscricao/arquivo', form);
+      setPageFeedback('Autorização enviada. A situação será atualizada após a sincronização.');
+      await loadData();
+    } catch {
+      setPageFeedback('Não foi possível enviar a autorização assinada.');
+    }
+    authorizationUploadInput.value = '';
+  });
+
+  document.querySelector('[data-physical-authorization]')?.addEventListener('click', async () => {
+    const form = new FormData();
+    form.append('action', 'physical_pending');
+    setPageFeedback('Registrando entrega presencial…');
+    try {
+      await postRegistrationAction('inscricao/autorizacao', form);
+      setPageFeedback('Entrega presencial registrada.');
+      await loadData();
+    } catch {
+      setPageFeedback('Não foi possível registrar a entrega presencial.');
+    }
+  });
+
+  managementForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!currentData) return;
+    if (submit) { submit.disabled = true; submit.textContent = 'Salvando…'; }
+    if (feedback) feedback.textContent = 'Salvando alterações no sistema oficial…';
+    try {
+      await postRegistrationForm<{ saved: boolean }>('inscricao/minha', buildManagementPayload(managementForm));
+      if (feedback) feedback.textContent = 'Alterações salvas.';
+      await loadData();
+    } catch (error) {
+      if (feedback) feedback.textContent = error instanceof RegistrationApiError ? error.message : 'Não foi possível salvar as alterações.';
+    } finally {
+      if (submit) { submit.disabled = false; submit.innerHTML = 'Salvar alterações <span aria-hidden="true">↗</span>'; }
+    }
+  });
+
+  document.querySelector('[data-management-logout]')?.addEventListener('click', async () => {
+    const button = document.querySelector<HTMLButtonElement>('[data-management-logout]');
+    if (button) { button.disabled = true; button.textContent = 'Saindo…'; }
+    try { await postRegistrationAction('inscricao/logout', new FormData()); } finally { window.location.assign(registrationRoutes.access); }
+  });
+
+  void loadData();
+</script>

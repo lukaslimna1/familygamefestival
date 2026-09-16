@@ -6,6 +6,8 @@ interface Props {
   featured?: boolean;
 }
 
+import RegistrationChoiceDialog from './RegistrationChoiceDialog.astro';
+
 const { entry, categoryLabel = entry.tournament.category, number, featured = false } = Astro.props;
 const detailId = `home-${entry.tournament.id}-details`;
 const titleId = `home-${entry.tournament.id}-title`;
@@ -45,6 +47,7 @@ const imageClass = `competition-art-fit-${entry.art.fit || 'cover'}`;
 
       <div class="home-competition-details-actions">
         <a class="home-competition-page-link" href={entry.pageUrl}>Página do campeonato <span aria-hidden="true">↗</span></a>
+        <RegistrationChoiceDialog entry={entry} compact label="Inscreva-se" />
       </div>
     </div>
   </div>

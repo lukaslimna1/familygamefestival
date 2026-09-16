@@ -1,0 +1,80 @@
+<div class="registration-additional-socials registration-field-full" data-additional-socials>
+  <div class="registration-subheading">
+    <strong>Outras redes</strong>
+    <span>Opcional · adicione apenas as que quiser compartilhar.</span>
+  </div>
+  <div class="registration-additional-social-list" data-additional-social-list>
+    <div class="registration-additional-social-row" data-additional-social-row>
+      <input name="additionalSocialName[]" type="text" placeholder="Nome da rede / plataforma" aria-label="Nome da rede social" />
+      <input name="additionalSocialUrl[]" type="url" placeholder="Link do perfil" aria-label="Link da rede social" />
+      <button class="registration-text-button is-danger" type="button" data-remove-additional-social>× Remover</button>
+    </div>
+  </div>
+  <input type="hidden" name="additionalSocialLinksJson" data-additional-social-json value="[]" />
+  <button class="registration-add-link" type="button" data-additional-social-add>+ Adicionar outra rede</button>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-additional-socials]').forEach((root) => {
+    const list = root.querySelector<HTMLElement>('[data-additional-social-list]');
+    const addButton = root.querySelector<HTMLButtonElement>('[data-additional-social-add]');
+    const jsonInput = root.querySelector<HTMLInputElement>('[data-additional-social-json]');
+    if (!list || !addButton || !jsonInput) return;
+
+    const syncStructuredLinks = () => {
+      const links = [...list.querySelectorAll<HTMLElement>('[data-additional-social-row]')].map((row) => {
+        const name = row.querySelector<HTMLInputElement>('input[name="additionalSocialName[]"]')?.value.trim() || '';
+        const url = row.querySelector<HTMLInputElement>('input[name="additionalSocialUrl[]"]')?.value.trim() || '';
+        return { name, url };
+      }).filter((link) => link.name || link.url);
+      jsonInput.value = JSON.stringify(links);
+    };
+
+    const bindRemove = (row: HTMLElement) => {
+      row.querySelector('[data-remove-additional-social]')?.addEventListener('click', () => {
+        row.remove();
+        syncStructuredLinks();
+      });
+    };
+
+    const firstRow = list.querySelector<HTMLElement>('[data-additional-social-row]');
+    if (firstRow) bindRemove(firstRow);
+    list.addEventListener('input', syncStructuredLinks);
+    addButton.addEventListener('click', () => {
+      const template = list.querySelector<HTMLElement>('[data-additional-social-row]');
+      let row: Node;
+      if (template) {
+        row = template.cloneNode(true);
+      } else {
+        const newRow = document.createElement('div');
+        newRow.className = 'registration-additional-social-row';
+        newRow.dataset.additionalSocialRow = '';
+        const nameInput = document.createElement('input');
+        nameInput.name = 'additionalSocialName[]';
+        nameInput.type = 'text';
+        nameInput.placeholder = 'Nome da rede / plataforma';
+        nameInput.setAttribute('aria-label', 'Nome da rede social');
+        const urlInput = document.createElement('input');
+        urlInput.name = 'additionalSocialUrl[]';
+        urlInput.type = 'url';
+        urlInput.placeholder = 'Link do perfil';
+        urlInput.setAttribute('aria-label', 'Link da rede social');
+        const removeButton = document.createElement('button');
+        removeButton.className = 'registration-text-button is-danger';
+        removeButton.type = 'button';
+        removeButton.dataset.removeAdditionalSocial = '';
+        removeButton.textContent = '× Remover';
+        newRow.append(nameInput, urlInput, removeButton);
+        row = newRow;
+      }
+      if (!(row instanceof HTMLElement)) return;
+      row.querySelectorAll<HTMLInputElement>('input').forEach((input) => { input.value = ''; });
+      bindRemove(row);
+      list.append(row);
+      row.querySelector<HTMLInputElement>('input')?.focus();
+      syncStructuredLinks();
+    });
+
+    syncStructuredLinks();
+  });
+</script>

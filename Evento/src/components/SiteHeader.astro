@@ -45,12 +45,26 @@ const getNavId = (label: string) => `nav-${label.normalize('NFD').replace(/[\u03
 </header>
 
 <script>
+  const header = document.querySelector('.site-header');
+  const menuToggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+  const navLinks = document.querySelectorAll('.main-nav a');
+
+  menuToggle?.addEventListener('click', () => {
+    const open = header?.classList.toggle('menu-open') ?? false;
+    menuToggle.setAttribute('aria-expanded', String(open));
+  });
+
+  navLinks.forEach((link) => link.addEventListener('click', () => {
+    header?.classList.remove('menu-open');
+    menuToggle?.setAttribute('aria-expanded', 'false');
+  }));
+
   const navDropdowns = document.querySelectorAll('[data-nav-dropdown]');
   const hoverQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
 
   navDropdowns.forEach((dropdown) => {
-    const toggle = dropdown.querySelector('.nav-dropdown-trigger');
-    const setOpen = (open) => {
+    const toggle = dropdown.querySelector<HTMLButtonElement>('.nav-dropdown-trigger');
+    const setOpen = (open: boolean) => {
       dropdown.classList.toggle('is-open', open);
       toggle?.setAttribute('aria-expanded', String(open));
     };
@@ -65,9 +79,10 @@ const getNavId = (label: string) => `nav-${label.normalize('NFD').replace(/[\u03
       if (hoverQuery.matches) setOpen(true);
     });
     dropdown.addEventListener('focusout', (event) => {
-      if (!dropdown.contains(event.relatedTarget)) setOpen(false);
+      const focusEvent = event as FocusEvent;
+      if (!(focusEvent.relatedTarget instanceof Node) || !dropdown.contains(focusEvent.relatedTarget)) setOpen(false);
     });
-    toggle?.addEventListener('pointerdown', (event) => {
+    toggle?.addEventListener('pointerdown', (event: PointerEvent) => {
       if (hoverQuery.matches && event.pointerType === 'mouse') event.preventDefault();
     });
     toggle?.addEventListener('click', () => {

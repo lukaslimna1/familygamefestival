@@ -8,13 +8,26 @@ const dayPanels = [
 
 const tournamentById = new Map(tournaments.map((tournament) => [tournament.id, tournament]));
 
+type ScheduleEntry = {
+  day: string;
+  time: string;
+  title: string;
+  detail: string;
+  category: string;
+  note?: string;
+  href?: string;
+  linkLabel?: string;
+  accent: string;
+  allDay?: boolean;
+};
+
 const timeToMinutes = (time: string) => {
   if (time === 'TODO O DIA') return -1;
   const [hours, minutes] = time.replace('h', ':').split(':').map(Number);
   return hours * 60 + minutes;
 };
 
-const getDayEntries = (day: (typeof dayPanels)[number]['label']) => {
+const getDayEntries = (day: (typeof dayPanels)[number]['label']): ScheduleEntry[] => {
   const tournamentEntries = tournamentSchedule
     .filter((slot) => slot.day === day)
     .map((slot) => {
@@ -34,7 +47,7 @@ const getDayEntries = (day: (typeof dayPanels)[number]['label']) => {
     });
 
   return [
-    ...eventScheduleExtras.filter((entry) => entry.day === day),
+    ...eventScheduleExtras.filter((entry) => entry.day === day) as ScheduleEntry[],
     ...tournamentEntries
   ].sort((first, second) => timeToMinutes(first.time) - timeToMinutes(second.time));
 };
@@ -101,7 +114,7 @@ const getDayEntries = (day: (typeof dayPanels)[number]['label']) => {
                 <h4>{entry.title}</h4>
                 {entry.note && <span class="event-schedule-note">{entry.note}</span>}
               </div>
-              {entry.href && <a class="event-schedule-link" href={entry.href}>{entry.linkLabel} <span aria-hidden="true">↗</span></a>}
+              {entry.href && <a class="event-schedule-link" href={entry.href}>{entry.linkLabel || 'Ver detalhes'} <span aria-hidden="true">↗</span></a>}
             </article>
           ))}
         </div>
@@ -111,8 +124,8 @@ const getDayEntries = (day: (typeof dayPanels)[number]['label']) => {
 </section>
 
 <script>
-  const scheduleTabs = document.querySelectorAll('[data-schedule-tab]');
-  const schedulePanels = document.querySelectorAll('[data-schedule-panel]');
+  const scheduleTabs = document.querySelectorAll<HTMLButtonElement>('[data-schedule-tab]');
+  const schedulePanels = document.querySelectorAll<HTMLElement>('[data-schedule-panel]');
 
   scheduleTabs.forEach((tab) => {
     tab.addEventListener('click', () => {

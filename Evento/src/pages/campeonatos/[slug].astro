@@ -4,6 +4,7 @@ import SiteHeader from '../../components/SiteHeader.astro';
 import CosplayRegulationDocument from '../../components/CosplayRegulationDocument.astro';
 import GamesGeneralRegulationDocument from '../../components/GamesGeneralRegulationDocument.astro';
 import CosplayReferenceGuides from '../../components/CosplayReferenceGuides.astro';
+import RegistrationChoiceDialog from '../../components/RegistrationChoiceDialog.astro';
 import { event } from '../../data/event';
 import { championshipEntries } from '../../data/championships';
 
@@ -17,6 +18,7 @@ const { entry } = Astro.props;
 const { tournament, art, schedule, regulation, generalRegulation, registrationUrl, registrationPrice, registrationNote, registrationFree, format, participants, prizeNote, pageUrl } = entry;
 const detail = tournament.detail || 'Informações e formato da disputa serão divulgados pela organização.';
 const isCosplay = tournament.id === 'cosplay';
+const regulationPageUrl = regulation && 'pageUrl' in regulation ? regulation.pageUrl : undefined;
 const cosplayPdfUrl = regulation ? `/assets/regulamentos/${encodeURIComponent(regulation.pdfFile)}` : undefined;
 const detailPageIntro = isCosplay
   ? 'Consulte abaixo o regulamento oficial completo do Concurso Cosplay e veja exemplos de guias de imagens para enviar antes de realizar sua inscrição.'
@@ -62,7 +64,7 @@ const participationCopy = registrationFree
           <p>{detail}</p>
           <div class="championship-detail-actions">
             {!isCosplay && regulation ? (
-              <a class="button button-yellow" href={regulation.pageUrl}>Regulamento Oficial <span aria-hidden="true">↗</span></a>
+              <a class="button button-yellow" href={regulationPageUrl}>Regulamento Oficial <span aria-hidden="true">↗</span></a>
             ) : !isCosplay ? (
               <span class="button button-detail-disabled">Regulamento específico em breve</span>
             ) : null}
@@ -80,6 +82,7 @@ const participationCopy = registrationFree
             ) : (
               <span class="button button-detail-disabled">Ingresso competidor em breve</span>
             )}
+            <RegistrationChoiceDialog entry={entry} label="FAZER INSCRIÇÃO ONLINE" />
           </div>
         </div>
       </div>
@@ -158,8 +161,8 @@ const participationCopy = registrationFree
 </BaseLayout>
 
 <script>
-  const cosplayTabs = document.querySelectorAll('[data-cosplay-tab]');
-  const cosplayPanels = document.querySelectorAll('[data-cosplay-panel]');
+  const cosplayTabs = document.querySelectorAll<HTMLButtonElement>('[data-cosplay-tab]');
+  const cosplayPanels = document.querySelectorAll<HTMLElement>('[data-cosplay-panel]');
 
   cosplayTabs.forEach((tab) => {
     tab.addEventListener('click', () => {

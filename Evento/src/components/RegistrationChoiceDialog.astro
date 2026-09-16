@@ -1,0 +1,66 @@
+---
+import { registrationRoutes } from '../lib/registration';
+
+interface Props {
+  entry: any;
+  compact?: boolean;
+  label?: string;
+}
+
+const { entry, compact = false, label = 'FAZER INSCRIÇÃO ONLINE' } = Astro.props;
+const dialogId = `registration-choice-${entry.tournament.id}`;
+const titleId = `${dialogId}-title`;
+---
+
+<div class="registration-choice" data-registration-choice>
+  <button class:list={['button', 'button-yellow', compact && 'button-small']} type="button" aria-haspopup="dialog" aria-controls={dialogId} data-registration-choice-trigger>
+    {label} <span aria-hidden="true">↗</span>
+  </button>
+
+  <dialog class="registration-choice-dialog" id={dialogId} aria-labelledby={titleId} data-registration-choice-dialog>
+    <div class="registration-choice-dialog-inner">
+      <button class="registration-choice-close" type="button" aria-label="Fechar opções de inscrição" data-registration-choice-close>×</button>
+      <p class="eyebrow eyebrow-cyan">Inscrição no campeonato</p>
+      <h2 id={titleId}>Como você quer continuar?</h2>
+      <p class="registration-choice-intro"><strong>{entry.tournament.title}</strong> já está selecionado para o próximo passo.</p>
+
+      <div class="registration-choice-options">
+        <a class="registration-choice-option" href={registrationRoutes.new(entry.tournament.id)} data-registration-choice-link>
+          <span class="registration-choice-index" aria-hidden="true">01</span>
+          <span class="registration-choice-option-copy">
+            <strong>NOVA INSCRIÇÃO</strong>
+            <small>Quero me inscrever nesta competição.</small>
+          </span>
+          <span class="registration-choice-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a class="registration-choice-option" href={`${registrationRoutes.access}?competition=${encodeURIComponent(entry.tournament.id)}`} data-registration-choice-link>
+          <span class="registration-choice-index" aria-hidden="true">02</span>
+          <span class="registration-choice-option-copy">
+            <strong>JÁ SOU INSCRITO</strong>
+            <small>Já fiz minha inscrição e quero consultar, completar ou atualizar minha participação.</small>
+          </span>
+          <span class="registration-choice-arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </div>
+  </dialog>
+</div>
+
+<script>
+  document.querySelectorAll('[data-registration-choice]').forEach((root) => {
+    const trigger = root.querySelector('[data-registration-choice-trigger]');
+    const dialog = root.querySelector('[data-registration-choice-dialog]');
+    const close = root.querySelector('[data-registration-choice-close]');
+
+    if (!(trigger instanceof HTMLButtonElement) || !(dialog instanceof HTMLDialogElement)) return;
+
+    trigger.addEventListener('click', () => dialog.showModal());
+    close?.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+    dialog.querySelectorAll('[data-registration-choice-link]').forEach((link) => {
+      link.addEventListener('click', () => dialog.close());
+    });
+  });
+</script>

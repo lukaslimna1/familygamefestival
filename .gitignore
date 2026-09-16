@@ -6,6 +6,8 @@ dist/
 .astro/
 .vercel/
 .sites-runtime/
+.playwright-cli/
+output/playwright/
 
 # Arquivos gerados pelo sistema operacional
 Thumbs.db

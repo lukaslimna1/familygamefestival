@@ -502,24 +502,10 @@ const guestVideos = existsSync(guestVideoDirectory)
   </footer>
 
   <script>
-    const header = document.querySelector('.site-header');
-    const menuToggle = document.querySelector('.menu-toggle');
-    const navLinks = document.querySelectorAll('.main-nav a');
+    const homeDayTabs = document.querySelectorAll<HTMLButtonElement>('[data-home-day-tab]');
+    const homeDayPanels = document.querySelectorAll<HTMLElement>('[data-home-day-panel]');
 
-    menuToggle?.addEventListener('click', () => {
-      const open = header?.classList.toggle('menu-open') ?? false;
-      menuToggle.setAttribute('aria-expanded', String(open));
-    });
-
-    navLinks.forEach((link) => link.addEventListener('click', () => {
-      header?.classList.remove('menu-open');
-      menuToggle?.setAttribute('aria-expanded', 'false');
-    }));
-
-    const homeDayTabs = document.querySelectorAll('[data-home-day-tab]');
-    const homeDayPanels = document.querySelectorAll('[data-home-day-panel]');
-
-    const activateHomeDay = (slug) => {
+    const activateHomeDay = (slug: string) => {
       homeDayTabs.forEach((tab) => {
         const active = tab.getAttribute('data-home-day-tab') === slug;
         tab.classList.toggle('is-active', active);
@@ -537,9 +523,9 @@ const guestVideos = existsSync(guestVideoDirectory)
       if (slug) activateHomeDay(slug);
     }));
 
-    document.querySelectorAll('[data-home-competition-item]').forEach((item) => {
-      const toggle = item.querySelector('[data-home-competition-toggle]');
-      const details = item.querySelector('[data-home-competition-details]');
+    document.querySelectorAll<HTMLElement>('[data-home-competition-item]').forEach((item) => {
+      const toggle = item.querySelector<HTMLButtonElement>('[data-home-competition-toggle]');
+      const details = item.querySelector<HTMLElement>('[data-home-competition-details]');
       if (!toggle || !details) return;
 
       toggle.addEventListener('click', () => {
@@ -550,15 +536,15 @@ const guestVideos = existsSync(guestVideoDirectory)
     });
 
     document.querySelectorAll('[data-ticket-carousel]').forEach((carousel) => {
-      const track = carousel.querySelector('[data-ticket-track]');
-      const cards = Array.from(carousel.querySelectorAll('[data-ticket-card]'));
-      const previous = carousel.querySelector('[data-ticket-prev]');
-      const next = carousel.querySelector('[data-ticket-next]');
-      const status = carousel.querySelector('[data-ticket-status]');
+      const track = carousel.querySelector<HTMLElement>('[data-ticket-track]');
+      const cards = Array.from(carousel.querySelectorAll<HTMLElement>('[data-ticket-card]'));
+      const previous = carousel.querySelector<HTMLButtonElement>('[data-ticket-prev]');
+      const next = carousel.querySelector<HTMLButtonElement>('[data-ticket-next]');
+      const status = carousel.querySelector<HTMLElement>('[data-ticket-status]');
       if (!track || !cards.length || !previous || !next || !status) return;
 
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-      let autoplayTimer;
+      let autoplayTimer: number | undefined;
       let isPaused = false;
 
       const getStep = () => {
@@ -569,9 +555,9 @@ const guestVideos = existsSync(guestVideoDirectory)
         return card.getBoundingClientRect().width + gap;
       };
 
-      const getVisible = (step) => step ? Math.max(1, Math.round(track.clientWidth / step)) : 1;
-      const getMaxStart = (step) => Math.max(0, cards.length - getVisible(step));
-      const getCurrent = (step) => {
+      const getVisible = (step: number) => step ? Math.max(1, Math.round(track.clientWidth / step)) : 1;
+      const getMaxStart = (step: number) => Math.max(0, cards.length - getVisible(step));
+      const getCurrent = (step: number) => {
         const maxStart = getMaxStart(step);
         return step ? Math.min(maxStart, Math.max(0, Math.round(track.scrollLeft / step))) : 0;
       };
@@ -588,13 +574,13 @@ const guestVideos = existsSync(guestVideoDirectory)
         next.disabled = !hasOverflow;
       };
 
-      const scrollToIndex = (index) => {
+      const scrollToIndex = (index: number) => {
         const step = getStep();
         if (!step) return;
         track.scrollTo({ left: Math.max(0, index) * step, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
       };
 
-      const move = (direction) => {
+      const move = (direction: number) => {
         const step = getStep();
         const maxStart = getMaxStart(step);
         if (!maxStart) return;
@@ -632,7 +618,8 @@ const guestVideos = existsSync(guestVideoDirectory)
       carousel.addEventListener('mouseleave', resumeAutoplay);
       carousel.addEventListener('focusin', pauseAutoplay);
       carousel.addEventListener('focusout', (event) => {
-        if (!carousel.contains(event.relatedTarget)) resumeAutoplay();
+        const focusEvent = event as FocusEvent;
+        if (!(focusEvent.relatedTarget instanceof Node) || !carousel.contains(focusEvent.relatedTarget)) resumeAutoplay();
       });
       track.addEventListener('scroll', updateCarousel, { passive: true });
       track.addEventListener('touchstart', pauseAutoplay, { passive: true });
@@ -666,7 +653,7 @@ const guestVideos = existsSync(guestVideoDirectory)
         const hours = Math.floor((totalSeconds % 86400) / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
-        const format = (value) => String(value).padStart(2, '0');
+        const format = (value: number) => String(value).padStart(2, '0');
 
         countdownDays.textContent = format(days);
         countdownHours.textContent = format(hours);

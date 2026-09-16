@@ -18,7 +18,8 @@
     "test:public-registration": "tsx scripts/test-public-registration.ts",
     "test:generic-registration": "tsx scripts/test-generic-registration.ts",
     "drive:bootstrap": "node scripts/drive-bootstrap.mjs",
-    "drive:repair-root": "node scripts/drive-repair-root.mjs"
+    "drive:repair-root": "node scripts/drive-repair-root.mjs",
+    "astro:check": "astro check"
   },
   "dependencies": {
     "@astrojs/vercel": "^11.0.10",
@@ -33,6 +34,8 @@
   },
   "devDependencies": {
     "astro": "^7.3.2",
+    "@astrojs/check": "^0.9.10",
+    "@types/node": "^24.10.1",
     "tsx": "^4.23.13",
     "typescript": "^5.9.3"
   },

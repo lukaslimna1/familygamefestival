@@ -1,0 +1,85 @@
+<div class="registration-section" id="audio">
+  <div class="registration-section-heading"><span>05</span><div><p class="eyebrow eyebrow-pink">Áudio da apresentação</p><h3>Identifique e envie seu áudio.</h3></div></div>
+  <p class="registration-helper">O áudio é opcional nesta etapa. Aceitamos MP3, M4A ou WAV; MP4 não é aceito. Você poderá substituir ou remover o arquivo depois.</p>
+  <div class="registration-field registration-audio-title-field">
+    <label for="audio-title">Identificação do áudio <span class="registration-optional">(opcional)</span></label>
+    <span class="registration-field-helper">Dê um nome para a organização localizar o arquivo com facilidade.</span>
+    <input id="audio-title" name="audioTitle" type="text" placeholder="Ex.: Trilha da apresentação da Sakura" />
+  </div>
+  <div class="registration-audio-manager" data-audio-uploader>
+    <input hidden type="file" accept=".mp3,.m4a,.wav,audio/mpeg,audio/x-m4a,audio/wav" data-audio-input />
+    <input hidden type="file" name="audioFile" accept=".mp3,.m4a,.wav,audio/mpeg,audio/x-m4a,audio/wav" data-audio-submit-input />
+    <div class="registration-upload-panel">
+      <div><strong>Envie o áudio da apresentação</strong><span>MP3, M4A ou WAV · um arquivo</span></div>
+      <button class="button button-outline-light" type="button" data-select-audio>Selecionar áudio <span aria-hidden="true">＋</span></button>
+    </div>
+    <div class="registration-audio-file" data-audio-file hidden>
+      <div><strong data-audio-name></strong><span data-audio-size></span></div>
+      <audio controls data-audio-player hidden></audio>
+      <div class="registration-item-actions"><button class="registration-text-button" type="button" data-replace-audio>Substituir</button><button class="registration-text-button is-danger" type="button" data-remove-audio>× Remover</button></div>
+    </div>
+    <p class="registration-inline-feedback" data-audio-feedback aria-live="polite"></p>
+  </div>
+  <label class="registration-check registration-audio-warning"><input type="checkbox" name="audioBackupAcknowledgement" data-audio-ack required /><span>Se sua apresentação utilizar áudio, além de anexar o arquivo aqui, você deverá levar no dia do evento uma cópia em pendrive devidamente identificada, para utilização em caso de falha técnica.</span></label>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-audio-uploader]').forEach((root) => {
+    const input = root.querySelector<HTMLInputElement>('[data-audio-input]');
+    const submitInput = root.querySelector<HTMLInputElement>('[data-audio-submit-input]');
+    const audioFile = root.querySelector<HTMLElement>('[data-audio-file]');
+    const audioPlayer = root.querySelector<HTMLAudioElement>('[data-audio-player]');
+    const audioName = root.querySelector<HTMLElement>('[data-audio-name]');
+    const audioSize = root.querySelector<HTMLElement>('[data-audio-size]');
+    const audioFeedback = root.querySelector<HTMLElement>('[data-audio-feedback]');
+    const emptyPanel = root.querySelector<HTMLElement>('.registration-upload-panel');
+    const ack = root.parentElement?.querySelector<HTMLInputElement>('[data-audio-ack]');
+    if (!input || !submitInput || !audioFile || !audioPlayer) return;
+
+    let audioUrl = '';
+    const formatBytes = (bytes: number) => bytes < 1024 * 1024 ? `${Math.round(bytes / 1024)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    const validAudio = (file: File) => ['mp3', 'm4a', 'wav'].includes(file.name.split('.').pop()?.toLowerCase() || '');
+
+    const clearAudio = () => {
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      audioUrl = '';
+      audioFile.hidden = true;
+      if (emptyPanel) emptyPanel.hidden = false;
+      audioPlayer.pause();
+      audioPlayer.removeAttribute('src');
+      audioPlayer.load();
+      audioPlayer.hidden = true;
+      submitInput.files = new DataTransfer().files;
+      if (ack) ack.required = true;
+    };
+
+    const showAudio = (file: File) => {
+      if (!validAudio(file)) {
+        if (audioFeedback) audioFeedback.textContent = 'Formato não aceito. Selecione MP3, M4A ou WAV. MP4 não é aceito.';
+        return;
+      }
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      audioUrl = URL.createObjectURL(file);
+      if (audioName) audioName.textContent = file.name;
+      if (audioSize) audioSize.textContent = formatBytes(file.size);
+      audioFile.hidden = false;
+      if (emptyPanel) emptyPanel.hidden = true;
+      audioPlayer.src = audioUrl;
+      audioPlayer.hidden = false;
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      submitInput.files = transfer.files;
+      if (ack) ack.required = true;
+      if (audioFeedback) audioFeedback.textContent = '';
+    };
+
+    root.querySelector('[data-select-audio]')?.addEventListener('click', () => input.click());
+    root.querySelector('[data-replace-audio]')?.addEventListener('click', () => input.click());
+    root.querySelector('[data-remove-audio]')?.addEventListener('click', clearAudio);
+    input.addEventListener('change', () => {
+      const file = input.files?.[0];
+      if (file) showAudio(file);
+      input.value = '';
+    });
+  });
+</script>
