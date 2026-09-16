@@ -9,7 +9,7 @@ import { PDFDocument } from 'pdf-lib';
 import type { drive_v3 } from 'googleapis';
 import competitionDefinitions from '../src/config/competitions.json';
 import { getDatabase } from '../src/lib/server/db/client';
-import { competitions, consents, participants, registrationFiles, registrations } from '../src/lib/server/db/schema';
+import { competitions, consents, participants, registrationFiles, registrationLinks, registrations } from '../src/lib/server/db/schema';
 import { createRegistrationDraft } from '../src/lib/server/db/repository';
 import { getDriveClient } from '../src/lib/server/drive/client';
 import { syncRegistrationToDrive } from '../src/lib/server/drive/registration-sync';
@@ -313,6 +313,7 @@ try {
     try {
       await database.delete(registrationFiles).where(eq(registrationFiles.registrationId, registrationId));
       await database.delete(consents).where(eq(consents.registrationId, registrationId));
+      await database.delete(registrationLinks).where(eq(registrationLinks.registrationId, registrationId));
       await database.delete(registrations).where(eq(registrations.id, registrationId));
     } catch {
       cleanupErrors.push('Inscrição ou consentimentos fictícios não puderam ser removidos do Turso.');
