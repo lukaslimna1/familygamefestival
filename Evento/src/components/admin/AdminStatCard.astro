@@ -1,0 +1,22 @@
+---
+import AdminIcon from './AdminIcon.astro';
+
+interface Props {
+  label: string;
+  value: string;
+  hint: string;
+  accent: 'yellow' | 'cyan' | 'magenta' | 'red';
+  icon: string;
+}
+
+const { label, value, hint, accent, icon } = Astro.props;
+---
+
+<article class:list={['admin-stat-card', `admin-accent-${accent}`]}>
+  <div class="admin-stat-card-header">
+    <span class="admin-stat-icon"><AdminIcon name={icon} /></span>
+    <span class="admin-stat-hint">{hint}</span>
+  </div>
+  <strong class="admin-stat-value">{value}</strong>
+  <span class="admin-stat-label">{label}</span>
+</article>

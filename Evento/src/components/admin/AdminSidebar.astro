@@ -1,0 +1,115 @@
+---
+import AdminIcon from './AdminIcon.astro';
+
+interface AdminIdentity {
+  displayName: string;
+  username: string;
+  mustChangePassword: boolean;
+}
+
+interface Props {
+  admin: AdminIdentity;
+  activePath: string;
+}
+
+const { admin, activePath } = Astro.props;
+const isFirstAccess = admin.mustChangePassword;
+const initials = admin.displayName
+  .split(/\s+/)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((part) => part[0]?.toUpperCase())
+  .join('');
+
+const navItems = [
+  { key: 'dashboard', label: 'Dashboard', href: '/admin', icon: 'grid' },
+  { key: 'inscricoes', label: 'Inscrições', href: '/admin#inscricoes', icon: 'clipboard' },
+  { key: 'cosplay', label: 'Cosplay', href: '/admin#cosplay', icon: 'spark' },
+  { key: 'menores', label: 'Menores', href: '/admin#menores', icon: 'shield' },
+  { key: 'documentos', label: 'Documentos', href: '/admin#documentos', icon: 'folder' },
+  { key: 'configuracoes', label: 'Configurações', href: '/admin#configuracoes', icon: 'settings' },
+];
+
+const isActive = (item: (typeof navItems)[number]) => item.key === 'dashboard' && activePath === '/admin';
+---
+
+<aside id="admin-sidebar" class="admin-sidebar" data-admin-sidebar aria-label="Navegação administrativa">
+  <div class="admin-sidebar-main">
+    <a class="admin-brand" href={isFirstAccess ? '/admin/account/password' : '/admin'}>
+      <span class="admin-brand-mark">FGF</span>
+      <span class="admin-brand-copy">
+        <strong>Family Game</strong>
+        <small>Festival · ADM</small>
+      </span>
+    </a>
+
+    <div class="admin-sidebar-event">
+      <span class="admin-sidebar-event-dot"></span>
+      <span>
+        <strong>Festival 2026</strong>
+        <small>Operação do evento</small>
+      </span>
+    </div>
+
+    <nav class="admin-sidebar-nav">
+      <p class="admin-nav-label">Workspace</p>
+      <div class="admin-nav-list">
+        {navItems.map((item) => (
+          isFirstAccess ? (
+            <span class="admin-nav-item is-disabled" aria-disabled="true">
+              <span class="admin-nav-icon"><AdminIcon name={item.icon} /></span>
+              <span>{item.label}</span>
+            </span>
+          ) : (
+            <a
+              class:list={['admin-nav-item', { 'is-active': isActive(item) }]}
+              href={item.href}
+              aria-current={isActive(item) ? 'page' : undefined}
+            >
+              <span class="admin-nav-icon"><AdminIcon name={item.icon} /></span>
+              <span>{item.label}</span>
+              {isActive(item) && <span class="admin-nav-active-bar" aria-hidden="true"></span>}
+            </a>
+          )
+        ))}
+      </div>
+    </nav>
+  </div>
+
+  <div class="admin-sidebar-footer">
+    {isFirstAccess && (
+      <div class="admin-sidebar-lock-note">
+        <span class="admin-sidebar-lock-icon"><AdminIcon name="lock" /></span>
+        <span>
+          <strong>Primeiro acesso</strong>
+          <small>Atualize sua senha para liberar o painel.</small>
+        </span>
+      </div>
+    )}
+
+    <a
+      class:list={['admin-account-link', { 'is-active': activePath.startsWith('/admin/account') }]}
+      href="/admin/account/password"
+      aria-current={activePath.startsWith('/admin/account') ? 'page' : undefined}
+    >
+      <span class="admin-nav-icon"><AdminIcon name="lock" /></span>
+      <span>
+        <strong>Segurança da conta</strong>
+        <small>Trocar senha</small>
+      </span>
+    </a>
+
+    <div class="admin-user-block">
+      <span class="admin-user-avatar" aria-hidden="true">{initials || 'A'}</span>
+      <span class="admin-user-copy">
+        <strong>{admin.displayName}</strong>
+        <small>@{admin.username}</small>
+      </span>
+      <form method="post" action="/api/admin/logout">
+        <button class="admin-logout-button" type="submit" aria-label="Sair do painel">
+          <AdminIcon name="logout" />
+        </button>
+      </form>
+    </div>
+  </div>
+</aside>

@@ -54,12 +54,18 @@ modalidades futuras sem criar colunas como `imagem1` e `imagem2`.
 Evento/
 ├─ db/migrations/0001_initial_schema.sql
 ├─ db/migrations/0002_competition_drive_links.sql
+├─ db/migrations/0003_admin_usernames.sql
+├─ db/migrations/0004_admin_force_password_change.sql
+├─ scripts/admin-create.ts
 ├─ scripts/db-migrate.mjs
 ├─ scripts/sync-competitions.mjs
+├─ scripts/test-admin-auth.ts
 ├─ scripts/test-registration-drive.ts
 ├─ src/config/competitions.json
 ├─ src/lib/server/
 │  ├─ auth/password.ts
+│  ├─ auth/admin-repository.ts
+│  ├─ auth/login-rate-limit.ts
 │  ├─ auth/session.ts
 │  ├─ config/env.ts
 │  ├─ db/client.ts
@@ -75,6 +81,31 @@ Evento/
    ├─ admin-panel-architecture.md
    └─ admin-panel-setup.md
 ```
+
+## Autenticação administrativa implementada
+
+O acesso administrativo usa username e senha validados exclusivamente no
+servidor. Senhas são armazenadas com bcrypt; o banco guarda apenas o hash. O
+login cria um JWT curto com identificador de sessão, mas a autorização efetiva
+exige também uma linha ativa correspondente em `admin_sessions`. Assim, logout,
+troca de senha, expiração e revogação invalidam a sessão no banco.
+
+As rotas `/admin/*` e `/api/admin/*` são protegidas pelo middleware, com exceção
+de `/admin/login` e `/api/admin/login`. A sessão é enviada em cookie HttpOnly,
+SameSite=Lax, com Secure em HTTPS/produção. O limite básico de tentativas fica
+em memória por instância para reduzir abuso sem adicionar outro serviço nesta
+etapa.
+
+O administrador não é criado automaticamente: `npm run admin:create` é o
+bootstrap interativo para que o responsável escolha as credenciais. A coluna
+`admins.email` legada recebe apenas um identificador interno derivado do
+username; ela não é usada como credencial nem é exibida no frontend.
+
+A coluna `admins.must_change_password` controla o primeiro acesso. Quando
+verdadeira, a sessão é criada normalmente, mas o middleware permite somente a
+troca de senha e o logout. Depois de um novo hash ser salvo, a flag volta para
+falsa, todas as sessões do administrador são revogadas e o login é solicitado
+novamente.
 
 ## Estado e pendências
 
@@ -94,9 +125,12 @@ Evento/
 - A sincronização registra `drive_pending`, `drive_syncing`, `synced` ou
   `failed` no Turso. O teste técnico criou e removeu uma inscrição fictícia de
   Tekken 8, incluindo sua pasta e seu PDF de teste.
-- Lucas Lima e Juruna estão previstos como os primeiros administradores; seus
-  e-mails e hashes de senha ainda precisam ser fornecidos/gerados antes do
-  seed. Nenhuma senha foi inserida no código.
-- A tela do painel, formulários públicos e regras específicas de cada
-  campeonato continuam fora desta etapa. A geração de PDF validada agora é
-  apenas a base server-side do fluxo de teste e não é um PDF oficial público.
+- Lucas Lima e Juruna continuam previstos como os primeiros administradores,
+  mas nenhuma conta real foi criada automaticamente. Eles devem ser criados
+  manualmente com `npm run admin:create` após a revisão; a senha temporária de
+  Juruna deve usar a opção de troca obrigatória.
+- O painel inicial protegido contém somente os espaços de Inscrições, Cosplay,
+  Menores e Configurações, além de troca de senha e logout. Formulários
+  públicos e regras específicas de cada campeonato continuam fora desta etapa.
+- A geração de PDF validada agora é apenas a base server-side do fluxo de teste
+  e não é um PDF oficial público.

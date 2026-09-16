@@ -96,7 +96,9 @@ try {
       cpf: fakeCpf,
       phone: '+5500000000000',
       email: fakeEmail,
-      dateOfBirth: '2000-01-01'
+      dateOfBirth: '2000-01-01',
+      city: 'Bauru',
+      state: 'SP'
     },
     competitionId,
     consents: [
@@ -201,8 +203,19 @@ try {
     fileId: registrationFolderId,
     fields: 'id,name,parents,appProperties,mimeType,trashed'
   })).data;
+  const expectedFolderName = `${publicCode} - ${fakeName}`;
+  const expectedSheetName = `Ficha-Inscricao - ${expectedFolderName}.pdf`;
   assertCondition(folderMetadata.parents?.includes(competitionFolderId), 'A pasta do participante não está dentro da pasta de Tekken 8.');
   assertCondition(folderMetadata.appProperties?.['fgf-key'] === `registration:${registrationId}`, 'A chave idempotente da pasta não confere.');
+  assertCondition(folderMetadata.name === expectedFolderName, 'A pasta de competição não segue o padrão código + nome completo.');
+  assertCondition(fileName === expectedSheetName, 'A ficha PDF não segue o padrão oficial de nomenclatura.');
+
+  const sheetMetadata = (await drive.files.get({
+    fileId: driveFileId,
+    fields: 'id,name,parents,mimeType'
+  })).data;
+  assertCondition(sheetMetadata.name === expectedSheetName, 'O nome da ficha PDF no Drive não segue o padrão oficial.');
+  assertCondition(sheetMetadata.parents?.includes(registrationFolderId), 'A ficha PDF não está diretamente na pasta da inscrição.');
 
   const downloaded = await drive.files.get({
     fileId: driveFileId,

@@ -1,0 +1,56 @@
+---
+import AdminIcon from './AdminIcon.astro';
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  action?: { label: string; href: string };
+  admin?: { displayName: string };
+}
+
+const { title, subtitle, action, admin } = Astro.props;
+const initials = admin?.displayName
+  ?.split(/\s+/)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((part) => part[0]?.toUpperCase())
+  .join('');
+---
+
+<header class="admin-topbar">
+  <div class="admin-topbar-heading">
+    <button
+      class="admin-menu-toggle"
+      type="button"
+      data-admin-menu-toggle
+      aria-controls="admin-sidebar"
+      aria-expanded="false"
+      aria-label="Abrir menu administrativo"
+    >
+      <AdminIcon name="menu" />
+    </button>
+    <div>
+      <p class="admin-topbar-kicker">Family Game Festival · área administrativa</p>
+      <h1>{title}</h1>
+      {subtitle && <p class="admin-topbar-subtitle">{subtitle}</p>}
+    </div>
+  </div>
+
+  <div class="admin-topbar-actions">
+    {action && (
+      <a class="admin-topbar-action" href={action.href}>
+        <span>{action.label}</span>
+        <AdminIcon name="arrow" />
+      </a>
+    )}
+    {admin && (
+      <div class="admin-topbar-user" aria-label={`Administrador ${admin.displayName}`}>
+        <span class="admin-topbar-avatar" aria-hidden="true">{initials || 'A'}</span>
+        <span class="admin-topbar-user-copy">
+          <strong>{admin.displayName}</strong>
+          <small>Administrador</small>
+        </span>
+      </div>
+    )}
+  </div>
+</header>

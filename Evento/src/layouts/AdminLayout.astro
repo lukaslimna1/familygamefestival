@@ -1,0 +1,84 @@
+---
+import '../styles/global.css';
+import '../styles/admin.css';
+import AdminSidebar from '../components/admin/AdminSidebar.astro';
+import AdminTopbar from '../components/admin/AdminTopbar.astro';
+
+interface AdminIdentity {
+  displayName: string;
+  username: string;
+  mustChangePassword: boolean;
+}
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  admin?: AdminIdentity | null;
+  navigation?: boolean;
+  action?: { label: string; href: string };
+}
+
+const {
+  title,
+  subtitle,
+  admin,
+  navigation = true,
+  action,
+} = Astro.props;
+const showNavigation = Boolean(navigation && admin);
+const activePath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#07111e" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body class:list={['admin-body', { 'admin-auth-body': !showNavigation }]}> 
+    {showNavigation ? (
+      <div class="admin-app">
+        <AdminSidebar admin={admin!} activePath={activePath} />
+        <div class="admin-main">
+          <AdminTopbar title={title.replace(' | Family Game Festival', '')} subtitle={subtitle} action={action} admin={admin!} />
+          <main class="admin-content">
+            <slot />
+          </main>
+        </div>
+        <div class="admin-sidebar-backdrop" data-admin-menu-backdrop></div>
+      </div>
+    ) : (
+      <main class="admin-auth-layout">
+        <slot />
+      </main>
+    )}
+
+    <script is:inline>
+      const adminMenuToggle = document.querySelector('[data-admin-menu-toggle]');
+      const adminSidebar = document.querySelector('[data-admin-sidebar]');
+      const adminBackdrop = document.querySelector('[data-admin-menu-backdrop]');
+
+      const setAdminMenuOpen = (open) => {
+        adminSidebar?.classList.toggle('is-open', open);
+        adminBackdrop?.classList.toggle('is-visible', open);
+        adminMenuToggle?.setAttribute('aria-expanded', String(open));
+        document.body.classList.toggle('admin-menu-open', open);
+      };
+
+      adminMenuToggle?.addEventListener('click', () => {
+        setAdminMenuOpen(!adminSidebar?.classList.contains('is-open'));
+      });
+      adminBackdrop?.addEventListener('click', () => setAdminMenuOpen(false));
+      adminSidebar?.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => setAdminMenuOpen(false));
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') setAdminMenuOpen(false);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,88 @@
+---
+import AdminIcon from '../../components/admin/AdminIcon.astro';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+
+const error = Astro.url.searchParams.get('error');
+const loggedOut = Astro.url.searchParams.get('logged_out') === '1';
+const passwordChanged = Astro.url.searchParams.get('password_changed') === '1';
+const message = error === 'rate'
+  ? 'Muitas tentativas. Aguarde alguns minutos e tente novamente.'
+  : error === 'unavailable'
+    ? 'Não foi possível iniciar a sessão agora. Tente novamente.'
+    : error === 'invalid'
+      ? 'Usuário ou senha inválidos.'
+      : passwordChanged
+        ? 'Senha alterada. Entre novamente com a nova senha.'
+        : loggedOut
+          ? 'Sessão encerrada.'
+          : '';
+---
+
+<AdminLayout
+  title="Acesso administrativo | Family Game Festival"
+  navigation={false}
+>
+  <section class="admin-auth-shell" aria-labelledby="admin-login-title">
+    <div class="admin-auth-brand">
+      <div class="admin-auth-brand-top">
+        <span class="admin-auth-brand-mark">FGF</span>
+        <span class="admin-auth-brand-label">
+          <strong>Family Game</strong>
+          <small>Festival · ADM</small>
+        </span>
+      </div>
+
+      <div>
+        <h1 id="admin-login-title">A operação do evento começa aqui.</h1>
+        <p>Um espaço reservado para acompanhar inscrições, documentos e tudo que mantém o festival em movimento.</p>
+        <div class="admin-auth-highlight">
+          <span class="admin-sidebar-event-dot" aria-hidden="true"></span>
+          <span>
+            <strong>2026</strong>
+            <small>Family Game Festival</small>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-auth-form-card">
+      <div class="admin-auth-form-header">
+        <div>
+          <p class="admin-eyebrow">Área restrita</p>
+          <h2>Entrar</h2>
+          <p>Use seu usuário administrativo para acessar o painel.</p>
+        </div>
+        <span class="admin-auth-status">
+          <span class="admin-auth-status-dot" aria-hidden="true"></span>
+          Acesso seguro
+        </span>
+      </div>
+
+      {message && <p class="admin-auth-message" role="alert">{message}</p>}
+
+      <form method="post" action="/api/admin/login" class="admin-auth-form">
+        <label for="username">Usuário</label>
+        <div class="admin-input-wrap">
+          <input id="username" name="username" type="text" autocomplete="username" required maxlength="60" />
+          <span class="admin-input-icon" aria-hidden="true"><AdminIcon name="grid" /></span>
+        </div>
+
+        <label for="password">Senha</label>
+        <div class="admin-input-wrap">
+          <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="256" />
+          <span class="admin-input-icon" aria-hidden="true"><AdminIcon name="lock" /></span>
+        </div>
+
+        <button class="admin-button admin-button-primary admin-auth-submit" type="submit">
+          Entrar no painel
+          <AdminIcon name="arrow" />
+        </button>
+      </form>
+
+      <div class="admin-auth-footer">
+        <a class="admin-back-link" href="/">Voltar ao site</a>
+        <span class="admin-auth-meta">Sessão protegida pelo Family Game Festival</span>
+      </div>
+    </div>
+  </section>
+</AdminLayout>

@@ -10,6 +10,12 @@ export const participants = sqliteTable('participants', {
   phone: text('phone').notNull(),
   email: text('email').notNull(),
   dateOfBirth: text('date_of_birth').notNull(),
+  city: text('city').notNull().default(''),
+  state: text('state').notNull().default(''),
+  instagram: text('instagram'),
+  tiktok: text('tiktok'),
+  facebook: text('facebook'),
+  otherSocials: text('other_socials'),
   createdAt: timestamp('created_at'),
   updatedAt: timestamp('updated_at')
 }, (table) => ({
@@ -100,9 +106,14 @@ export const guardians = sqliteTable('guardians', {
 export const minorAuthorizations = sqliteTable('minor_authorizations', {
   id: text('id').primaryKey(),
   registrationId: text('registration_id').notNull().references(() => registrations.id, { onDelete: 'cascade' }),
+  participantId: text('participant_id').notNull().references(() => participants.id, { onDelete: 'cascade' }),
   guardianId: text('guardian_id').notNull().references(() => guardians.id, { onDelete: 'restrict' }),
+  version: integer('version').notNull().default(1),
+  competitionIds: text('competition_ids').notNull().default('[]'),
   status: text('status').notNull().default('pending'),
   driveFileId: text('drive_file_id'),
+  signedDriveFileId: text('signed_drive_file_id'),
+  deliveryType: text('delivery_type'),
   requestedAt: timestamp('requested_at'),
   uploadedAt: text('uploaded_at'),
   receivedAt: text('received_at'),
@@ -110,7 +121,8 @@ export const minorAuthorizations = sqliteTable('minor_authorizations', {
   createdAt: timestamp('created_at'),
   updatedAt: timestamp('updated_at')
 }, (table) => ({
-  registrationUnique: uniqueIndex('minor_authorizations_registration_unique').on(table.registrationId)
+  participantIndex: index('minor_authorizations_participant_idx').on(table.participantId, table.version),
+  participantVersionUnique: uniqueIndex('minor_authorizations_participant_version_unique').on(table.participantId, table.version)
 }));
 
 export const cosplayEntries = sqliteTable('cosplay_entries', {
@@ -120,7 +132,12 @@ export const cosplayEntries = sqliteTable('cosplay_entries', {
   characterName: text('character_name').notNull(),
   sourceWork: text('source_work').notNull(),
   presentationType: text('presentation_type').notNull(),
+  cosplayDescription: text('cosplay_description').notNull().default(''),
   presentationDescription: text('presentation_description'),
+  stageCallName: text('stage_call_name').notNull().default(''),
+  presentationNotes: text('presentation_notes'),
+  technicalNotes: text('technical_notes'),
+  judgeNotes: text('judge_notes'),
   musicTitle: text('music_title'),
   createdAt: timestamp('created_at'),
   updatedAt: timestamp('updated_at')
@@ -138,6 +155,7 @@ export const registrationFiles = sqliteTable('registration_files', {
   contentHash: text('content_hash'),
   driveFileId: text('drive_file_id'),
   drivePath: text('drive_path'),
+  authorizationVersion: integer('authorization_version'),
   syncStatus: text('sync_status').notNull().default('drive_pending'),
   lastError: text('last_error'),
   createdAt: timestamp('created_at'),
@@ -147,12 +165,25 @@ export const registrationFiles = sqliteTable('registration_files', {
   contentHashUnique: uniqueIndex('registration_files_hash_unique').on(table.registrationId, table.fileType, table.contentHash)
 }));
 
+export const registrationLinks = sqliteTable('registration_links', {
+  id: text('id').primaryKey(),
+  registrationId: text('registration_id').notNull().references(() => registrations.id, { onDelete: 'cascade' }),
+  label: text('label').notNull(),
+  url: text('url').notNull(),
+  createdAt: timestamp('created_at'),
+  updatedAt: timestamp('updated_at')
+}, (table) => ({
+  registrationIndex: index('registration_links_registration_idx').on(table.registrationId, table.createdAt)
+}));
+
 export const admins = sqliteTable('admins', {
   id: text('id').primaryKey(),
   displayName: text('display_name').notNull(),
+  username: text('username'),
   email: text('email').notNull(),
   passwordHash: text('password_hash').notNull(),
   status: text('status').notNull().default('active'),
+  mustChangePassword: integer('must_change_password', { mode: 'boolean' }).notNull().default(false),
   lastLoginAt: text('last_login_at'),
   createdAt: timestamp('created_at'),
   updatedAt: timestamp('updated_at')
@@ -181,6 +212,7 @@ export const databaseSchema = {
   minorAuthorizations,
   cosplayEntries,
   registrationFiles,
+  registrationLinks,
   admins,
   adminSessions
 };

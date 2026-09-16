@@ -1,0 +1,119 @@
+---
+import AdminIcon from '../../components/admin/AdminIcon.astro';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import AdminQuickAction from '../../components/admin/AdminQuickAction.astro';
+import AdminStatCard from '../../components/admin/AdminStatCard.astro';
+import AdminStatusCard from '../../components/admin/AdminStatusCard.astro';
+
+const admin = Astro.locals.admin;
+if (!admin) return Astro.redirect('/admin/login');
+if (admin.mustChangePassword) return Astro.redirect('/admin/account/password');
+
+const stats = [
+  { label: 'Total de inscrições', value: '0', hint: 'base geral', accent: 'yellow', icon: 'clipboard' },
+  { label: 'Inscrições de Cosplay', value: '0', hint: 'modalidade', accent: 'magenta', icon: 'spark' },
+  { label: 'Menores de idade', value: '0', hint: 'participantes', accent: 'cyan', icon: 'shield' },
+  { label: 'Autorizações pendentes', value: '0', hint: 'atenção', accent: 'red', icon: 'folder' },
+] as const;
+---
+
+<AdminLayout
+  title="Painel administrativo | Family Game Festival"
+  subtitle="Visão geral do evento e da operação administrativa."
+  admin={admin}
+  action={{ label: 'Trocar senha', href: '/admin/account/password' }}
+>
+  <div class="admin-dashboard">
+    <section class="admin-dashboard-intro" aria-labelledby="admin-welcome-title">
+      <div class="admin-dashboard-intro-copy">
+        <p class="admin-eyebrow">Family Game Festival 2026 · visão geral</p>
+        <h2 id="admin-welcome-title">Olá, {admin.displayName}.</h2>
+        <p>Este é o ponto de partida para acompanhar a operação do Family Game Festival e preparar as próximas etapas do painel.</p>
+      </div>
+      <div class="admin-event-chip">
+        <span class="admin-event-chip-label">Próxima edição</span>
+        <strong>19–20 SET</strong>
+        <span class="admin-event-chip-label">Bauru · SP</span>
+      </div>
+    </section>
+
+    <section id="inscricoes" class="admin-panel-section" aria-labelledby="admin-summary-title">
+      <div class="admin-section-heading">
+        <div>
+          <p class="admin-section-kicker">Resumo operacional</p>
+          <h2 id="admin-summary-title">Panorama do painel</h2>
+        </div>
+        <p>Os indicadores serão preenchidos pelas inscrições do evento.</p>
+      </div>
+      <div class="admin-stat-grid">
+        {stats.map((stat) => <AdminStatCard {...stat} />)}
+      </div>
+    </section>
+
+    <div class="admin-dashboard-grid">
+      <section id="cosplay" class="admin-panel" aria-labelledby="admin-shortcuts-title">
+        <div class="admin-panel-header">
+          <div>
+            <p class="admin-section-kicker">Navegação rápida</p>
+            <h2 id="admin-shortcuts-title">Acesse uma área</h2>
+            <p>Organize o trabalho por frente de operação.</p>
+          </div>
+          <span class="admin-panel-header-icon"><AdminIcon name="arrow" /></span>
+        </div>
+        <div class="admin-quick-grid">
+          <AdminQuickAction title="Inscrições" description="Acompanhar entradas" href="/admin#inscricoes" accent="yellow" icon="clipboard" />
+          <AdminQuickAction title="Cosplay" description="Concurso e arquivos" href="/admin#cosplay" accent="magenta" icon="spark" />
+          <AdminQuickAction title="Menores" description="Autorizações" href="/admin#menores" accent="cyan" icon="shield" />
+          <AdminQuickAction title="Documentos" description="Arquivos do evento" href="/admin#documentos" accent="red" icon="folder" />
+        </div>
+      </section>
+
+      <section id="documentos" class="admin-panel" aria-labelledby="admin-status-title">
+        <div class="admin-panel-header">
+          <div>
+            <p class="admin-section-kicker">Infraestrutura</p>
+            <h2 id="admin-status-title">Status do sistema</h2>
+            <p>Serviços usados pela operação administrativa.</p>
+          </div>
+          <span class="admin-auth-status"><span class="admin-auth-status-dot" aria-hidden="true"></span>Online</span>
+        </div>
+        <div class="admin-status-list">
+          <AdminStatusCard label="Banco de dados" value="Conectado" description="Turso · conexão ativa" state="connected" icon="grid" />
+          <AdminStatusCard label="Google Drive" value="Conectado" description="OAuth server-side configurado" state="connected" icon="folder" />
+          <AdminStatusCard label="Sessão administrativa" value="Ativa" description="Acesso validado com segurança" state="active" icon="lock" />
+          <AdminStatusCard label="Ambiente" value="Desenvolvimento" description="Branch feature/admin-panel" state="local" icon="settings" />
+        </div>
+      </section>
+    </div>
+
+    <section id="menores" class="admin-panel admin-next-steps" aria-labelledby="admin-next-steps-title">
+      <div class="admin-panel-header">
+        <div>
+          <p class="admin-section-kicker">Acompanhamento</p>
+          <h2 id="admin-next-steps-title">Próximas etapas</h2>
+          <p>O painel está preparado para receber os módulos operacionais.</p>
+        </div>
+      </div>
+      <ul class="admin-next-steps-list">
+        <li class="admin-next-step">
+          <span class="admin-next-step-mark">01</span>
+          <span class="admin-next-step-copy"><strong>Inscrições públicas</strong><small>Conectar os fluxos de cadastro às modalidades do festival.</small></span>
+          <span class="admin-next-step-status">Em preparação</span>
+        </li>
+        <li class="admin-next-step">
+          <span class="admin-next-step-mark">02</span>
+          <span class="admin-next-step-copy"><strong>Documentos e arquivos</strong><small>Organizar os materiais recebidos por participante no Drive.</small></span>
+          <span class="admin-next-step-status">Planejado</span>
+        </li>
+        <li class="admin-next-step">
+          <span class="admin-next-step-mark">03</span>
+          <span class="admin-next-step-copy"><strong>Autorizações</strong><small>Revisar pendências de menores e consentimentos.</small></span>
+          <span class="admin-next-step-status">Planejado</span>
+        </li>
+      </ul>
+      <div id="configuracoes" class="admin-panel-footer-link">
+        <a class="admin-inline-link" href="/admin/account/password">Gerenciar segurança da conta <AdminIcon name="arrow" /></a>
+      </div>
+    </section>
+  </div>
+</AdminLayout>

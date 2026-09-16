@@ -66,7 +66,39 @@ npm run db:migrate
 O runner usa a mesma base Turso configurada no `Evento/.env.local`. A migração
 cria as tabelas de participantes, competições,
 inscrições, consentimentos, responsáveis, autorizações de menores, dados
-específicos do cosplay, arquivos, administradores e sessões.
+específicos do cosplay, arquivos, administradores e sessões. A migration
+`0003_admin_usernames.sql` adiciona o username único usado pelo login
+administrativo. A migration `0004_admin_force_password_change.sql` adiciona a
+flag persistente de troca obrigatória no primeiro acesso.
+
+## Acesso administrativo local
+
+O painel usa uma sessão server-side persistida em `admin_sessions`. Antes do
+primeiro login, gere um segredo local com:
+
+```powershell
+node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"
+```
+
+Copie o resultado somente para `ADMIN_SESSION_SECRET` no
+`Evento/.env.local`. Não coloque esse valor no Git, em HTML, no frontend ou em
+logs. `ADMIN_SESSION_TTL_SECONDS` é opcional e, quando omitida, usa 8 horas.
+
+Depois de aplicar as migrações, crie cada administrador individualmente no
+terminal interativo:
+
+```powershell
+Set-Location 'H:\00- Family Game Festival\Evento'
+npm run admin:create
+```
+
+O comando solicita nome, username, se a senha será temporária e a senha duas
+vezes. A senha é ocultada no terminal, é armazenado somente o hash bcrypt e
+usernames repetidos são recusados. Ao escolher a opção temporária, o primeiro
+login libera somente a tela de troca de senha; após a troca, todas as sessões
+anteriores são revogadas e um novo login é exigido. O login local fica em
+`http://localhost:4321/admin/login` e o painel protegido em
+`http://localhost:4321/admin`.
 
 ## Desenvolvimento
 
@@ -76,5 +108,13 @@ npm run dev
 ```
 
 Nenhuma rota pública foi redesenhada nesta fase. A próxima etapa deve criar o
-login e os endpoints administrativos somente depois de validar a conexão com
-o banco Turso único.
+formulário público de inscrições e os módulos do painel somente após a revisão
+da autenticação administrativa. Para validar o fluxo sem criar contas reais,
+use os dados temporários do teste automatizado:
+
+```powershell
+npm run test:admin-auth
+```
+
+O teste cria um administrador temporário, valida login, proteção das rotas,
+revogação, troca de senha e expiração e remove os dados ao terminar.
