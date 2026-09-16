@@ -10,6 +10,8 @@ export type RegistrationApiErrorCode =
   | 'file'
   | string;
 
+export { formatCpf, formatPhone, isValidCpf, isValidPhone, normalizeCpf, normalizePhone } from './registration-validation';
+
 export class RegistrationApiError extends Error {
   code: RegistrationApiErrorCode;
   status: number;
@@ -210,6 +212,8 @@ export function buildRegistrationPayload(source: HTMLFormElement, competitionId:
 
 export function buildManagementPayload(source: HTMLFormElement) {
   const payload = new FormData();
+  payload.append('phone', valueOf(source, 'phone'));
+  payload.append('email', valueOf(source, 'email'));
   for (const name of ['instagram', 'tiktok', 'facebook', 'otherSocials', 'stageName', 'stageCallName', 'characterName', 'sourceWork', 'cosplayDescription', 'presentationDescription', 'presentationNotes', 'technicalNotes', 'judgeNotes', 'musicTitle']) {
     appendValue(payload, name, valueOf(source, name));
   }

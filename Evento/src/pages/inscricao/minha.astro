@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
+import RegistrationAuthorization from '../../components/RegistrationAuthorization.astro';
 import { event } from '../../data/event';
 import { registrationRoutes } from '../../lib/registration';
 ---
@@ -33,14 +34,14 @@ import { registrationRoutes } from '../../lib/registration';
 
       <form class="management-form" data-management-form hidden>
         <section class="management-card">
-          <div class="management-card-heading"><div><p class="eyebrow eyebrow-yellow">Dados protegidos</p><h2>Dados pessoais.</h2></div><span class="management-lock">🔒 Somente leitura</span></div>
-          <p class="registration-helper">Para sua segurança, dados de identificação e contato ficam bloqueados depois do primeiro cadastro.</p>
+          <div class="management-card-heading"><div><p class="eyebrow eyebrow-yellow">Dados pessoais</p><h2>Identificação e contato.</h2></div><span class="management-lock">🔒 Identificação protegida</span></div>
+          <p class="registration-helper">Nome, CPF, nascimento, cidade, estado e competição ficam protegidos. Telefone e e-mail podem ser atualizados quando necessário.</p>
           <div class="registration-grid">
             <div class="registration-field"><label for="mine-name">Nome completo</label><input id="mine-name" readonly /></div>
             <div class="registration-field"><label for="mine-birth">Data de nascimento</label><input id="mine-birth" readonly /></div>
             <div class="registration-field"><label for="mine-cpf">CPF</label><input id="mine-cpf" readonly /></div>
-            <div class="registration-field"><label for="mine-phone">Telefone / WhatsApp</label><input id="mine-phone" readonly /></div>
-            <div class="registration-field"><label for="mine-email">E-mail</label><input id="mine-email" readonly /></div>
+            <div class="registration-field"><label for="mine-phone">Telefone / WhatsApp</label><input id="mine-phone" name="phone" type="tel" inputmode="tel" maxlength="15" /></div>
+            <div class="registration-field"><label for="mine-email">E-mail</label><input id="mine-email" name="email" type="email" /></div>
             <div class="registration-field"><label for="mine-city">Cidade</label><input id="mine-city" readonly /></div>
             <div class="registration-field"><label for="mine-state">Estado / UF</label><input id="mine-state" readonly /></div>
           </div>
@@ -93,21 +94,7 @@ import { registrationRoutes } from '../../lib/registration';
         </section>
 
         <section class="management-card">
-          <div class="management-card-heading"><div><p class="eyebrow eyebrow-cyan">Acompanhamento</p><h2>Responsável e confirmações.</h2></div><span class="management-lock">🔒 Dados registrados</span></div>
-          <div class="management-minor-status" data-management-authorization-status>Consultando a autorização do responsável…</div>
-          <div class="management-authorization-actions" data-management-authorization-actions hidden>
-            <div class="registration-subheading"><strong>Documentos da autorização</strong><span>Escolha a forma mais conveniente para concluir.</span></div>
-            <div class="management-authorization-links">
-              <a class="registration-text-button" data-authorization-filled target="_blank" rel="noreferrer">Baixar preenchida</a>
-              <a class="registration-text-button" data-authorization-blank target="_blank" rel="noreferrer">Baixar em branco</a>
-              <a class="registration-text-button" data-authorization-editable target="_blank" rel="noreferrer">Baixar editável</a>
-            </div>
-            <input hidden type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" data-authorization-upload-input />
-            <div class="management-authorization-buttons">
-              <button type="button" class="button button-outline-light" data-upload-authorization>Enviar autorização assinada</button>
-              <button type="button" class="registration-text-button" data-physical-authorization>Entregarei presencialmente</button>
-            </div>
-          </div>
+          <RegistrationAuthorization variant="management" />
           <div class="management-acceptances" data-management-acceptances></div>
         </section>
 
@@ -122,7 +109,8 @@ import { registrationRoutes } from '../../lib/registration';
 </BaseLayout>
 
 <script>
-  import { buildManagementPayload, getRegistrationApi, parseOtherSocials, postRegistrationAction, postRegistrationForm, registrationApiUrl, RegistrationApiError } from '../../lib/registration-api';
+  import { buildManagementPayload, formatCpf, formatPhone, getRegistrationApi, parseOtherSocials, postRegistrationAction, postRegistrationForm, registrationApiUrl, RegistrationApiError } from '../../lib/registration-api';
+  import { renderRegistrationAuthorization } from '../../lib/authorization-ui';
   import { registrationRoutes } from '../../lib/registration';
 
   type RegistrationData = {
@@ -147,7 +135,6 @@ import { registrationRoutes } from '../../lib/registration';
   const fileFeedback = document.querySelector<HTMLElement>('[data-management-file-feedback]');
   const socialList = document.querySelector<HTMLElement>('[data-management-social-list]');
   const uploadInput = document.querySelector<HTMLInputElement>('[data-management-upload-input]');
-  const authorizationUploadInput = document.querySelector<HTMLInputElement>('[data-authorization-upload-input]');
   let currentData: RegistrationData | null = null;
   let pendingFileType: 'cosplay_reference' | 'cosplay_audio' | null = null;
   let replacementFileId: string | null = null;
@@ -160,6 +147,34 @@ import { registrationRoutes } from '../../lib/registration';
   const fileLabel = (type: string) => ({ cosplay_reference: 'Referência', cosplay_audio: 'Áudio', guardian_authorization_signed: 'Autorização assinada', guardian_authorization: 'Autorização preenchida', registration_sheet: 'Ficha da inscrição' } as Record<string, string>)[type] || 'Arquivo';
   const statusLabel = (value: string) => ({ submitted: 'Em análise', pending: 'Pendente', approved: 'Confirmada', rejected: 'Revisar dados' } as Record<string, string>)[value] || value.replaceAll('_', ' ');
   const setPageFeedback = (message: string) => { if (pageFeedback) pageFeedback.textContent = message; };
+  const showManagementFieldError = (name: string, message: string) => {
+    const field = managementForm?.elements.namedItem(name);
+    if (!(field instanceof HTMLInputElement || field instanceof HTMLSelectElement || field instanceof HTMLTextAreaElement)) return;
+    const wrapper = field.closest<HTMLElement>('.registration-field');
+    if (!wrapper) return;
+    let note = wrapper.querySelector<HTMLElement>('[data-field-error]');
+    if (!note) {
+      note = document.createElement('p');
+      note.className = 'registration-field-error';
+      note.dataset.fieldError = '';
+      wrapper.append(note);
+    }
+    note.textContent = message;
+    field.setAttribute('aria-invalid', 'true');
+    field.focus({ preventScroll: true });
+    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+  document.querySelector<HTMLInputElement>('#mine-phone')?.addEventListener('input', (event) => {
+    const input = event.currentTarget as HTMLInputElement;
+    input.value = formatPhone(input.value);
+    input.closest('.registration-field')?.querySelector('[data-field-error]')?.remove();
+    input.removeAttribute('aria-invalid');
+  });
+  document.querySelector<HTMLInputElement>('#mine-email')?.addEventListener('input', (event) => {
+    const input = event.currentTarget as HTMLInputElement;
+    input.closest('.registration-field')?.querySelector('[data-field-error]')?.remove();
+    input.removeAttribute('aria-invalid');
+  });
 
   const addSocialRow = (label = '', url = '') => {
     if (!socialList) return;
@@ -276,37 +291,9 @@ import { registrationRoutes } from '../../lib/registration';
   };
 
   const renderAuthorization = (data: RegistrationData) => {
-    const authorizationStatus = document.querySelector<HTMLElement>('[data-management-authorization-status]');
-    const actions = document.querySelector<HTMLElement>('[data-management-authorization-actions]');
-    const filled = document.querySelector<HTMLAnchorElement>('[data-authorization-filled]');
-    const blank = document.querySelector<HTMLAnchorElement>('[data-authorization-blank]');
-    const editable = document.querySelector<HTMLAnchorElement>('[data-authorization-editable]');
+    const authorizationRoot = document.querySelector<HTMLElement>('[data-registration-authorization]');
+    if (authorizationRoot) renderRegistrationAuthorization(authorizationRoot, data, loadData);
     const acceptances = document.querySelector<HTMLElement>('[data-management-acceptances]');
-    if (!authorizationStatus || !actions) return;
-    if (!data.guardian || !data.minorAuthorization) {
-      authorizationStatus.replaceChildren();
-      const title = document.createElement('strong');
-      title.textContent = 'Participante maior de idade';
-      const description = document.createElement('span');
-      description.textContent = 'Autorização de responsável não se aplica a esta inscrição.';
-      authorizationStatus.append(title, description);
-      actions.hidden = true;
-    } else {
-      const auth = data.minorAuthorization;
-      const signed = auth.status === 'uploaded' || auth.status === 'received';
-      const covered = signed && auth.coversCurrentCompetition;
-      authorizationStatus.replaceChildren();
-      const title = document.createElement('strong');
-      title.textContent = covered ? 'Autorização do responsável já válida para esta competição.' : auth.status === 'physical_pending' ? 'Entrega presencial registrada.' : 'Autorização pendente.';
-      const description = document.createElement('span');
-      description.textContent = covered ? `Versão ${auth.version} · esta autorização também cobre ${auth.competitionIds.length} competição(ões).` : auth.status === 'physical_pending' ? `A organização aguardará o documento presencial da versão ${auth.version}.` : `Versão ${auth.version} · baixe, assine e envie o documento ou escolha a entrega presencial.`;
-      authorizationStatus.append(title, description);
-      actions.hidden = covered;
-      const base = registrationApiUrl('inscricao/autorizacao');
-      if (filled) filled.href = `${base}?format=filled`;
-      if (blank) blank.href = `${base}?format=blank`;
-      if (editable) editable.href = `${base}?format=editable`;
-    }
     if (acceptances) {
       acceptances.replaceChildren();
       data.consents.filter((consent) => consent.granted).forEach((consent) => {
@@ -338,8 +325,8 @@ import { registrationRoutes } from '../../lib/registration';
     if (statusNote) statusNote.textContent = 'Você ainda pode atualizar os dados permitidos';
     setValue('mine-name', data.participant.fullName);
     setValue('mine-birth', formatDate(data.participant.dateOfBirth));
-    setValue('mine-cpf', data.participant.cpf);
-    setValue('mine-phone', data.participant.phone);
+    setValue('mine-cpf', formatCpf(data.participant.cpf));
+    setValue('mine-phone', formatPhone(data.participant.phone));
     setValue('mine-email', data.participant.email);
     setValue('mine-city', data.participant.city);
     setValue('mine-state', data.participant.state);
@@ -404,10 +391,16 @@ import { registrationRoutes } from '../../lib/registration';
   };
 
   const uploadFile = async (fileType: 'cosplay_reference' | 'cosplay_audio', file: File, replaceId?: string | null) => {
+    const needsPendriveConsent = fileType === 'cosplay_audio' && !currentData?.consents.some((consent) => consent.type === 'pendrive_backup' && consent.granted);
+    if (needsPendriveConsent) {
+      const accepted = window.confirm('Este áudio precisa de uma cópia de segurança em pendrive no dia do evento. Você confirma essa orientação para continuar?');
+      if (!accepted) return;
+    }
     if (replaceId) await deleteFile(replaceId);
     const form = new FormData();
     form.append('fileType', fileType);
     form.append('file', file, file.name);
+    if (needsPendriveConsent) form.append('consentPendrive', 'yes');
     const label = fileType === 'cosplay_audio' ? 'áudio' : 'referência';
     if (fileFeedback) fileFeedback.textContent = `Enviando ${label}…`;
     try {
@@ -452,37 +445,6 @@ import { registrationRoutes } from '../../lib/registration';
     uploadInput.value = '';
   });
 
-  document.querySelector('[data-upload-authorization]')?.addEventListener('click', () => authorizationUploadInput?.click());
-  authorizationUploadInput?.addEventListener('change', async () => {
-    const file = authorizationUploadInput.files?.[0];
-    if (!file) return;
-    const form = new FormData();
-    form.append('fileType', 'guardian_authorization_signed');
-    form.append('file', file, file.name);
-    setPageFeedback('Enviando autorização assinada…');
-    try {
-      await postRegistrationAction('inscricao/arquivo', form);
-      setPageFeedback('Autorização enviada. A situação será atualizada após a sincronização.');
-      await loadData();
-    } catch {
-      setPageFeedback('Não foi possível enviar a autorização assinada.');
-    }
-    authorizationUploadInput.value = '';
-  });
-
-  document.querySelector('[data-physical-authorization]')?.addEventListener('click', async () => {
-    const form = new FormData();
-    form.append('action', 'physical_pending');
-    setPageFeedback('Registrando entrega presencial…');
-    try {
-      await postRegistrationAction('inscricao/autorizacao', form);
-      setPageFeedback('Entrega presencial registrada.');
-      await loadData();
-    } catch {
-      setPageFeedback('Não foi possível registrar a entrega presencial.');
-    }
-  });
-
   managementForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!currentData) return;
@@ -494,6 +456,11 @@ import { registrationRoutes } from '../../lib/registration';
       await loadData();
     } catch (error) {
       if (feedback) feedback.textContent = error instanceof RegistrationApiError ? error.message : 'Não foi possível salvar as alterações.';
+      if (error instanceof RegistrationApiError) {
+        const message = error.message.toLowerCase();
+        if (message.includes('telefone')) showManagementFieldError('phone', error.message);
+        if (message.includes('e-mail')) showManagementFieldError('email', error.message);
+      }
     } finally {
       if (submit) { submit.disabled = false; submit.innerHTML = 'Salvar alterações <span aria-hidden="true">↗</span>'; }
     }

@@ -3,6 +3,6 @@ import { createPublicRegistration } from '../../../lib/server/registration/publi
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
-  return createPublicRegistration(request, 'cosplay');
+export const POST: APIRoute = async ({ request, cookies }) => {
+  return createPublicRegistration(request, 'cosplay', cookies);
 };

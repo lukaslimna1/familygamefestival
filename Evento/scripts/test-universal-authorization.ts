@@ -5,6 +5,7 @@ import { and, eq } from 'drizzle-orm';
 import { getDatabase } from '../src/lib/server/db/client';
 import { consents as consentRows, guardians, minorAuthorizations, participants, registrationFiles, registrationLinks, registrations } from '../src/lib/server/db/schema';
 import { createRegistrationDraft, getRegistrationDetails } from '../src/lib/server/db/repository';
+import { makeTestCpf } from './test-data';
 
 const projectDirectory = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const localEnvFile = join(projectDirectory, '.env.local');
@@ -12,8 +13,8 @@ if (existsSync(localEnvFile) && typeof process.loadEnvFile === 'function') proce
 
 const database = getDatabase();
 const runId = `${Date.now()}${Math.floor(Math.random() * 1000)}`;
-const participantCpf = `8${runId.slice(-10)}`;
-const guardianCpf = `6${runId.slice(-10)}`;
+const participantCpf = makeTestCpf(runId, '8');
+const guardianCpf = makeTestCpf(runId, '6');
 const registrationIds: string[] = [];
 let participantId = '';
 

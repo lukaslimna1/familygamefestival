@@ -464,11 +464,14 @@ export async function syncRegistrationToDrive(
           id: competition.id,
           title: competition.name,
           category: competition.category,
-          eventDate: competition.eventDate
+          eventDay: competition.eventDay,
+          eventDate: competition.eventDate,
+          displayDate: competition.displayDate,
+          startTime: competition.startTime
         })),
         selectedCompetitionIds: record.minorAuthorization.competitionIds,
-        location: 'Arena Tauste · Bauru',
-        eventDates: '19 e 20/09/2026',
+        location: 'Arena Tauste - SORRI Bauru',
+        eventDates: '19 e 20 de setembro de 2026',
         generatedAt: new Date().toISOString()
       });
       const authorizationFile = record.files.find((file) => file.fileType === guardianAuthorizationFileType);

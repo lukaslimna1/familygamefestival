@@ -1,5 +1,14 @@
 import competitionDefinitions from '../../../config/competitions.json';
 
+export {
+  formatCpf,
+  formatPhone,
+  isValidCpf,
+  isValidPhone,
+  normalizeCpf,
+  normalizePhone
+} from '../../registration-validation';
+
 export const DEFAULT_REGISTRATION_CAPACITY = 32;
 export const ONLINE_REGISTRATION_DEADLINE_ISO = '2026-09-18T18:00:00.000Z';
 export const REGISTRATION_TIME_ZONE = 'America/Sao_Paulo';
@@ -70,14 +79,6 @@ export function calculateAge(dateOfBirth: string, now = new Date()) {
   const month = now.getUTCMonth() - birthDate.getUTCMonth();
   if (month < 0 || (month === 0 && now.getUTCDate() < birthDate.getUTCDate())) age -= 1;
   return age;
-}
-
-export function normalizeCpf(value: string) {
-  return value.replace(/\D/g, '');
-}
-
-export function isValidCpf(value: string) {
-  return /^\d{11}$/.test(normalizeCpf(value));
 }
 
 export function normalizeOptionalText(value: string | null | undefined, maxLength = 500) {

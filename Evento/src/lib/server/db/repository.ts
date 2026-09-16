@@ -9,7 +9,9 @@ import {
   getRegistrationCapacity,
   getRegistrationWindowStatus,
   isValidCpf,
-  normalizeCpf
+  isValidPhone,
+  normalizeCpf,
+  normalizePhone
 } from '../registration/config';
 import { getDatabase } from './client';
 import {
@@ -39,7 +41,7 @@ export const registrationDraftSchema = z.object({
   participant: z.object({
     fullName: z.string().trim().min(3).max(160),
     cpf: z.string().trim().min(11).max(18),
-    phone: z.string().trim().min(8).max(30).optional(),
+    phone: z.string().trim().max(30).optional(),
     email: z.string().trim().email().max(254).optional(),
     dateOfBirth: isoDate,
     city: z.string().trim().min(2).max(120),
@@ -56,7 +58,7 @@ export const registrationDraftSchema = z.object({
   guardian: z.object({
     fullName: z.string().trim().min(3).max(160),
     cpf: z.string().trim().min(11).max(18),
-    phone: z.string().trim().min(8).max(30),
+    phone: z.string().trim().max(30),
     email: z.string().trim().email().max(254),
     relationship: z.string().trim().min(2).max(80)
   }).optional(),
@@ -102,8 +104,40 @@ function isUniquePublicCodeError(error: unknown) {
 
 function validateCpf(value: string, label: string) {
   const normalized = normalizeCpf(value);
-  if (!isValidCpf(normalized)) throw new RegistrationError('invalid', `${label} deve conter 11 dígitos.`);
+  if (!isValidCpf(normalized)) throw new RegistrationError('invalid', `${label} é inválido. Confira os dígitos verificadores.`);
   return normalized;
+}
+
+function validatePhone(value: string | undefined, label: string): string;
+function validatePhone(value: string | undefined, label: string, optional: true): string | undefined;
+function validatePhone(value: string | undefined, label: string, optional = false) {
+  const normalized = normalizePhone(value ?? '');
+  if (!normalized && optional) return undefined;
+  if (!isValidPhone(normalized)) throw new RegistrationError('invalid', `${label} deve ser um telefone brasileiro válido com DDD.`);
+  return normalized;
+}
+
+function humanValidationMessage(error: z.ZodError) {
+  const path = error.issues[0]?.path.join('.') ?? '';
+  const messages: Record<string, string> = {
+    'participant.fullName': 'Informe seu nome completo.',
+    'participant.cpf': 'Informe um CPF válido.',
+    'participant.phone': 'Informe um telefone brasileiro válido com DDD.',
+    'participant.email': 'Informe um e-mail válido ou deixe o campo vazio.',
+    'participant.dateOfBirth': 'Informe uma data de nascimento válida.',
+    'participant.city': 'Informe sua cidade.',
+    'participant.state': 'Informe seu estado.',
+    'phone': 'Informe um telefone brasileiro válido com DDD.',
+    'email': 'Informe um e-mail válido ou deixe o campo vazio.',
+    'guardian.fullName': 'Informe o nome completo do responsável.',
+    'guardian.cpf': 'Informe um CPF válido para o responsável.',
+    'guardian.phone': 'Informe um telefone brasileiro válido para o responsável.',
+    'guardian.email': 'Informe um e-mail válido para o responsável.',
+    'guardian.relationship': 'Informe o parentesco ou relação com o participante.',
+    'links': 'Confira os links informados.',
+    'competitionId': 'Selecione uma competição válida.'
+  };
+  return messages[path] || 'Confira os dados informados e tente novamente.';
 }
 
 function normalizeOptional(value: string | undefined) {
@@ -168,9 +202,6 @@ function validateDraftBusinessRules(draft: RegistrationDraft, competitionDefinit
   }
   if (competitionDefinition.type === 'cosplay') {
     if (!draft.cosplay) throw new RegistrationError('invalid', 'Os dados do Cosplay são obrigatórios.');
-    if (!consentTypes.has('pendrive_backup')) {
-      throw new RegistrationError('invalid', 'É necessário confirmar a ciência sobre o backup em pendrive.');
-    }
   } else if (draft.cosplay) {
     throw new RegistrationError('invalid', 'Dados de Cosplay não pertencem a esta competição.');
   } else if (consentTypes.has('pendrive_backup')) {
@@ -236,11 +267,12 @@ export async function createRegistrationDraft(input: RegistrationDraft) {
   try {
     draft = registrationDraftSchema.parse(input);
   } catch (error) {
-    const message = error instanceof z.ZodError ? error.issues[0]?.message : undefined;
-    throw new RegistrationError('invalid', message || 'Os dados da inscrição são inválidos.');
+    throw new RegistrationError('invalid', error instanceof z.ZodError ? humanValidationMessage(error) : 'Os dados da inscrição são inválidos.');
   }
   const participantCpf = validateCpf(draft.participant.cpf, 'O CPF do participante');
   const guardianCpf = draft.guardian ? validateCpf(draft.guardian.cpf, 'O CPF do responsável') : undefined;
+  const participantPhone = validatePhone(draft.participant.phone, 'O telefone do participante', true);
+  const guardianPhone = draft.guardian ? validatePhone(draft.guardian.phone, 'O telefone do responsável') : undefined;
   const competitionDefinition = competitionById.get(draft.competitionId);
   const competition = await getCompetitionRow(draft.competitionId);
 
@@ -306,7 +338,7 @@ export async function createRegistrationDraft(input: RegistrationDraft) {
   );
   if (existingParticipant && (
     existingParticipant.fullName !== draft.participant.fullName ||
-    existingParticipant.phone !== draft.participant.phone ||
+    normalizePhone(existingParticipant.phone) !== (participantPhone ?? '') ||
     existingParticipant.email !== draft.participant.email ||
     existingParticipant.dateOfBirth !== draft.participant.dateOfBirth ||
     existingParticipant.city !== draft.participant.city ||
@@ -315,9 +347,9 @@ export async function createRegistrationDraft(input: RegistrationDraft) {
     throw new RegistrationError('duplicate', 'O CPF já está cadastrado com dados diferentes. Procure a organização para corrigir a inscrição.');
   }
   if (existingGuardian && draft.guardian && (
-    existingGuardian.cpf !== guardianCpf ||
+    normalizeCpf(existingGuardian.cpf) !== guardianCpf ||
     existingGuardian.fullName !== draft.guardian.fullName ||
-    existingGuardian.phone !== draft.guardian.phone ||
+    normalizePhone(existingGuardian.phone) !== guardianPhone ||
     existingGuardian.email !== draft.guardian.email ||
     existingGuardian.relationship !== draft.guardian.relationship
   )) {
@@ -339,7 +371,7 @@ export async function createRegistrationDraft(input: RegistrationDraft) {
             id: participantId,
             fullName: draft.participant.fullName,
             cpf: participantCpf,
-            phone: draft.participant.phone || '',
+            phone: participantPhone || '',
             email: draft.participant.email || '',
             dateOfBirth: draft.participant.dateOfBirth,
             city: draft.participant.city,
@@ -391,7 +423,7 @@ export async function createRegistrationDraft(input: RegistrationDraft) {
               participantId,
               fullName: draft.guardian.fullName,
               cpf: guardianCpf,
-              phone: draft.guardian.phone,
+              phone: guardianPhone ?? '',
               email: draft.guardian.email,
               relationship: draft.guardian.relationship
             });
@@ -665,6 +697,8 @@ export async function getRegistrationByAccess(registrationId: string, publicCode
 }
 
 const publicRegistrationUpdateSchema = z.object({
+  phone: z.string().trim().max(30).optional(),
+  email: z.string().trim().max(254).refine((value) => value === '' || /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value), 'Informe um e-mail válido.').optional(),
   instagram: z.string().trim().max(240).optional(),
   tiktok: z.string().trim().max(240).optional(),
   facebook: z.string().trim().max(240).optional(),
@@ -692,16 +726,19 @@ export async function updatePublicRegistration(registrationId: string, input: Pu
   try {
     update = publicRegistrationUpdateSchema.parse(input);
   } catch (error) {
-    const message = error instanceof z.ZodError ? error.issues[0]?.message : undefined;
-    throw new RegistrationError('invalid', message || 'Os dados da atualização são inválidos.');
+    throw new RegistrationError('invalid', error instanceof z.ZodError ? humanValidationMessage(error) : 'Os dados da atualização são inválidos.');
   }
   const current = await getRegistrationById(registrationId);
   if (!current) throw new RegistrationError('invalid', 'Inscrição não encontrada.');
 
   const now = new Date().toISOString();
+  const participantPhone = update.phone === undefined ? current.phone : validatePhone(update.phone, 'O telefone do participante', true) || '';
+  const participantEmail = update.email === undefined ? current.email : normalizeOptional(update.email) || '';
   const links = update.links ? ensureValidReferenceLinks(update.links) : undefined;
   await getDatabase().transaction(async (transaction) => {
     await transaction.update(participants).set({
+      phone: participantPhone,
+      email: participantEmail,
       instagram: normalizeOptional(update.instagram),
       tiktok: normalizeOptional(update.tiktok),
       facebook: normalizeOptional(update.facebook),

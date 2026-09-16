@@ -1,5 +1,6 @@
 import { createRegistrationDraft, RegistrationError } from '../db/repository';
 import { uploadRegistrationFile, syncRegistrationToDrive } from '../drive/registration-sync';
+import { createPublicRegistrationAccessToken, getPublicRegistrationAccessCookieOptions, PUBLIC_REGISTRATION_ACCESS_COOKIE } from './access';
 import {
   COSPLAY_AUDIO_MAX_BYTES,
   COSPLAY_REFERENCE_FILE_LIMIT,
@@ -86,7 +87,15 @@ function errorResponse(request: Request, slug: string, error: RegistrationError 
   });
 }
 
-function successResponse(request: Request, created: { registrationId: string; publicCode: string; competitionId: string; eventAccessIncluded: boolean; driveSyncStatus: string }) {
+type RegistrationCookies = {
+  set(name: string, value: string, options: ReturnType<typeof getPublicRegistrationAccessCookieOptions>): void;
+};
+
+async function successResponse(request: Request, created: { registrationId: string; publicCode: string; competitionId: string; eventAccessIncluded: boolean; driveSyncStatus: string }, cookies?: RegistrationCookies) {
+  if (cookies) {
+    const accessToken = await createPublicRegistrationAccessToken(created.registrationId, created.publicCode);
+    cookies.set(PUBLIC_REGISTRATION_ACCESS_COOKIE, accessToken, getPublicRegistrationAccessCookieOptions(request));
+  }
   if (wantsJson(request)) {
     return new Response(JSON.stringify({
       data: {
@@ -110,7 +119,7 @@ function successResponse(request: Request, created: { registrationId: string; pu
   });
 }
 
-export async function createPublicRegistration(request: Request, competitionSlug: string) {
+export async function createPublicRegistration(request: Request, competitionSlug: string, cookies?: RegistrationCookies) {
   const definition = getCompetitionDefinitionBySlug(competitionSlug);
   if (!definition) {
     if (wantsJson(request)) {
@@ -155,7 +164,7 @@ export async function createPublicRegistration(request: Request, competitionSlug
   const acceptedRegulation = form.get('consentRegulation') === 'yes';
   const acceptedImage = form.get('consentImage') === 'yes';
   const acceptedPendrive = form.get('consentPendrive') === 'yes';
-  if (!acceptedRegulation || !acceptedImage || (cosplay && !acceptedPendrive)) {
+  if (!acceptedRegulation || !acceptedImage || (audioEntries.length > 0 && !acceptedPendrive)) {
     return errorResponse(request, definition.slug, new RegistrationError('invalid', 'Os aceites obrigatórios não foram confirmados.'));
   }
 
@@ -180,7 +189,7 @@ export async function createPublicRegistration(request: Request, competitionSlug
       consents: [
         { type: 'competition_regulation', granted: true, policyVersion: getCompetitionRegulationVersion(definition) },
         { type: 'image_use', granted: true, policyVersion: REGISTRATION_POLICY_VERSIONS.imageUse },
-        ...(cosplay ? [{ type: 'pendrive_backup' as const, granted: true as const, policyVersion: REGISTRATION_POLICY_VERSIONS.pendriveBackup }] : [])
+        ...(audioEntries.length > 0 && acceptedPendrive ? [{ type: 'pendrive_backup' as const, granted: true as const, policyVersion: REGISTRATION_POLICY_VERSIONS.pendriveBackup }] : [])
       ],
       ...(hasGuardianData ? {
         guardian: {
@@ -248,7 +257,7 @@ export async function createPublicRegistration(request: Request, competitionSlug
       ...created,
       competitionId: definition.id,
       driveSyncStatus: driveFailed || filesFailed ? 'pending' : 'synced'
-    });
+    }, cookies);
   } catch (error) {
     return errorResponse(request, definition.slug, error instanceof RegistrationError ? error : new Error('Não foi possível salvar a inscrição agora.'));
   }

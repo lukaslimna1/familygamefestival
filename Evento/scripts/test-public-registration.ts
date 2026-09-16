@@ -9,6 +9,7 @@ import { guardians, minorAuthorizations, participants, registrationFiles, regist
 import { createRegistrationDraft } from '../src/lib/server/db/repository';
 import { getDriveClient } from '../src/lib/server/drive/client';
 import { syncRegistrationToDrive } from '../src/lib/server/drive/registration-sync';
+import { makeTestCpf } from './test-data';
 
 const projectDirectory = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const localEnvFile = join(projectDirectory, '.env.local');
@@ -16,10 +17,10 @@ if (existsSync(localEnvFile) && typeof process.loadEnvFile === 'function') proce
 
 const baseUrl = process.env.FGF_TEST_BASE_URL ?? 'http://localhost:4321';
 const database = getDatabase();
-const fakeAdultCpf = `8${Date.now().toString().slice(-10)}`;
-const fakeMinorCpf = `7${(Date.now() + 1).toString().slice(-10)}`;
-const fakeGuardianCpf = `6${(Date.now() + 2).toString().slice(-10)}`;
 const runId = `${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
+const fakeAdultCpf = makeTestCpf(runId, '8');
+const fakeMinorCpf = makeTestCpf(`${runId}1`, '7');
+const fakeGuardianCpf = makeTestCpf(`${runId}2`, '6');
 const adultEmail = `public-registration-adult-${runId}@example.invalid`;
 const minorEmail = `public-registration-minor-${runId}@example.invalid`;
 const competitionId = 'cosplay';
@@ -128,6 +129,7 @@ async function createFormRegistration() {
     const uploadForm = new FormData();
     uploadForm.set('fileType', fileType);
     uploadForm.set('file', new File([content], name, { type }));
+    if (fileType === 'cosplay_audio') uploadForm.set('consentPendrive', 'yes');
     const response = await fetch(`${baseUrl}/api/inscricao/arquivo`, { method: 'POST', body: uploadForm, headers: { Cookie: cookie, Origin: baseUrl }, redirect: 'manual' });
     assertCondition(response.status === 303 && getLocation(response).includes('file=1'), `O upload de ${fileType} não foi concluído.`);
   };

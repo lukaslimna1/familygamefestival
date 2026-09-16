@@ -14,7 +14,10 @@ const authorizationCompetitions = competitionDefinitions.map((competition) => ({
   id: competition.id,
   title: competition.name,
   category: competition.category,
-  eventDate: competition.eventDate
+  eventDay: competition.eventDay,
+  eventDate: competition.eventDate,
+  displayDate: competition.displayDate,
+  startTime: competition.startTime
 }));
 
 function pdfResponse(bytes: Uint8Array, fileName: string, disposition: 'inline' | 'attachment' = 'attachment') {
@@ -32,20 +35,20 @@ function pdfResponse(bytes: Uint8Array, fileName: string, disposition: 'inline' 
 
 export const GET: APIRoute = async ({ request, cookies }) => {
   const format = new URL(request.url).searchParams.get('format') ?? 'filled';
-  if (!['blank', 'filled', 'editable'].includes(format)) {
+  if (!['blank', 'filled'].includes(format)) {
     return new Response(JSON.stringify({ error: { code: 'invalid', message: 'Formato de autorização inválido.' } }), {
       status: 400,
       headers: { 'Cache-Control': 'no-store', 'Content-Type': 'application/json; charset=utf-8' }
     });
   }
 
-  if (format === 'blank' || format === 'editable') {
+  if (format === 'blank') {
     const bytes = await createGuardianAuthorizationPdf({
       mode: format,
       competitions: authorizationCompetitions,
       generatedAt: new Date().toISOString()
     });
-    return pdfResponse(bytes, format === 'editable' ? 'Autorizacao Editavel - Family Game Festival 2026.pdf' : 'Autorizacao em Branco - Family Game Festival 2026.pdf');
+    return pdfResponse(bytes, 'Autorizacao em Branco - Family Game Festival 2026.pdf');
   }
 
   const access = await verifyPublicRegistrationAccessToken(cookies.get(PUBLIC_REGISTRATION_ACCESS_COOKIE)?.value);
@@ -65,8 +68,8 @@ export const GET: APIRoute = async ({ request, cookies }) => {
     guardian: registration.guardian,
     competitions: authorizationCompetitions,
     selectedCompetitionIds: registration.minorAuthorization.competitionIds,
-    location: 'Arena Tauste · Bauru',
-    eventDates: '19 e 20/09/2026',
+    location: 'Arena Tauste - SORRI Bauru',
+    eventDates: '19 e 20 de setembro de 2026',
     generatedAt: new Date().toISOString()
   });
   return pdfResponse(bytes, `${registration.publicCode}-Autorizacao-V${registration.minorAuthorization.version}.pdf`, 'inline');

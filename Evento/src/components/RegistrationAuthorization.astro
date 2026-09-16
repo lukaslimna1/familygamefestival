@@ -1,0 +1,34 @@
+---
+interface Props {
+  variant?: 'success' | 'management';
+}
+
+const { variant = 'management' } = Astro.props;
+---
+
+<section class={`registration-authorization registration-authorization-${variant}`} data-registration-authorization data-authorization-variant={variant} hidden={variant === 'success'}>
+  <div class="registration-authorization-heading">
+    <div>
+      <p class="eyebrow eyebrow-pink">Acompanhamento</p>
+      <h2>Autorização do responsável<span>.</span></h2>
+    </div>
+    <span class="registration-authorization-badge" data-authorization-badge>Consultando</span>
+  </div>
+  <div class="registration-authorization-status" data-authorization-status aria-live="polite">
+    <strong>Consultando a autorização do responsável…</strong>
+    <span>Aguarde enquanto buscamos o status no sistema oficial.</span>
+  </div>
+  <div class="registration-authorization-actions" data-authorization-actions hidden>
+    <div class="registration-subheading"><strong>Documentos da autorização</strong><span>Baixe, assine e escolha como entregar.</span></div>
+    <div class="management-authorization-links">
+      <a class="registration-text-button" data-authorization-filled target="_blank" rel="noreferrer">Baixar preenchida</a>
+      <a class="registration-text-button" data-authorization-blank target="_blank" rel="noreferrer">Baixar em branco</a>
+    </div>
+    <input hidden type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" data-authorization-upload-input />
+    <div class="management-authorization-buttons">
+      <button type="button" class="button button-outline-light" data-upload-authorization>Enviar autorização assinada</button>
+      <button type="button" class="registration-text-button" data-physical-authorization>Entregarei presencialmente</button>
+    </div>
+    <p class="registration-inline-feedback" data-authorization-feedback aria-live="polite"></p>
+  </div>
+</section>

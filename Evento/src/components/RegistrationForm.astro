@@ -99,7 +99,7 @@ const consentStep = isCosplay ? '07' : '04';
 </section>
 
 <script>
-  import { buildRegistrationPayload, getRegistrationApi, isMinorDate, postRegistrationForm, RegistrationApiError } from '../lib/registration-api';
+  import { buildRegistrationPayload, formatCpf, formatPhone, getRegistrationApi, isMinorDate, isValidCpf, isValidPhone, normalizeCpf, normalizePhone, postRegistrationForm, RegistrationApiError } from '../lib/registration-api';
 
   const registrationForms = document.querySelectorAll<HTMLFormElement>('[data-registration-form]');
 
@@ -123,6 +123,75 @@ const consentStep = isCosplay ? '07' : '04';
     let statusUnavailable = false;
     let onlineOpen = false;
     let full = false;
+
+    const cpfInputs = form.querySelectorAll<HTMLInputElement>('[data-cpf], [name="responsibleCpf"]');
+    const phoneInputs = form.querySelectorAll<HTMLInputElement>('[name="phone"], [name="responsiblePhone"]');
+    cpfInputs.forEach((input) => input.addEventListener('input', () => { input.value = formatCpf(input.value); }));
+    phoneInputs.forEach((input) => input.addEventListener('input', () => { input.value = formatPhone(input.value); }));
+
+    const fieldMessage = (field: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement) => {
+      const name = field.name;
+      if (name === 'fullName') return 'Informe seu nome completo.';
+      if (name === 'birthDate') return 'Informe sua data de nascimento.';
+      if (name === 'cpf' || name === 'responsibleCpf') return name === 'cpf' ? 'Informe um CPF válido.' : 'Informe um CPF válido para o responsável.';
+      if (name === 'phone' || name === 'responsiblePhone') return name === 'phone' ? 'Informe um telefone brasileiro válido com DDD.' : 'Informe um telefone brasileiro válido para o responsável.';
+      if (name === 'email' || name === 'responsibleEmail') return name === 'email' ? 'Informe um e-mail válido ou deixe o campo vazio.' : 'Informe um e-mail válido para o responsável.';
+      if (name === 'state') return 'Selecione seu estado.';
+      if (name === 'city') return 'Selecione sua cidade.';
+      if (name === 'responsibleName') return 'Informe o nome completo do responsável.';
+      if (name === 'responsibleRelationship') return 'Informe o parentesco ou relação com o participante.';
+      if (name === 'stageCallName') return 'Informe o nome para chamada no palco.';
+      if (name === 'character') return 'Informe o personagem.';
+      if (name === 'franchise') return 'Informe a obra ou franquia.';
+      if (name === 'acceptRules') return 'Aceite o regulamento para continuar.';
+      if (name === 'acceptImageUse') return 'Autorize o uso de imagem para continuar.';
+      if (name === 'audioBackupAcknowledgement') return 'Confirme que levará uma cópia do áudio em pendrive.';
+      return 'Confira este campo.';
+    };
+    const fieldInvalid = (field: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement) => {
+      if (!field.checkValidity()) return true;
+      if (field.name === 'cpf' || field.name === 'responsibleCpf') return !isValidCpf(normalizeCpf(field.value));
+      if (field.name === 'phone' || field.name === 'responsiblePhone') return Boolean(field.value.trim()) && !isValidPhone(normalizePhone(field.value));
+      return false;
+    };
+    const clearFieldError = (field: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement) => {
+      const wrapper = field.closest<HTMLElement>('.registration-field, .registration-check');
+      wrapper?.querySelector('[data-field-error]')?.remove();
+      field.removeAttribute('aria-invalid');
+    };
+    const showFieldError = (field: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement, message: string) => {
+      const wrapper = field.closest<HTMLElement>('.registration-field, .registration-check');
+      if (!wrapper) return;
+      let note = wrapper.querySelector<HTMLElement>('[data-field-error]');
+      if (!note) {
+        note = document.createElement('p');
+        note.className = 'registration-field-error';
+        note.dataset.fieldError = '';
+        wrapper.append(note);
+      }
+      note.textContent = message;
+      field.setAttribute('aria-invalid', 'true');
+    };
+    const clearFieldErrors = () => {
+      form.querySelectorAll<HTMLElement>('[data-field-error]').forEach((note) => note.remove());
+      form.querySelectorAll<HTMLElement>('[aria-invalid="true"]').forEach((field) => field.removeAttribute('aria-invalid'));
+    };
+    const showValidationErrors = () => {
+      clearFieldErrors();
+      const fields = [...form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('input, select, textarea')]
+        .filter((field) => !field.disabled && !field.closest('[hidden]'));
+      const invalid = fields.filter(fieldInvalid);
+      invalid.forEach((field) => showFieldError(field, fieldMessage(field)));
+      const first = invalid[0];
+      if (first) {
+        first.focus({ preventScroll: true });
+        first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return invalid.length === 0;
+    };
+    form.addEventListener('input', (event) => {
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement || event.target instanceof HTMLTextAreaElement) clearFieldError(event.target);
+    });
 
     const updateProgress = () => {
       const requiredFields = [...form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('input[required], select[required], textarea[required]')]
@@ -219,8 +288,12 @@ const consentStep = isCosplay ? '07' : '04';
         return;
       }
       if (!form.checkValidity()) {
-        form.reportValidity();
+        showValidationErrors();
         if (submitFeedback) submitFeedback.textContent = 'Confira os campos obrigatórios antes de enviar.';
+        return;
+      }
+      if (!showValidationErrors()) {
+        if (submitFeedback) submitFeedback.textContent = 'Confira os campos destacados antes de enviar.';
         return;
       }
       if (submitButton) {
@@ -249,6 +322,25 @@ const consentStep = isCosplay ? '07' : '04';
           if (error instanceof RegistrationApiError && error.code === 'full') submitFeedback.textContent = 'As vagas desta competição foram preenchidas. Consulte a organização sobre a inscrição presencial.';
           else if (error instanceof RegistrationApiError && error.code === 'duplicate') submitFeedback.textContent = 'Este CPF já possui uma inscrição nesta competição. Use o acesso do participante para consultar ou atualizar seus dados.';
           else submitFeedback.textContent = error instanceof RegistrationApiError ? error.message : 'Não foi possível enviar a inscrição agora. Tente novamente.';
+        }
+        if (error instanceof RegistrationApiError) {
+          const message = error.message.toLowerCase();
+          const targetName = message.includes('responsável') && message.includes('cpf') ? 'responsibleCpf'
+            : message.includes('cpf') ? 'cpf'
+              : message.includes('responsável') && message.includes('telefone') ? 'responsiblePhone'
+                : message.includes('telefone') ? 'phone'
+                  : message.includes('e-mail') ? 'email'
+                    : message.includes('nascimento') ? 'birthDate'
+                      : message.includes('cidade') ? 'city'
+                        : message.includes('estado') ? 'state'
+                          : message.includes('personagem') ? 'character'
+                            : message.includes('franquia') || message.includes('obra') ? 'franchise' : '';
+          const field = targetName ? form.elements.namedItem(targetName) : null;
+          if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement || field instanceof HTMLTextAreaElement) {
+            showFieldError(field, error.message);
+            field.focus({ preventScroll: true });
+            field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
         }
         await loadStatus();
       }

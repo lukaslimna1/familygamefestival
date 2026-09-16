@@ -20,7 +20,7 @@
     </div>
     <p class="registration-inline-feedback" data-audio-feedback aria-live="polite"></p>
   </div>
-  <label class="registration-check registration-audio-warning"><input type="checkbox" name="audioBackupAcknowledgement" data-audio-ack required /><span>Se sua apresentação utilizar áudio, além de anexar o arquivo aqui, você deverá levar no dia do evento uma cópia em pendrive devidamente identificada, para utilização em caso de falha técnica.</span></label>
+  <label class="registration-check registration-audio-warning"><input type="checkbox" name="audioBackupAcknowledgement" data-audio-ack disabled /><span>Se você adicionar um áudio, deverá levar no dia do evento uma cópia em pendrive devidamente identificada, para utilização em caso de falha técnica.</span></label>
 </div>
 
 <script>
@@ -50,7 +50,11 @@
       audioPlayer.load();
       audioPlayer.hidden = true;
       submitInput.files = new DataTransfer().files;
-      if (ack) ack.required = true;
+      if (ack) {
+        ack.checked = false;
+        ack.required = false;
+        ack.disabled = true;
+      }
     };
 
     const showAudio = (file: File) => {
@@ -69,7 +73,10 @@
       const transfer = new DataTransfer();
       transfer.items.add(file);
       submitInput.files = transfer.files;
-      if (ack) ack.required = true;
+      if (ack) {
+        ack.disabled = false;
+        ack.required = true;
+      }
       if (audioFeedback) audioFeedback.textContent = '';
     };
 
@@ -81,5 +88,9 @@
       if (file) showAudio(file);
       input.value = '';
     });
+    if (ack) {
+      ack.required = false;
+      ack.disabled = true;
+    }
   });
 </script>

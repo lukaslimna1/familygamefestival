@@ -1,12 +1,16 @@
+import { randomUUID } from 'node:crypto';
 import type { APIRoute } from 'astro';
 import { getRegistrationByAccess } from '../../../lib/server/db/repository';
 import { uploadRegistrationFile, type RegistrationUploadFileType } from '../../../lib/server/drive/registration-sync';
+import { consents } from '../../../lib/server/db/schema';
+import { getDatabase } from '../../../lib/server/db/client';
 import { PUBLIC_REGISTRATION_ACCESS_COOKIE, verifyPublicRegistrationAccessToken } from '../../../lib/server/registration/access';
 import {
   COSPLAY_AUDIO_MAX_BYTES,
   COSPLAY_REFERENCE_FILE_LIMIT,
   COSPLAY_REFERENCE_MAX_BYTES,
-  getRegistrationWindowStatus
+  getRegistrationWindowStatus,
+  REGISTRATION_POLICY_VERSIONS
 } from '../../../lib/server/registration/config';
 
 export const prerender = false;
@@ -54,6 +58,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
     if (fileType === 'cosplay_audio') {
       if (!['mp3', 'm4a', 'wav'].includes(ext) || file.size > COSPLAY_AUDIO_MAX_BYTES) return redirect(request, 'error=file');
+      const hasPendriveConsent = registration.consents.some((consent) => consent.type === 'pendrive_backup' && consent.granted);
+      if (!hasPendriveConsent && form.get('consentPendrive') !== 'yes') return redirect(request, 'error=file');
     }
     if (fileType === 'guardian_authorization_signed') {
       if (!registration.minorAuthorization || !['pdf', 'jpg', 'jpeg', 'png'].includes(ext) || file.size > COSPLAY_REFERENCE_MAX_BYTES) return redirect(request, 'error=file');
@@ -66,6 +72,16 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       mimeType: file.type || (ext === 'pdf' ? 'application/pdf' : 'application/octet-stream'),
       bytes: new Uint8Array(await file.arrayBuffer())
     });
+    if (fileType === 'cosplay_audio' && !registration.consents.some((consent) => consent.type === 'pendrive_backup' && consent.granted)) {
+      await getDatabase().insert(consents).values({
+        id: randomUUID(),
+        registrationId: access.registrationId,
+        consentType: 'pendrive_backup',
+        granted: true,
+        policyVersion: REGISTRATION_POLICY_VERSIONS.pendriveBackup,
+        grantedAt: new Date().toISOString()
+      });
+    }
     return redirect(request, 'file=1');
   } catch {
     return redirect(request, 'error=file');

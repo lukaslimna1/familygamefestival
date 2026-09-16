@@ -73,6 +73,8 @@ Campos comuns opcionais:
 
 Para menores, enviar também `guardianFullName`, `guardianCpf`, `guardianPhone`, `guardianEmail` e `guardianRelationship`. O backend calcula a idade e exige o conjunto completo somente quando necessário. A primeira inscrição pode enviar múltiplos `authorizationCompetitionId`; todos os valores precisam existir em `src/config/competitions.json` e a competição atual sempre é incluída pelo servidor.
 
+O backend normaliza os contatos antes de persistir: CPF fica somente com 11 dígitos e passa pela validação dos dois dígitos verificadores; telefone brasileiro fica no formato internacional sem pontuação (`+55DDDnúmero`). O formulário aceita CPF e telefone com ou sem pontuação, mas a validação server-side continua obrigatória. Telefone do participante pode ficar vazio; quando informado, deve conter DDD válido.
+
 Cosplay acrescenta:
 
 - `stageName` opcional;
@@ -162,7 +164,7 @@ Todas as rotas abaixo exigem o cookie privado:
 
 Uploads e exclusões retornam `303 /inscricao/minha?file=1` em caso de sucesso ou `error=file` em caso de falha. O prazo online também se aplica a alterações, uploads, substituições e exclusões.
 
-`GET /api/inscricao/autorizacao?format=blank` baixa o modelo em branco com as 16 competições. `GET /api/inscricao/autorizacao?format=editable` baixa o mesmo modelo com campos preenchíveis no PDF. `GET /api/inscricao/autorizacao?format=filled` exige o cookie privado e gera a versão preenchida da autorização universal vigente do participante.
+`GET /api/inscricao/autorizacao?format=blank` baixa o modelo em branco com as 16 competições. `GET /api/inscricao/autorizacao?format=filled` exige o cookie privado e gera a versão preenchida da autorização universal vigente do participante.
 
 Uma autorização é identificada por `participant_id` e `version`, preserva `competitionIds` e pode ter status `pending`, `uploaded`, `physical_pending`, `received` ou `rejected`. Uma inscrição em competição já coberta por uma versão assinada reutiliza a autorização; uma nova competição fora da cobertura cria a próxima versão sem apagar o histórico.
 

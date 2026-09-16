@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
+import RegistrationAuthorization from '../../components/RegistrationAuthorization.astro';
 import { event } from '../../data/event';
 import { registrationRoutes } from '../../lib/registration';
 ---
@@ -23,6 +24,7 @@ import { registrationRoutes } from '../../lib/registration';
           <button class="button button-yellow" type="button" data-copy-registration>Copiar código <span aria-hidden="true">↗</span></button>
           <p data-copy-feedback aria-live="polite"></p>
         </div>
+        <RegistrationAuthorization variant="success" />
         <p class="success-save-note">Guarde este código. Você precisará dele junto com seu CPF para consultar ou atualizar sua inscrição.</p>
         <p class="success-save-note">Recomendamos salvar este código ou tirar uma captura desta tela.</p>
         <p class="success-sync-note" data-success-sync hidden>O cadastro foi salvo, mas a sincronização de arquivos continuará em processamento.</p>
@@ -40,6 +42,15 @@ import { registrationRoutes } from '../../lib/registration';
 </BaseLayout>
 
 <script>
+  import { renderRegistrationAuthorization } from '../../lib/authorization-ui';
+  import { getRegistrationApi, RegistrationApiError } from '../../lib/registration-api';
+
+  type SuccessRegistrationData = {
+    registration: { publicCode: string };
+    guardian: unknown | null;
+    minorAuthorization: { version: number; competitionIds: string[]; status: string; coversCurrentCompetition: boolean } | null;
+  };
+
   const codeElement = document.querySelector<HTMLElement>('[data-success-code]');
   const copyButton = document.querySelector<HTMLButtonElement>('[data-copy-registration]');
   const copyFeedback = document.querySelector<HTMLElement>('[data-copy-feedback]');
@@ -59,4 +70,19 @@ import { registrationRoutes } from '../../lib/registration';
       if (copyFeedback) copyFeedback.textContent = 'Não foi possível copiar automaticamente. Selecione o código acima.';
     }
   });
+
+  const authorizationRoot = document.querySelector<HTMLElement>('[data-registration-authorization]');
+  if (authorizationRoot && code) {
+    try {
+      const result = await getRegistrationApi<SuccessRegistrationData>('inscricao/minha');
+      if (result.registration.publicCode === code) {
+        renderRegistrationAuthorization(authorizationRoot, result, async () => {
+          const refreshed = await getRegistrationApi<SuccessRegistrationData>('inscricao/minha');
+          renderRegistrationAuthorization(authorizationRoot, refreshed);
+        });
+      }
+    } catch (error) {
+      if (!(error instanceof RegistrationApiError && error.code === 'unauthorized')) authorizationRoot.hidden = true;
+    }
+  }
 </script>

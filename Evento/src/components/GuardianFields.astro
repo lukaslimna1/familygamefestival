@@ -14,8 +14,8 @@ const { step, competitionId } = Astro.props;
   <p class="registration-helper">Como a data indica um participante menor de 18 anos, precisamos dos dados do responsável legal.</p>
   <div class="registration-grid">
     <div class="registration-field registration-field-full"><label for="responsible-name">Nome completo do responsável <span aria-hidden="true">*</span></label><input id="responsible-name" name="responsibleName" type="text" data-responsible-required placeholder="Nome completo" /></div>
-    <div class="registration-field"><label for="responsible-cpf">CPF do responsável <span aria-hidden="true">*</span></label><input id="responsible-cpf" name="responsibleCpf" type="text" inputmode="numeric" data-responsible-required placeholder="000.000.000-00" /></div>
-    <div class="registration-field"><label for="responsible-phone">Telefone <span aria-hidden="true">*</span></label><input id="responsible-phone" name="responsiblePhone" type="tel" data-responsible-required placeholder="(14) 99999-9999" /></div>
+    <div class="registration-field"><label for="responsible-cpf">CPF do responsável <span aria-hidden="true">*</span></label><input id="responsible-cpf" name="responsibleCpf" type="text" inputmode="numeric" maxlength="14" data-responsible-required placeholder="000.000.000-00" /></div>
+    <div class="registration-field"><label for="responsible-phone">Telefone <span aria-hidden="true">*</span></label><input id="responsible-phone" name="responsiblePhone" type="tel" inputmode="tel" maxlength="15" data-responsible-required placeholder="(14) 99999-9999" /></div>
     <div class="registration-field"><label for="responsible-email">E-mail <span aria-hidden="true">*</span></label><input id="responsible-email" name="responsibleEmail" type="email" data-responsible-required placeholder="responsavel@email.com" /></div>
     <div class="registration-field"><label for="responsible-relationship">Parentesco / relação <span aria-hidden="true">*</span></label><input id="responsible-relationship" name="responsibleRelationship" type="text" data-responsible-required placeholder="Ex.: mãe, pai ou responsável legal" /></div>
   </div>

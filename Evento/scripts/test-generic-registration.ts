@@ -8,6 +8,7 @@ import { competitions, consents, guardians, minorAuthorizations, participants, r
 import { findRegistrationByCredentials, getCompetitionRegistrationStatus, getRegistrationDetails } from '../src/lib/server/db/repository';
 import { getDriveClient } from '../src/lib/server/drive/client';
 import { getRegistrationWindowStatus } from '../src/lib/server/registration/config';
+import { makeTestCpf } from './test-data';
 
 const projectDirectory = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const localEnvFile = join(projectDirectory, '.env.local');
@@ -17,9 +18,9 @@ const baseUrl = process.env.FGF_TEST_BASE_URL ?? 'http://localhost:4321';
 const database = getDatabase();
 const drive = getDriveClient();
 const runId = `${Date.now()}${Math.floor(Math.random() * 1000)}`;
-const adultCpf = `8${runId.slice(-10)}`;
-const minorCpf = `7${runId.slice(-10)}`;
-const guardianCpf = `6${runId.slice(-10)}`;
+const adultCpf = makeTestCpf(runId, '8');
+const minorCpf = makeTestCpf(runId, '7');
+const guardianCpf = makeTestCpf(runId, '6');
 const registrationIds: string[] = [];
 const participantIds: string[] = [];
 const driveFolderIds: string[] = [];

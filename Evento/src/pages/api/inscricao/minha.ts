@@ -76,10 +76,10 @@ function text(form: FormData, name: string) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function redirect(request: Request, query: string) {
+function redirect(request: Request, query: string, message?: string) {
   if (request.headers.get('accept')?.includes('application/json')) {
     const [key, value] = query.split('=');
-    return new Response(JSON.stringify({ data: value === '1' ? { saved: true } : undefined, ...(key?.startsWith('error') ? { error: { code: value } } : {}) }), {
+    return new Response(JSON.stringify({ data: value === '1' ? { saved: true } : undefined, ...(key?.startsWith('error') ? { error: { code: value, message: message || 'Não foi possível salvar as alterações.' } } : {}) }), {
       status: value === 'closed' ? 410 : value === 'invalid' ? 401 : 200,
       headers: { 'Cache-Control': 'no-store', 'Content-Type': 'application/json; charset=utf-8' }
     });
@@ -105,6 +105,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       .filter((link) => link.label || link.url);
 
     const update: Parameters<typeof updatePublicRegistration>[1] = {
+      phone: text(form, 'phone'),
+      email: text(form, 'email'),
       instagram: text(form, 'instagram'),
       tiktok: text(form, 'tiktok'),
       facebook: text(form, 'facebook'),
@@ -135,7 +137,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
     return redirect(request, 'saved=1');
   } catch (error) {
-    if (error instanceof RegistrationError && error.code === 'online_closed') return redirect(request, 'error=closed');
-    return redirect(request, 'error=invalid');
+    if (error instanceof RegistrationError && error.code === 'online_closed') return redirect(request, 'error=closed', error.message);
+    return redirect(request, 'error=invalid', error instanceof RegistrationError ? error.message : undefined);
   }
 };

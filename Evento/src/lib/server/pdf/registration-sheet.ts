@@ -1,4 +1,8 @@
-import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFImage, type PDFPage } from 'pdf-lib';
+import { formatCpf, formatPhone } from '../../registration-validation';
 
 export type RegistrationSheetData = {
   publicCode: string;
@@ -45,111 +49,120 @@ export type RegistrationSheetData = {
   } | null;
   links?: Array<{ label: string; url: string }>;
   files?: Array<{ fileType: string; originalName: string; mimeType: string; sizeBytes: number }>;
-  consents: Array<{
-    type: string;
-    granted: boolean;
-    policyVersion: string;
-    grantedAt: string;
-  }>;
+  consents: Array<{ type: string; granted: boolean; policyVersion: string; grantedAt: string }>;
   generatedAt: string;
   updatedAt?: string | null;
 };
 
+export type GuardianAuthorizationCompetition = {
+  id: string;
+  title: string;
+  category: string;
+  eventDay?: string;
+  eventDate: string;
+  displayDate?: string;
+  startTime?: string;
+};
+
+export type GuardianAuthorizationData = {
+  mode?: 'blank' | 'filled';
+  publicCode?: string | null;
+  version?: number | null;
+  participant?: { fullName?: string | null; cpf?: string | null; dateOfBirth?: string | null };
+  guardian?: { fullName?: string | null; cpf?: string | null; phone?: string | null; email?: string | null; relationship?: string | null };
+  competitions: GuardianAuthorizationCompetition[];
+  selectedCompetitionIds?: string[];
+  location?: string;
+  eventDates?: string;
+  generatedAt?: string;
+};
+
 const PAGE_WIDTH = 595;
 const PAGE_HEIGHT = 842;
-const INK = rgb(0.16, 0.16, 0.2);
-const MUTED = rgb(0.35, 0.35, 0.4);
-const RED = rgb(0.76, 0.08, 0.2);
+const MARGIN = 48;
+const CONTENT_BOTTOM = 62;
+const PAPER = rgb(0.965, 0.973, 0.976);
+const NAVY = rgb(0.031, 0.067, 0.122);
+const INK = rgb(0.063, 0.094, 0.157);
+const MUTED = rgb(0.35, 0.42, 0.5);
+const LINE = rgb(0.82, 0.85, 0.88);
+const YELLOW = rgb(1, 0.788, 0.157);
+const CYAN = rgb(0.098, 0.776, 0.949);
+const PINK = rgb(0.929, 0.176, 0.569);
 
-function wrapText(text: string, font: PDFFont, size: number, maxWidth: number) {
-  const words = text.replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
-  if (words.length === 0) return ['-'];
-  const lines: string[] = [];
-  let current = '';
-  for (const word of words) {
-    const candidate = current ? `${current} ${word}` : word;
-    if (font.widthOfTextAtSize(candidate, size) <= maxWidth || !current) {
-      current = candidate;
-    } else {
-      lines.push(current);
-      current = word;
-    }
-  }
-  if (current) lines.push(current);
-  return lines;
+function valueOf(value: string | null | undefined) {
+  return typeof value === 'string' ? value.trim() : '';
 }
 
-function drawHeader(page: PDFPage, font: PDFFont, boldFont: PDFFont, publicCode: string) {
-  page.drawRectangle({ x: 0, y: 770, width: PAGE_WIDTH, height: 72, color: rgb(0.1, 0.07, 0.16) });
-  page.drawText('FAMILY GAME FESTIVAL 2026', {
-    x: 52,
-    y: 808,
-    size: 20,
-    font: boldFont,
-    color: rgb(1, 1, 1)
-  });
-  page.drawText('Ficha de inscrição', {
-    x: 52,
-    y: 786,
-    size: 12,
-    font,
-    color: rgb(0.8, 0.9, 1)
-  });
-  page.drawText('CÓDIGO PÚBLICO', { x: 400, y: 811, size: 8, font: boldFont, color: rgb(0.75, 0.8, 0.9) });
-  page.drawText(publicCode, { x: 400, y: 792, size: 13, font: boldFont, color: rgb(1, 0.82, 0.25) });
-}
-
-function drawSection(page: PDFPage, title: string, y: number, boldFont: PDFFont) {
-  page.drawText(title, { x: 52, y, size: 12, font: boldFont, color: RED });
-  return y - 28;
-}
-
-function drawField(
-  page: PDFPage,
-  label: string,
-  value: string,
-  y: number,
-  font: PDFFont,
-  boldFont: PDFFont,
-  maxWidth = 350
-) {
-  page.drawText(`${label}:`, { x: 52, y, size: 10, font: boldFont, color: INK, maxWidth: 128 });
-  const lines = wrapText(value || '-', font, 10, maxWidth);
-  lines.forEach((line, index) => {
-    page.drawText(line, { x: 190, y: y - index * 14, size: 10, font, color: INK, maxWidth });
-  });
-  return y - Math.max(20, lines.length * 14);
-}
-
-function drawLongField(page: PDFPage, label: string, value: string, y: number, font: PDFFont, boldFont: PDFFont) {
-  page.drawText(label, { x: 52, y, size: 10, font: boldFont, color: INK });
-  const lines = wrapText(value || '-', font, 10, 490);
-  lines.forEach((line, index) => {
-    page.drawText(line, { x: 52, y: y - 15 - index * 14, size: 10, font, color: INK, maxWidth: 490 });
-  });
-  return y - 29 - (lines.length - 1) * 14;
+function formatHumanDate(value: string | null | undefined) {
+  const match = valueOf(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : valueOf(value);
 }
 
 function formatOtherSocials(value: string | null | undefined) {
-  if (!value) return value;
+  if (!valueOf(value)) return '';
   try {
-    const parsed = JSON.parse(value) as unknown;
+    const parsed = JSON.parse(value as string) as unknown;
     if (Array.isArray(parsed)) {
-      const formatted = parsed
+      return parsed
         .filter((item): item is { label?: unknown; url?: unknown } => typeof item === 'object' && item !== null)
-        .map((item) => {
-          const label = typeof item.label === 'string' ? item.label.trim() : '';
-          const url = typeof item.url === 'string' ? item.url.trim() : '';
-          return [label, url].filter(Boolean).join(': ');
-        })
+        .map((item) => `${valueOf(typeof item.label === 'string' ? item.label : '')}: ${valueOf(typeof item.url === 'string' ? item.url : '')}`.replace(/^: |: $/g, ''))
         .filter(Boolean)
         .join('\n');
-      return formatted || '-';
     }
   } catch {
-    // Preserve legacy free-text values that predate structured social links.
+    // Preserve a legacy free-text value.
   }
-  return value;
+  return valueOf(value);
+}
+
+function wrapText(text: string, font: PDFFont, size: number, maxWidth: number) {
+  const lines: string[] = [];
+  const paragraphs = text.replace(/\r\n?/g, '\n').split('\n');
+  for (const paragraph of paragraphs) {
+    const words = paragraph.trim().split(/\s+/).filter(Boolean);
+    if (!words.length) {
+      if (paragraphs.length > 1) lines.push('');
+      continue;
+    }
+
+    let current = '';
+    const pushWord = (word: string) => {
+      let remainder = word;
+      while (remainder && font.widthOfTextAtSize(remainder, size) > maxWidth) {
+        let splitAt = 1;
+        while (splitAt < remainder.length && font.widthOfTextAtSize(remainder.slice(0, splitAt + 1), size) <= maxWidth) splitAt += 1;
+        if (current) {
+          lines.push(current);
+          current = '';
+        }
+        lines.push(remainder.slice(0, splitAt));
+        remainder = remainder.slice(splitAt);
+      }
+      if (!remainder) return;
+      const candidate = current ? `${current} ${remainder}` : remainder;
+      if (font.widthOfTextAtSize(candidate, size) <= maxWidth) current = candidate;
+      else {
+        if (current) lines.push(current);
+        current = remainder;
+      }
+    };
+
+    for (const word of words) pushWord(word);
+    if (current) lines.push(current);
+  }
+  while (lines.at(-1) === '') {
+    lines.pop();
+  }
+  return lines;
+}
+
+function consentLabel(type: string) {
+  return ({
+    competition_regulation: 'Regulamento aplicável',
+    image_use: 'Uso de imagem',
+    pendrive_backup: 'Backup de áudio em pendrive'
+  } as Record<string, string>)[type] || 'Confirmação registrada';
 }
 
 export async function createRegistrationSheetPdf(data: RegistrationSheetData) {
@@ -157,278 +170,257 @@ export async function createRegistrationSheetPdf(data: RegistrationSheetData) {
   document.setTitle(`Ficha de inscrição - ${data.publicCode}`);
   document.setSubject('Ficha de inscrição do Family Game Festival 2026');
   document.setCreator('Family Game Festival');
-
   const font = await document.embedFont(StandardFonts.Helvetica);
   const boldFont = await document.embedFont(StandardFonts.HelveticaBold);
-  const pages: PDFPage[] = [];
-  const addPage = () => {
-    const page = document.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
-    pages.push(page);
-    drawHeader(page, font, boldFont, data.publicCode);
-    return page;
+  const logo = await embedOfficialLogo(document);
+  let pageNumber = 0;
+  let page!: PDFPage;
+  let y = 0;
+  let sectionNumber = 0;
+  const newPage = () => {
+    pageNumber += 1;
+    page = document.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+    drawHeader(page, logo, boldFont, 'FICHA DE INSCRIÇÃO', data.publicCode);
+    y = 758;
   };
+  const moveToNextPage = () => {
+    drawFooter(page, font, pageNumber);
+    newPage();
+  };
+  const ensure = (height: number) => {
+    if (y - height < CONTENT_BOTTOM) moveToNextPage();
+  };
+  const drawAdaptiveLongField = (label: string, value: string | null | undefined) => {
+    const text = valueOf(value);
+    if (!text) return;
+    const lines = wrapText(text, font, 9.2, PAGE_WIDTH - (MARGIN * 2));
+    if (!lines.length) return;
 
-  let page = addPage();
-  let y = 720;
-  const ensureSpace = (height: number) => {
-    if (y - height < 70) {
-      page = addPage();
-      y = 720;
-    }
-  };
-  const section = (title: string) => {
-    ensureSpace(48);
-    y = drawSection(page, title, y, boldFont);
-  };
-  const field = (label: string, value: string | null | undefined) => {
-    ensureSpace(32);
-    y = drawField(page, label, value || '-', y, font, boldFont);
-  };
-  const longField = (label: string, value: string | null | undefined) => {
-    ensureSpace(48);
-    page.drawText(label, { x: 52, y, size: 10, font: boldFont, color: INK });
-    y -= 15;
-    const lines = wrapText(value || '-', font, 10, 490);
-    for (const line of lines) {
-      if (y < 70) {
-        page = addPage();
-        y = 720;
+    // Keep the label and at least two lines together. If the text is larger
+    // than a page, continue it naturally on the next page with a clear marker.
+    ensure(43);
+    page.drawText(label.toUpperCase(), { x: MARGIN, y, size: 7.4, font: boldFont, color: MUTED });
+    y -= 16;
+    for (const [index, line] of lines.entries()) {
+      if (y - 11 < CONTENT_BOTTOM) {
+        moveToNextPage();
+        page.drawText(`${label.toUpperCase()} (CONTINUAÇÃO)`, { x: MARGIN, y, size: 7.4, font: boldFont, color: MUTED });
+        y -= 16;
       }
-      page.drawText(line, { x: 52, y, size: 10, font, color: INK, maxWidth: 490 });
-      y -= 14;
+      page.drawText(line, { x: MARGIN, y, size: 9.2, font, color: INK, maxWidth: PAGE_WIDTH - (MARGIN * 2) });
+      y -= 13;
+      if (index === lines.length - 1) y -= 9;
     }
-    y -= 14;
+  };
+  const section = (title: string, fields: Array<[string, string | null | undefined]>, longFields: Array<[string, string | null | undefined]> = []) => {
+    if (!fields.some(([, value]) => valueOf(value)) && !longFields.some(([, value]) => valueOf(value))) return;
+    sectionNumber += 1;
+    ensure(55);
+    y = drawSectionHeading(page, String(sectionNumber).padStart(2, '0'), title, y, boldFont);
+    fields.forEach(([label, value]) => { ensure(24); y = drawRow(page, label, valueOf(value), y, font, boldFont); });
+    longFields.forEach(([label, value]) => drawAdaptiveLongField(label, value));
+    y -= 4;
   };
 
-  section('COMPETIÇÃO');
-  field('Modalidade', data.competition.title);
-  field('Categoria', data.competition.category);
-  field('Data', `${data.competition.eventDay} - ${data.competition.eventDate}`);
-  field('Horário', data.competition.startTime);
-  field('Acesso ao evento', data.competition.eventAccessIncluded ? 'Incluído no ingresso competidor' : 'Não incluído');
-
-  section('PARTICIPANTE');
-  field('Nome', data.participant.fullName);
-  field('CPF', data.participant.cpf);
-  field('Telefone', data.participant.phone);
-  field('E-mail', data.participant.email);
-  field('Nascimento', data.participant.dateOfBirth);
-  field('Cidade / estado', [data.participant.city, data.participant.state].filter(Boolean).join(' / '));
-
-  section('REDES SOCIAIS');
-  field('Instagram', data.participant.instagram);
-  field('TikTok', data.participant.tiktok);
-  field('Facebook', data.participant.facebook);
-  field('Outras redes', formatOtherSocials(data.participant.otherSocials));
-
-  if (data.guardian) {
-    section('RESPONSÁVEL LEGAL');
-    field('Nome', data.guardian.fullName);
-    field('CPF', data.guardian.cpf);
-    field('Telefone', data.guardian.phone);
-    field('E-mail', data.guardian.email);
-    field('Relação', data.guardian.relationship);
-  }
-
+  newPage();
+  section('INSCRIÇÃO / COMPETIÇÃO', [
+    ['Competição', data.competition.title],
+    ['Categoria', data.competition.category === data.competition.title ? '' : data.competition.category],
+    ['Data', `${valueOf(data.competition.eventDay)} - ${formatHumanDate(data.competition.eventDate)}`],
+    ['Horário', data.competition.startTime],
+    ['Acesso ao evento', data.competition.eventAccessIncluded ? 'Incluído no ingresso de competidor' : 'Não incluído']
+  ]);
+  section('PARTICIPANTE', [
+    ['Nome completo', data.participant.fullName],
+    ['CPF', formatCpf(data.participant.cpf)],
+    ['Nascimento', formatHumanDate(data.participant.dateOfBirth)],
+    ['Telefone', formatPhone(data.participant.phone)],
+    ['E-mail', data.participant.email],
+    ['Cidade / UF', [data.participant.city, data.participant.state].filter(Boolean).join(' / ')]
+  ]);
+  if (data.guardian) section('RESPONSÁVEL LEGAL', [
+    ['Nome completo', data.guardian.fullName],
+    ['CPF', formatCpf(data.guardian.cpf)],
+    ['Telefone', formatPhone(data.guardian.phone)],
+    ['E-mail', data.guardian.email],
+    ['Parentesco / relação', data.guardian.relationship]
+  ]);
+  section('REDES E LINKS', [
+    ['Instagram', data.participant.instagram],
+    ['TikTok', data.participant.tiktok],
+    ['Facebook', data.participant.facebook],
+    ['Outras redes', formatOtherSocials(data.participant.otherSocials)],
+    ...((data.links || []).map((link) => [link.label, link.url] as [string, string]))
+  ]);
   if (data.cosplay) {
-    section('COSPLAY E APRESENTAÇÃO');
-    field('Nome artístico', data.cosplay.stageName);
-    field('Nome para chamada', data.cosplay.stageCallName);
-    field('Personagem', data.cosplay.characterName);
-    field('Obra / franquia', data.cosplay.sourceWork);
-    field('Modalidade', data.cosplay.presentationType);
-    longField('Descrição do cosplay', data.cosplay.cosplayDescription);
-    longField('Descrição da apresentação', data.cosplay.presentationDescription);
-    longField('Observações da apresentação', data.cosplay.presentationNotes);
-    longField('Observações técnicas', data.cosplay.technicalNotes);
-    longField('Observações para os jurados', data.cosplay.judgeNotes);
-    field('Título do áudio', data.cosplay.musicTitle);
+    section('COSPLAY', [
+      ['Nome artístico', data.cosplay.stageName],
+      ['Nome para chamada', data.cosplay.stageCallName],
+      ['Personagem', data.cosplay.characterName],
+      ['Obra / franquia', data.cosplay.sourceWork]
+    ], [['Descrição do cosplay', data.cosplay.cosplayDescription]]);
+    section('APRESENTAÇÃO', [
+      ['Formato', data.cosplay.presentationType],
+      ['Título do áudio', data.cosplay.musicTitle]
+    ], [
+      ['Descrição da apresentação', data.cosplay.presentationDescription],
+      ['Observações da apresentação', data.cosplay.presentationNotes],
+      ['Observações técnicas', data.cosplay.technicalNotes],
+      ['Observações para os jurados', data.cosplay.judgeNotes]
+    ]);
   }
-
-  if (data.links && data.links.length > 0) {
-    section('LINKS DE REFERÊNCIA');
-    data.links.forEach((link) => field(link.label, link.url));
-  }
-
-  if (data.files && data.files.length > 0) {
-    section('ARQUIVOS');
-    data.files.forEach((file) => field(file.fileType, `${file.originalName} · ${file.mimeType} · ${file.sizeBytes} bytes`));
-  }
-
-  section('ACEITES');
-  data.consents.forEach((consent) => {
-    field(consent.type, `${consent.granted ? 'Concedido' : 'Não concedido'} · ${consent.policyVersion} · ${consent.grantedAt}`);
-  });
-
-  ensureSpace(70);
-  page.drawText(`Gerado em: ${data.generatedAt}`, { x: 52, y, size: 9, font, color: MUTED });
-  y -= 18;
-  page.drawText(`Última atualização: ${data.updatedAt || data.generatedAt}`, { x: 52, y, size: 9, font, color: MUTED });
-  y -= 18;
-  page.drawText('Documento gerado automaticamente pelo Family Game Festival.', {
-    x: 52,
-    y,
-    size: 9,
-    font,
-    color: MUTED
-  });
-
-  // Keep the array referenced so the page lifecycle remains explicit for future
-  // visual additions such as reference thumbnails.
-  void pages;
+  section('ACEITES', data.consents.filter((consent) => consent.granted).map((consent) => [consentLabel(consent.type), 'Confirmado'] as [string, string]));
+  drawFooter(page, font, pageNumber);
   return document.save();
 }
-export type GuardianAuthorizationCompetition = {
-  id: string;
-  title: string;
-  category: string;
-  eventDate: string;
-};
 
-export type GuardianAuthorizationData = {
-  mode?: 'blank' | 'filled' | 'editable';
-  publicCode?: string | null;
-  version?: number | null;
-  participant?: {
-    fullName?: string | null;
-    cpf?: string | null;
-    dateOfBirth?: string | null;
-  };
-  guardian?: {
-    fullName?: string | null;
-    cpf?: string | null;
-    phone?: string | null;
-    email?: string | null;
-    relationship?: string | null;
-  };
-  competitions: GuardianAuthorizationCompetition[];
-  selectedCompetitionIds?: string[];
-  location?: string;
-  eventDates?: string;
-  generatedAt: string;
-};
-
-function drawAuthorizationCheckbox(
-  page: PDFPage,
-  x: number,
-  y: number,
-  label: string,
-  selected: boolean,
-  font: PDFFont,
-  boldFont: PDFFont,
-  form: ReturnType<PDFDocument['getForm']> | null,
-  fieldName: string
-) {
-  if (form) {
-    const checkbox = form.createCheckBox(fieldName);
-    if (selected) checkbox.check();
-    checkbox.addToPage(page, { x, y: y - 2, width: 12, height: 12, borderWidth: 1, borderColor: INK });
-  } else {
-    page.drawRectangle({ x, y: y - 2, width: 12, height: 12, borderWidth: 1, borderColor: INK });
-    if (selected) page.drawText('X', { x: x + 2, y: y, size: 9, font: boldFont, color: RED });
+async function embedOfficialLogo(document: PDFDocument) {
+  const candidates = [
+    join(process.cwd(), 'public', 'assets', 'logo.png'),
+    fileURLToPath(new URL('../../../../public/assets/logo.png', import.meta.url))
+  ];
+  for (const candidate of candidates) {
+    try {
+      return await document.embedPng(await readFile(candidate));
+    } catch {
+      // Try the next runtime path.
+    }
   }
-  page.drawText(label, { x: x + 20, y, size: 8.2, font, color: INK, maxWidth: 230 });
+  return null;
 }
 
-function addAuthorizationTextField(
-  page: PDFPage,
-  form: ReturnType<PDFDocument['getForm']> | null,
-  label: string,
-  value: string,
-  fieldName: string,
-  y: number,
-  font: PDFFont,
-  boldFont: PDFFont,
-  width = 390
-) {
-  page.drawText(`${label}:`, { x: 52, y: y + 5, size: 9, font: boldFont, color: INK });
-  if (form) {
-    const field = form.createTextField(fieldName);
-    if (value) field.setText(value);
-    field.addToPage(page, { x: 178, y: y - 2, width, height: 20, borderWidth: 1, borderColor: INK, textColor: INK });
+function drawFooter(page: PDFPage, font: PDFFont, pageNumber: number) {
+  page.drawLine({ start: { x: MARGIN, y: 47 }, end: { x: PAGE_WIDTH - MARGIN, y: 47 }, thickness: 0.7, color: LINE });
+  page.drawText('Family Game Festival 2026  -  19 e 20 de setembro  -  Bauru/SP  -  @familygamex', {
+    x: MARGIN, y: 31, size: 7.6, font, color: MUTED, maxWidth: 440
+  });
+  page.drawText(String(pageNumber).padStart(2, '0'), { x: PAGE_WIDTH - 70, y: 31, size: 8, font, color: MUTED });
+}
+
+function drawHeader(page: PDFPage, logo: PDFImage | null, boldFont: PDFFont, title: string, code?: string) {
+  page.drawRectangle({ x: 0, y: 0, width: PAGE_WIDTH, height: PAGE_HEIGHT, color: PAPER });
+  page.drawRectangle({ x: 0, y: 785, width: PAGE_WIDTH, height: 57, color: NAVY });
+  page.drawRectangle({ x: 0, y: 785, width: PAGE_WIDTH, height: 4, color: YELLOW });
+  if (logo) {
+    const height = 39;
+    const width = logo.width * (height / logo.height);
+    page.drawImage(logo, { x: MARGIN, y: 794, width, height });
   } else {
-    page.drawLine({ start: { x: 178, y }, end: { x: Math.min(PAGE_WIDTH - 52, 178 + width), y }, thickness: 1, color: INK });
-    if (value) page.drawText(value, { x: 184, y: y + 5, size: 9, font, color: INK, maxWidth: width - 12 });
+    page.drawText('FAMILY GAME', { x: MARGIN, y: 813, size: 15, font: boldFont, color: rgb(1, 1, 1) });
+    page.drawText('FESTIVAL', { x: MARGIN, y: 798, size: 9, font: boldFont, color: YELLOW });
   }
-  return y - 25;
+  page.drawText('FAMILY GAME FESTIVAL 2026', { x: 173, y: 816, size: 8.5, font: boldFont, color: CYAN });
+  page.drawText(title, { x: 173, y: 797, size: 16, font: boldFont, color: rgb(1, 1, 1), maxWidth: 255 });
+  if (code) {
+    page.drawRectangle({ x: 446, y: 798, width: 101, height: 24, color: YELLOW });
+    page.drawText(code, { x: 454, y: 806, size: 9, font: boldFont, color: NAVY, maxWidth: 85 });
+  }
+}
+
+function drawSectionHeading(page: PDFPage, number: string, title: string, y: number, boldFont: PDFFont) {
+  page.drawRectangle({ x: MARGIN, y: y - 2, width: 20, height: 20, color: YELLOW });
+  page.drawText(number, { x: MARGIN + 5.5, y: y + 4, size: 8, font: boldFont, color: NAVY });
+  page.drawText(title, { x: MARGIN + 29, y: y + 4, size: 11, font: boldFont, color: NAVY });
+  page.drawLine({ start: { x: MARGIN + 29, y: y - 5 }, end: { x: PAGE_WIDTH - MARGIN, y: y - 5 }, thickness: 1.2, color: CYAN });
+  return y - 29;
+}
+
+function drawRow(page: PDFPage, label: string, value: string, y: number, font: PDFFont, boldFont: PDFFont, labelWidth = 135) {
+  const text = valueOf(value);
+  if (!text) return y;
+  const valueX = MARGIN + labelWidth;
+  const lines = wrapText(text, font, 9.2, PAGE_WIDTH - valueX - MARGIN);
+  const labelLines = wrapText(label.toUpperCase(), boldFont, 7.4, labelWidth - 9);
+  labelLines.forEach((line, index) => page.drawText(line, { x: MARGIN, y: y - index * 10, size: 7.4, font: boldFont, color: MUTED, maxWidth: labelWidth - 9 }));
+  lines.forEach((line, index) => page.drawText(line, { x: valueX, y: y - index * 12, size: 9.2, font, color: INK, maxWidth: PAGE_WIDTH - valueX - MARGIN }));
+  return y - Math.max(20, lines.length * 12, labelLines.length * 10);
+}
+
+
+function drawSmallField(page: PDFPage, x: number, width: number, label: string, value: string, y: number, font: PDFFont, boldFont: PDFFont) {
+  page.drawText(label.toUpperCase(), { x, y, size: 7.1, font: boldFont, color: MUTED, maxWidth: width });
+  const lines = wrapText(valueOf(value) || '________________________________', font, 9, width);
+  lines.slice(0, 2).forEach((line, index) => page.drawText(line, { x, y: y - 13 - index * 11, size: 9, font, color: INK, maxWidth: width }));
+}
+
+function drawAuthorizationCheckbox(page: PDFPage, x: number, y: number, label: string, selected: boolean, font: PDFFont, boldFont: PDFFont) {
+  page.drawRectangle({ x, y: y - 2, width: 11, height: 11, borderWidth: 0.9, borderColor: selected ? CYAN : MUTED, color: selected ? CYAN : PAPER });
+  if (selected) {
+    page.drawLine({ start: { x: x + 2, y: y + 2 }, end: { x: x + 5, y: y - 1 }, thickness: 1.2, color: NAVY });
+    page.drawLine({ start: { x: x + 5, y: y - 1 }, end: { x: x + 10, y: y + 6 }, thickness: 1.2, color: NAVY });
+  }
+  page.drawText(label, { x: x + 18, y, size: 8.2, font: selected ? boldFont : font, color: INK, maxWidth: 225 });
+}
+
+function authorizationDate(competition: GuardianAuthorizationCompetition) {
+  return competition.displayDate || formatHumanDate(competition.eventDate);
 }
 
 export async function createGuardianAuthorizationPdf(data: GuardianAuthorizationData) {
-  const mode = data.mode ?? 'filled';
-  const isBlank = mode === 'blank';
-  const isEditable = mode === 'editable';
+  const isBlank = data.mode === 'blank';
   const document = await PDFDocument.create();
-  const identifier = data.publicCode ? `${data.publicCode}-AUT-V${data.version ?? 1}` : 'AUTORIZAÇÃO EM BRANCO';
+  const identifier = data.publicCode ? `${data.publicCode} - V${data.version ?? 1}` : 'MODELO EM BRANCO';
   document.setTitle(`Autorização do responsável - ${identifier}`);
-  document.setSubject('Autorização universal para participação de menor no Family Game Festival 2026');
+  document.setSubject('Autorização para participação de menor no Family Game Festival 2026');
   document.setCreator('Family Game Festival');
   const font = await document.embedFont(StandardFonts.Helvetica);
   const boldFont = await document.embedFont(StandardFonts.HelveticaBold);
-  const form = isEditable ? document.getForm() : null;
+  const logo = await embedOfficialLogo(document);
   const page = document.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+  drawHeader(page, logo, boldFont, 'AUTORIZAÇÃO DE MENOR', data.publicCode || undefined);
+  let y = 758;
+  page.drawText('AUTORIZAÇÃO DE PARTICIPAÇÃO DE MENOR DE IDADE', { x: MARGIN, y, size: 14, font: boldFont, color: NAVY, maxWidth: 390 });
+  page.drawText(`Identificador técnico: ${identifier}`, { x: MARGIN, y: y - 18, size: 7.2, font, color: MUTED });
+  y -= 40;
 
-  page.drawRectangle({ x: 0, y: 770, width: PAGE_WIDTH, height: 72, color: rgb(0.1, 0.07, 0.16) });
-  page.drawText('FAMILY GAME FESTIVAL 2026', { x: 52, y: 808, size: 20, font: boldFont, color: rgb(1, 1, 1) });
-  page.drawText('Autorização universal do responsável legal', { x: 52, y: 786, size: 12, font, color: rgb(0.8, 0.9, 1) });
-  page.drawText(identifier, { x: 335, y: 796, size: 10, font: boldFont, color: rgb(1, 0.82, 0.25), maxWidth: 208 });
+  y = drawSectionHeading(page, '01', 'PARTICIPANTE MENOR', y, boldFont);
+  drawSmallField(page, MARGIN, 235, 'Nome completo', isBlank ? '' : valueOf(data.participant?.fullName), y, font, boldFont);
+  drawSmallField(page, 315, 232, 'CPF', isBlank ? '' : formatCpf(data.participant?.cpf), y, font, boldFont);
+  y -= 43;
+  drawSmallField(page, MARGIN, 235, 'Data de nascimento', isBlank ? '' : formatHumanDate(data.participant?.dateOfBirth), y, font, boldFont);
+  y -= 43;
 
-  let y = 742;
-  page.drawText('IDENTIFICAÇÃO DO DOCUMENTO', { x: 52, y, size: 11, font: boldFont, color: RED });
-  y -= 25;
-  y = addAuthorizationTextField(page, form, 'Código', isBlank ? '' : (data.publicCode ?? ''), 'authorization_code', y, font, boldFont, 170);
-  y = addAuthorizationTextField(page, form, 'Versão', isBlank ? '' : `Versão ${data.version ?? 1}`, 'authorization_version', y, font, boldFont, 170);
+  y = drawSectionHeading(page, '02', 'RESPONSÁVEL LEGAL', y, boldFont);
+  drawSmallField(page, MARGIN, 235, 'Nome completo', isBlank ? '' : valueOf(data.guardian?.fullName), y, font, boldFont);
+  drawSmallField(page, 315, 232, 'CPF', isBlank ? '' : formatCpf(data.guardian?.cpf), y, font, boldFont);
+  y -= 43;
+  drawSmallField(page, MARGIN, 235, 'Telefone / WhatsApp', isBlank ? '' : formatPhone(data.guardian?.phone), y, font, boldFont);
+  drawSmallField(page, 315, 232, 'E-mail', isBlank ? '' : valueOf(data.guardian?.email), y, font, boldFont);
+  y -= 43;
+  drawSmallField(page, MARGIN, 235, 'Parentesco / relação', isBlank ? '' : valueOf(data.guardian?.relationship), y, font, boldFont);
+  y -= 43;
 
-  page.drawText('DADOS DO PARTICIPANTE MENOR', { x: 52, y, size: 11, font: boldFont, color: RED });
-  y -= 25;
-  y = addAuthorizationTextField(page, form, 'Nome completo', isBlank ? '' : (data.participant?.fullName ?? ''), 'participant_full_name', y, font, boldFont);
-  y = addAuthorizationTextField(page, form, 'CPF', isBlank ? '' : (data.participant?.cpf ?? ''), 'participant_cpf', y, font, boldFont, 170);
-  y = addAuthorizationTextField(page, form, 'Nascimento', isBlank ? '' : (data.participant?.dateOfBirth ?? ''), 'participant_date_of_birth', y, font, boldFont, 170);
-
-  page.drawText('DADOS DO RESPONSÁVEL LEGAL', { x: 52, y, size: 11, font: boldFont, color: RED });
-  y -= 25;
-  y = addAuthorizationTextField(page, form, 'Nome completo', isBlank ? '' : (data.guardian?.fullName ?? ''), 'guardian_full_name', y, font, boldFont);
-  y = addAuthorizationTextField(page, form, 'CPF', isBlank ? '' : (data.guardian?.cpf ?? ''), 'guardian_cpf', y, font, boldFont, 170);
-  y = addAuthorizationTextField(page, form, 'Telefone', isBlank ? '' : (data.guardian?.phone ?? ''), 'guardian_phone', y, font, boldFont, 170);
-  y = addAuthorizationTextField(page, form, 'E-mail', isBlank ? '' : (data.guardian?.email ?? ''), 'guardian_email', y, font, boldFont);
-  y = addAuthorizationTextField(page, form, 'Relação', isBlank ? '' : (data.guardian?.relationship ?? ''), 'guardian_relationship', y, font, boldFont, 170);
-
-  page.drawText('COMPETIÇÕES AUTORIZADAS', { x: 52, y, size: 11, font: boldFont, color: RED });
-  y -= 22;
-  const selectedIds = new Set(data.selectedCompetitionIds ?? []);
-  const columns = [data.competitions.slice(0, Math.ceil(data.competitions.length / 2)), data.competitions.slice(Math.ceil(data.competitions.length / 2))];
-  const competitionStartY = y;
-  columns.forEach((column, columnIndex) => {
-    let columnY = competitionStartY;
-    column.forEach((competition) => {
-      drawAuthorizationCheckbox(
-        page,
-        columnIndex === 0 ? 52 : 315,
-        columnY,
-        `${competition.title} · ${competition.eventDate}`,
-        !isBlank && selectedIds.has(competition.id),
-        font,
-        boldFont,
-        form,
-        `competition_${competition.id}`
-      );
-      columnY -= 24;
-    });
+  y = drawSectionHeading(page, '03', 'COMPETIÇÕES AUTORIZADAS', y, boldFont);
+  const selected = new Set(data.selectedCompetitionIds || []);
+  const groups = new Map<string, GuardianAuthorizationCompetition[]>();
+  [...data.competitions].sort((a, b) => `${a.eventDate}-${a.startTime || ''}`.localeCompare(`${b.eventDate}-${b.startTime || ''}`)).forEach((competition) => {
+    const key = `${valueOf(competition.eventDay) || 'EVENTO'} - ${authorizationDate(competition)}`;
+    groups.set(key, [...(groups.get(key) || []), competition]);
   });
-  y -= Math.ceil(Math.max(columns[0].length, columns[1].length) * 24) + 3;
+  for (const [groupName, competitions] of groups) {
+    page.drawText(groupName, { x: MARGIN, y, size: 8, font: boldFont, color: PINK });
+    y -= 17;
+    const columns = [competitions.filter((_, index) => index % 2 === 0), competitions.filter((_, index) => index % 2 === 1)];
+    const groupY = y;
+    columns.forEach((column, columnIndex) => column.forEach((competition, index) => {
+      const label = `${competition.title}${competition.startTime ? ` - ${competition.startTime}` : ''}`;
+      drawAuthorizationCheckbox(page, columnIndex === 0 ? MARGIN : 315, groupY - index * 18, label, !isBlank && selected.has(competition.id), font, boldFont);
+    }));
+    y -= Math.max(columns[0].length, columns[1].length) * 18 + 8;
+  }
 
-  const declaration = 'Eu, responsável legal identificado acima, autorizo o participante menor a participar do Family Game Festival 2026 e das competições assinaladas neste documento, conforme os regulamentos oficiais. Declaro que os dados informados são verdadeiros e estou ciente de que esta autorização poderá ser solicitada pela organização.';
-  y = drawLongField(page, 'DECLARAÇÃO', declaration, y, font, boldFont);
-  y -= 25;
-  y = addAuthorizationTextField(page, form, 'Local', isBlank ? '' : (data.location ?? 'Arena Tauste · Bauru'), 'event_location', y, font, boldFont);
-  y = addAuthorizationTextField(page, form, 'Data do evento', isBlank ? '' : (data.eventDates ?? '19 e 20/09/2026'), 'event_dates', y, font, boldFont, 170);
-  y -= 15;
-  page.drawLine({ start: { x: 72, y }, end: { x: 280, y }, thickness: 1, color: INK });
-  page.drawLine({ start: { x: 315, y }, end: { x: 523, y }, thickness: 1, color: INK });
-  page.drawText('Assinatura manuscrita do responsável', { x: 78, y: y - 18, size: 8.5, font, color: MUTED });
-  page.drawText('Data da assinatura', { x: 375, y: y - 18, size: 8.5, font, color: MUTED });
-  page.drawText(`Gerado em: ${data.generatedAt}`, { x: 52, y: 58, size: 8.5, font, color: MUTED });
-  page.drawText('A assinatura permanece manuscrita. O documento assinado pode ser enviado pelo sistema ou entregue presencialmente.', { x: 52, y: 42, size: 8.5, font, color: MUTED, maxWidth: 490 });
-
-  if (form) form.updateFieldAppearances(font);
+  y = drawSectionHeading(page, '04', 'DECLARAÇÃO E ASSINATURA', y, boldFont);
+  const declaration = 'Eu, responsável legal identificado acima, autorizo o participante menor a participar do Family Game Festival 2026 e das competições assinaladas neste documento. Declaro que os dados informados são verdadeiros e estou ciente de que a autorização assinada poderá ser solicitada pela organização.';
+  const declarationLines = wrapText(declaration, font, 8.8, PAGE_WIDTH - (MARGIN * 2));
+  declarationLines.forEach((line, index) => page.drawText(line, { x: MARGIN, y: y - index * 12, size: 8.8, font, color: INK, maxWidth: PAGE_WIDTH - (MARGIN * 2) }));
+  y -= declarationLines.length * 12 + 20;
+  page.drawText(`Local: ${isBlank ? '________________________________________' : valueOf(data.location) || 'Arena Tauste - SORRI Bauru'}`, { x: MARGIN, y, size: 8.8, font, color: INK });
+  page.drawText(`Data: ${isBlank ? '____/____/________' : valueOf(data.eventDates) || '19 e 20 de setembro de 2026'}`, { x: 350, y, size: 8.8, font, color: INK, maxWidth: 195 });
+  y -= 45;
+  page.drawLine({ start: { x: 70, y }, end: { x: 275, y }, thickness: 0.9, color: INK });
+  page.drawLine({ start: { x: 325, y }, end: { x: 525, y }, thickness: 0.9, color: INK });
+  page.drawText('Assinatura manuscrita do responsável', { x: 78, y: y - 15, size: 7.8, font, color: MUTED });
+  page.drawText('Data da assinatura', { x: 385, y: y - 15, size: 7.8, font, color: MUTED });
+  drawFooter(page, font, 1);
   return document.save();
 }

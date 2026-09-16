@@ -14,6 +14,7 @@ import { createRegistrationDraft } from '../src/lib/server/db/repository';
 import { getDriveClient } from '../src/lib/server/drive/client';
 import { syncRegistrationToDrive } from '../src/lib/server/drive/registration-sync';
 import { createRegistrationSheetPdf } from '../src/lib/server/pdf/registration-sheet';
+import { makeTestCpf } from './test-data';
 
 const execFile = promisify(execFileCallback);
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
@@ -70,7 +71,7 @@ async function listTestRegistrationFolders(drive: drive_v3.Drive, competitionFol
 }
 
 const runId = `${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
-const fakeCpf = `9${Date.now().toString().slice(-10)}`;
+const fakeCpf = makeTestCpf(runId, '9');
 const fakeEmail = `integration-${runId}@example.invalid`;
 const fakeName = 'TESTE INTEGRACAO TEKKEN 8 - REMOVER';
 const competitionId = 'tekken-8';
@@ -94,7 +95,7 @@ try {
     participant: {
       fullName: fakeName,
       cpf: fakeCpf,
-      phone: '+5500000000000',
+      phone: '+5514999991000',
       email: fakeEmail,
       dateOfBirth: '2000-01-01',
       city: 'Bauru',
@@ -142,7 +143,7 @@ try {
     participant: {
       fullName: fakeName,
       cpf: fakeCpf,
-      phone: '+5500000000000',
+      phone: '+5514999991000',
       email: fakeEmail,
       dateOfBirth: '2000-01-01'
     },
