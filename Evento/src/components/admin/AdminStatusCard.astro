@@ -1,0 +1,23 @@
+---
+import AdminIcon from './AdminIcon.astro';
+
+interface Props {
+  label: string;
+  value: string;
+  description: string;
+  state: 'connected' | 'active' | 'local' | 'pending';
+  icon: string;
+}
+
+const { label, value, description, state, icon } = Astro.props;
+---
+
+<div class="admin-status-item">
+  <span class:list={['admin-status-icon', `admin-status-${state}`]}><AdminIcon name={icon} /></span>
+  <span class="admin-status-copy">
+    <span class="admin-status-label">{label}</span>
+    <strong>{value}</strong>
+    <small>{description}</small>
+  </span>
+  <span class:list={['admin-status-dot', `admin-status-dot-${state}`]} aria-hidden="true"></span>
+</div>

@@ -1,0 +1,22 @@
+---
+import AdminIcon from './AdminIcon.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  href: string;
+  accent: 'yellow' | 'cyan' | 'magenta' | 'red';
+  icon: string;
+}
+
+const { title, description, href, accent, icon } = Astro.props;
+---
+
+<a class:list={['admin-quick-action', `admin-accent-${accent}`]} href={href}>
+  <span class="admin-quick-action-icon"><AdminIcon name={icon} /></span>
+  <span class="admin-quick-action-copy">
+    <strong>{title}</strong>
+    <small>{description}</small>
+  </span>
+  <span class="admin-quick-action-arrow"><AdminIcon name="arrow" /></span>
+</a>

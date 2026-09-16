@@ -25,11 +25,15 @@ const detailPageIntro = isCosplay
     : `Esta é a página oficial de ${tournament.title} no Family Game Festival 2026. Aqui ficarão reunidos o regulamento, os detalhes da inscrição e as orientações da organização.`;
 const participationTitle = registrationFree
   ? 'Inscrição gratuita'
+  : isCosplay
+    ? 'Compre o ingresso e faça sua inscrição'
   : registrationUrl
     ? 'Compre seu ingresso competidor'
     : 'Ingresso competidor em breve';
 const participationCopy = registrationFree
   ? 'Compre o ingresso do evento. A inscrição na seletiva é gratuita e pode ser feita online ou presencialmente até uma hora antes da atividade.'
+  : isCosplay
+    ? 'Compre o ingresso competidor ou o ingresso comum do evento. Depois, preencha a inscrição online para enviar seus dados e informações da apresentação. O ingresso competidor já inclui a entrada no evento no dia do concurso.'
   : registrationUrl
     ? 'Compre o ingresso competidor ou o ingresso comum do evento. A inscrição para competir pode ser feita online ou presencialmente até uma hora antes da competição, conforme as vagas e as regras da modalidade. O ingresso competidor já inclui a entrada no evento no dia da competição.'
     : 'As informações de compra e inscrição serão publicadas assim que a organização confirmar a abertura.';
@@ -62,6 +66,10 @@ const participationCopy = registrationFree
             ) : !isCosplay ? (
               <span class="button button-detail-disabled">Regulamento específico em breve</span>
             ) : null}
+            {isCosplay && <>
+              <a class="button button-yellow" href="/inscricao/cosplay">Fazer inscrição online <span aria-hidden="true">↗</span></a>
+              <a class="button button-outline-light" href="/inscricao/acessar">Já sou inscrito</a>
+            </>}
             {registrationFree ? (
               <div class="championship-registration-free" role="status">
                 <strong>Inscrição gratuita</strong>
