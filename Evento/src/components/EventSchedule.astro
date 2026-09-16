@@ -1,0 +1,135 @@
+---
+import { event, eventScheduleExtras, tournamentSchedule, tournaments } from '../data/event';
+
+const dayPanels = [
+  { label: 'SÁBADO', date: '19/09', slug: 'sabado', accent: 'cyan' },
+  { label: 'DOMINGO', date: '20/09', slug: 'domingo', accent: 'red' }
+] as const;
+
+const tournamentById = new Map(tournaments.map((tournament) => [tournament.id, tournament]));
+
+const timeToMinutes = (time: string) => {
+  if (time === 'TODO O DIA') return -1;
+  const [hours, minutes] = time.replace('h', ':').split(':').map(Number);
+  return hours * 60 + minutes;
+};
+
+const getDayEntries = (day: (typeof dayPanels)[number]['label']) => {
+  const tournamentEntries = tournamentSchedule
+    .filter((slot) => slot.day === day)
+    .map((slot) => {
+      const tournament = tournamentById.get(slot.tournamentId)!;
+      return {
+        day: slot.day,
+        time: slot.time,
+        title: tournament.title,
+        detail: tournament.category,
+        category: 'Campeonato',
+        note: slot.note,
+        href: `/campeonatos/${tournament.id}`,
+        linkLabel: 'Ver campeonato',
+        accent: tournament.accent,
+        allDay: false
+      };
+    });
+
+  return [
+    ...eventScheduleExtras.filter((entry) => entry.day === day),
+    ...tournamentEntries
+  ].sort((first, second) => timeToMinutes(first.time) - timeToMinutes(second.time));
+};
+---
+
+<section class="section event-schedule-section" id="cronograma" aria-labelledby="event-schedule-title">
+  <div class="container">
+    <div class="section-heading heading-row event-schedule-heading">
+      <div>
+        <p class="eyebrow eyebrow-yellow">Programe sua visita</p>
+        <h2 id="event-schedule-title">Cronograma do evento.</h2>
+      </div>
+      <p class="heading-note heading-note-light">Confira os horários de campeonatos, atrações e atividades do Family Game Festival.</p>
+    </div>
+
+    <div class="event-schedule-meta" aria-label="Informações do cronograma">
+      <span><span class="status-dot" aria-hidden="true"></span> 19 e 20 de setembro de 2026</span>
+      <span>{event.venue} · {event.hours}</span>
+    </div>
+
+    <div class="event-schedule-tabs" role="tablist" aria-label="Escolha o dia do cronograma">
+      {dayPanels.map((day, index) => (
+        <button
+          class:list={['event-schedule-tab', `event-schedule-tab-${day.accent}`, index === 0 && 'is-active']}
+          id={`schedule-${day.slug}-tab`}
+          type="button"
+          role="tab"
+          aria-selected={index === 0 ? 'true' : 'false'}
+          aria-controls={`schedule-${day.slug}-panel`}
+          data-schedule-tab={day.slug}
+        >
+          <span>{day.label}</span>
+          <small>{day.date} · SETEMBRO 2026</small>
+          <strong>{getDayEntries(day.label).length} horários</strong>
+        </button>
+      ))}
+    </div>
+
+    {dayPanels.map((day, index) => (
+      <div
+        class:list={['event-schedule-panel', index === 0 && 'is-active']}
+        id={`schedule-${day.slug}-panel`}
+        role="tabpanel"
+        aria-labelledby={`schedule-${day.slug}-tab`}
+        data-schedule-panel={day.slug}
+        hidden={index !== 0}
+        tabindex="0"
+      >
+        <div class="event-schedule-panel-heading">
+          <div>
+            <p class="card-eyebrow">Programação oficial</p>
+            <h3>{day.label}</h3>
+          </div>
+          <div class="event-schedule-panel-date"><strong>{day.date}</strong><span>SETEMBRO 2026</span></div>
+        </div>
+
+        <div class="event-schedule-list">
+          {getDayEntries(day.label).map((entry) => (
+            <article class:list={['event-schedule-entry', `event-schedule-entry-${entry.accent}`, entry.allDay && 'is-all-day']}>
+              <time class="event-schedule-time">{entry.time}</time>
+              <span class="event-schedule-marker" aria-hidden="true"></span>
+              <div class="event-schedule-copy">
+                <p>{entry.category}{entry.detail ? ` · ${entry.detail}` : ''}</p>
+                <h4>{entry.title}</h4>
+                {entry.note && <span class="event-schedule-note">{entry.note}</span>}
+              </div>
+              {entry.href && <a class="event-schedule-link" href={entry.href}>{entry.linkLabel} <span aria-hidden="true">↗</span></a>}
+            </article>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<script>
+  const scheduleTabs = document.querySelectorAll('[data-schedule-tab]');
+  const schedulePanels = document.querySelectorAll('[data-schedule-panel]');
+
+  scheduleTabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const day = tab.getAttribute('data-schedule-tab');
+      if (!day) return;
+
+      scheduleTabs.forEach((item) => {
+        const isActive = item === tab;
+        item.classList.toggle('is-active', isActive);
+        item.setAttribute('aria-selected', String(isActive));
+      });
+
+      schedulePanels.forEach((panel) => {
+        const isActive = panel.getAttribute('data-schedule-panel') === day;
+        panel.hidden = !isActive;
+        panel.classList.toggle('is-active', isActive);
+      });
+    });
+  });
+</script>

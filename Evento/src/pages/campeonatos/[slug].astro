@@ -1,0 +1,167 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import CosplayRegulationDocument from '../../components/CosplayRegulationDocument.astro';
+import GamesGeneralRegulationDocument from '../../components/GamesGeneralRegulationDocument.astro';
+import CosplayReferenceGuides from '../../components/CosplayReferenceGuides.astro';
+import { event } from '../../data/event';
+import { championshipEntries } from '../../data/championships';
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return championshipEntries.map((entry) => ({ params: { slug: entry.tournament.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { tournament, art, schedule, regulation, generalRegulation, registrationUrl, registrationPrice, registrationNote, registrationFree, format, participants, prizeNote, pageUrl } = entry;
+const detail = tournament.detail || 'Informações e formato da disputa serão divulgados pela organização.';
+const isCosplay = tournament.id === 'cosplay';
+const cosplayPdfUrl = regulation ? `/assets/regulamentos/${encodeURIComponent(regulation.pdfFile)}` : undefined;
+const detailPageIntro = isCosplay
+  ? 'Consulte abaixo o regulamento oficial completo do Concurso Cosplay e veja exemplos de guias de imagens para enviar antes de realizar sua inscrição.'
+  : generalRegulation
+    ? `Esta é a página oficial de ${tournament.title} no Family Game Festival 2026. Aqui ficarão reunidos os detalhes da inscrição, as orientações da organização e as regras gerais aplicáveis aos campeonatos de games.`
+    : `Esta é a página oficial de ${tournament.title} no Family Game Festival 2026. Aqui ficarão reunidos o regulamento, os detalhes da inscrição e as orientações da organização.`;
+const participationTitle = registrationFree
+  ? 'Inscrição gratuita'
+  : registrationUrl
+    ? 'Compre seu ingresso competidor'
+    : 'Ingresso competidor em breve';
+const participationCopy = registrationFree
+  ? 'Compre o ingresso do evento. A inscrição na seletiva é gratuita e pode ser feita online ou presencialmente até uma hora antes da atividade.'
+  : registrationUrl
+    ? 'Compre o ingresso competidor ou o ingresso comum do evento. A inscrição para competir pode ser feita online ou presencialmente até uma hora antes da competição, conforme as vagas e as regras da modalidade. O ingresso competidor já inclui a entrada no evento no dia da competição.'
+    : 'As informações de compra e inscrição serão publicadas assim que a organização confirmar a abertura.';
+---
+
+<BaseLayout
+  title={`${tournament.title} | Campeonatos | ${event.name}`}
+  description={`${tournament.title}: data, horário, premiação, regulamento e inscrição no Family Game Festival 2026.`}
+  canonical={`https://familygamefestival.vercel.app${pageUrl}`}
+>
+  <SiteHeader current="Campeonatos" />
+
+  <main class:list={['championship-detail-page', `championship-detail-${tournament.accent}`, isCosplay && 'championship-detail-cosplay']}>
+    <section class="championship-detail-hero">
+      <div class="container championship-detail-hero-grid">
+        <div class="championship-detail-art-wrap" style={art.image ? `--detail-art-image: url("${art.image}")` : undefined}>
+          {art.image ? (
+            <img class={`championship-detail-art championship-art-fit-${art.fit}`} src={art.image} alt={art.alt} />
+          ) : (
+            <div class="championship-detail-art-empty"><span>{tournament.title}</span></div>
+          )}
+        </div>
+        <div class="championship-detail-intro">
+          <p class="eyebrow eyebrow-yellow">{tournament.category} · Family Game Festival 2026</p>
+          <h1>{tournament.title}</h1>
+          <p>{detail}</p>
+          <div class="championship-detail-actions">
+            {!isCosplay && regulation ? (
+              <a class="button button-yellow" href={regulation.pageUrl}>Regulamento Oficial <span aria-hidden="true">↗</span></a>
+            ) : !isCosplay ? (
+              <span class="button button-detail-disabled">Regulamento específico em breve</span>
+            ) : null}
+            {registrationFree ? (
+              <div class="championship-registration-free" role="status">
+                <strong>Inscrição gratuita</strong>
+                <span>{registrationNote}</span>
+              </div>
+            ) : registrationUrl ? (
+              <a class="button button-outline-light" href={registrationUrl} target="_blank" rel="noreferrer">Comprar ingresso competidor <span aria-hidden="true">↗</span></a>
+            ) : (
+              <span class="button button-detail-disabled">Ingresso competidor em breve</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="championship-detail-facts-section">
+      <div class="container championship-detail-facts">
+        <div><span>DIA</span><strong>{schedule.day}</strong><small>{schedule.date}/2026</small></div>
+        <div><span>HORÁRIO</span><strong>{schedule.time}</strong><small>Programação oficial</small></div>
+        <div><span>PREMIAÇÃO</span><strong>{tournament.prize || 'A definir'}</strong><small>Premiação da disputa</small></div>
+        <div><span>FORMATO</span><strong>{format || 'A confirmar'}</strong><small>{participants || 'Vagas e participantes a confirmar'}</small></div>
+          <div><span>INGRESSO COMPETIDOR</span><strong>{registrationPrice}</strong><small>{registrationNote}</small></div>
+      </div>
+      {prizeNote && (
+        <div class="container championship-detail-prize-note">
+          <span>OBSERVAÇÃO DA PREMIAÇÃO</span>
+          <p>{prizeNote}</p>
+        </div>
+      )}
+    </section>
+
+    <section class="section championship-detail-content">
+      <div class="container championship-detail-content-grid">
+        <div>
+          <p class="eyebrow eyebrow-cyan">{isCosplay ? 'Informações do Cosplay' : 'Página do campeonato'}</p>
+          <h2>{isCosplay ? 'Informações do Cosplay.' : 'Informações da disputa.'}</h2>
+          <p>{detailPageIntro}</p>
+        </div>
+        <div class="championship-detail-info-board">
+          <div><span>DATA E LOCAL</span><strong>{schedule.date}/2026 · Arena Tauste</strong><small>SORRI Bauru · Av. Nações Unidas, 5340</small></div>
+          <div><span>COMO PARTICIPAR</span><strong>{participationTitle}</strong><small>{participationCopy}</small></div>
+          {!isCosplay && <div><span>REGULAMENTO ESPECÍFICO</span><strong>{regulation ? 'Regulamento publicado' : 'Regulamento em breve'}</strong><small>{regulation ? 'Leia a versão completa antes de realizar sua inscrição.' : 'O documento próprio desta modalidade será publicado assim que for disponibilizado.'}</small></div>}
+        </div>
+      </div>
+    </section>
+
+    {generalRegulation && <GamesGeneralRegulationDocument />}
+
+    {isCosplay && (
+      <div class="championship-cosplay-resources">
+        <section class="section championship-cosplay-switcher">
+          <div class="container championship-cosplay-switcher-inner">
+            <p class="eyebrow eyebrow-pink">Conteúdo do concurso</p>
+            <h2>Consulte o regulamento e as referências.</h2>
+            <p>Escolha o material que deseja consultar. O conteúdo aparece logo abaixo nesta mesma página.</p>
+            <div class="championship-cosplay-tabs" role="tablist" aria-label="Conteúdo do Concurso Cosplay">
+              <button id="cosplay-regulation-tab" class="championship-cosplay-tab" type="button" role="tab" aria-selected="true" aria-controls="cosplay-regulation-panel" data-cosplay-tab>Ver regulamento</button>
+              <button id="cosplay-guides-tab" class="championship-cosplay-tab" type="button" role="tab" aria-selected="false" aria-controls="cosplay-guides-panel" data-cosplay-tab>Ver exemplos de guia</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="cosplay-regulation-panel" class="section championship-regulation-section championship-cosplay-regulation-panel" role="tabpanel" aria-labelledby="cosplay-regulation-tab" data-cosplay-panel>
+          <div class="container championship-regulation-heading">
+            <p class="eyebrow eyebrow-pink">Documento oficial</p>
+            <h2>Regulamento do Concurso Cosplay.</h2>
+            <p>Leia todas as regras, critérios, prazos e condições do concurso nesta mesma página.</p>
+            <div class="championship-regulation-actions">
+              {cosplayPdfUrl && <a class="button button-yellow" href={cosplayPdfUrl} download>Baixar PDF oficial <span aria-hidden="true">↓</span></a>}
+            </div>
+          </div>
+          <CosplayRegulationDocument />
+        </section>
+
+        <div id="cosplay-guides-panel" role="tabpanel" aria-labelledby="cosplay-guides-tab" data-cosplay-panel hidden>
+          <CosplayReferenceGuides />
+        </div>
+      </div>
+    )}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-top"><a class="brand" href="/"><img src="/assets/logo.svg" alt="Family Game Festival" /></a><p>Games, cultura geek e impacto local.<br />Bauru · 19—20 setembro 2026</p><a class="button button-yellow button-small" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a></div>
+    <div class="container footer-bottom"><span>© 2026 Family Game Festival</span><a href={event.instagramUrl} target="_blank" rel="noreferrer">{event.instagram}</a><span>{event.socialImpact}</span><span class="footer-credit">Desenvolvido pela <a href="https://www.instagram.com/usealterstate/" target="_blank" rel="noreferrer">ALTERSTATE</a></span></div>
+  </footer>
+</BaseLayout>
+
+<script>
+  const cosplayTabs = document.querySelectorAll('[data-cosplay-tab]');
+  const cosplayPanels = document.querySelectorAll('[data-cosplay-panel]');
+
+  cosplayTabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const targetId = tab.getAttribute('aria-controls');
+      if (!targetId) return;
+
+      cosplayTabs.forEach((item) => item.setAttribute('aria-selected', String(item === tab)));
+      cosplayPanels.forEach((panel) => {
+        panel.hidden = panel.id !== targetId;
+      });
+    });
+  });
+</script>

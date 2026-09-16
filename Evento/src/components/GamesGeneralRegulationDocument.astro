@@ -1,0 +1,64 @@
+---
+import { regulations } from '../data/regulations';
+
+const regulation = regulations.gamesGeneral;
+---
+
+<section class="section championship-general-regulation-section">
+  <div class="container championship-general-regulation-heading">
+    <p class="eyebrow eyebrow-cyan">Regras gerais dos campeonatos</p>
+    <h2>Uma base comum para todas as disputas de games.</h2>
+    <p>Este documento é aplicado aos campeonatos de videogame e complementa as regras específicas de cada modalidade.</p>
+  </div>
+
+  <div class="container regulation-layout games-general-regulation-layout">
+    <aside class="regulation-toc" aria-label="Índice das regras gerais">
+      <p class="eyebrow eyebrow-cyan">Neste documento</p>
+      <h2>Índice</h2>
+      <nav>
+        <a href="#convivencia">01 · Convivência e conduta</a>
+        <a href="#operacao">02 · Operação das partidas</a>
+      </nav>
+    </aside>
+
+    <article class="regulation-document">
+      <header class="regulation-document-header">
+        <p class="eyebrow eyebrow-cyan">Family Game Festival 2026</p>
+        <h2>{regulation.title}</h2>
+        <p>Convivência, conduta e operação geral</p>
+      </header>
+
+      <section id="convivencia" class="regulation-section">
+        <h3><span>01</span> Da convivência e conduta</h3>
+        <ol class="regulation-items">
+          <li><span>1.1.</span><p>Estas regras serão válidas para todos os campeonatos de games, além das regras específicas de cada modalidade.</p></li>
+          <li><span>1.2.</span><p><strong>Fair Play obrigatório:</strong> todos os competidores deverão manter respeito e espírito esportivo durante toda a competição.</p></li>
+          <li><span>1.3.</span><p><strong>Tolerância de 5 minutos:</strong> após ser chamado para sua partida, o participante terá até 5 minutos para comparecer à arena. Após esse período, poderá ser aplicado W.O., salvo decisão da organização diante de situação excepcional.</p></li>
+          <li><span>1.4.</span><p><strong>Ofensas e provocações:</strong> xingamentos, ameaças, ofensas pessoais, discriminação, intimidação ou comportamento agressivo contra adversários, staffs ou organização não serão permitidos.</p></li>
+          <li><span>1.5.</span><p><strong>Penalidades disciplinares:</strong> em infrações leves, a organização poderá aplicar advertência. Em caso de ofensa ou conduta antidesportiva durante uma disputa, poderá ser aplicada perda de 1 round/partida, conforme o formato do jogo. Na segunda infração, o participante poderá ser desclassificado do campeonato. Casos graves poderão gerar desclassificação imediata.</p></li>
+          <li><span>1.6.</span><p><strong>Sem atrapalhar o adversário:</strong> é proibido tocar no controle, console, cadeira ou equipamento do oponente, bem como gritar propositalmente para desconcentrá-lo ou interferir fisicamente em sua partida.</p></li>
+        </ol>
+      </section>
+
+      <section id="operacao" class="regulation-section regulation-section-final">
+        <h3><span>02</span> Da operação das partidas</h3>
+        <ol class="regulation-items">
+          <li><span>2.1.</span><p><strong>Pausar a partida:</strong> pausa intencional sem autorização poderá gerar penalidade. Se houver problema técnico, o participante deverá chamar imediatamente um staff.</p></li>
+          <li><span>2.2.</span><p><strong>Controles:</strong> cada jogador poderá utilizar controle próprio quando autorizado pela organização. Controles com macros, turbo, automações ou qualquer recurso que gere vantagem indevida serão proibidos.</p></li>
+          <li><span>2.3.</span><p><strong>Configuração do jogo:</strong> não será permitido alterar configurações definidas pela organização sem autorização do staff.</p></li>
+          <li><span>2.4.</span><p><strong>Problemas técnicos:</strong> em caso de travamento, queda de energia, falha do console ou controle fornecido pela organização, o staff decidirá se a partida continuará do ponto em que estava ou será reiniciada.</p></li>
+          <li><span>2.5.</span><p><strong>Resultado:</strong> ao final da partida, ambos os competidores deverão respeitar o resultado apresentado pelo jogo. Qualquer contestação deverá ser feita ao staff antes do início da próxima partida.</p></li>
+          <li><span>2.6.</span><p><strong>Formato de eliminação:</strong> salvo quando anunciado de outra forma, os campeonatos poderão utilizar eliminação simples, ou seja, perdeu a disputa, está eliminado.</p></li>
+          <li><span>2.7.</span><p><strong>Decisão da organização:</strong> situações não previstas serão analisadas pela organização do Family Game Festival, buscando preservar a igualdade de condições e o fair play.</p></li>
+        </ol>
+        <div class="regulation-callout"><strong>Aplicação de penalidades:</strong> advertência, perda de round/partida ou desclassificação poderão ser aplicadas conforme a gravidade da infração.</div>
+      </section>
+
+      <footer class="regulation-document-footer">
+        <strong>{regulation.title}</strong>
+        <span>{regulation.subtitle}</span>
+        <span>Estas regras complementam o regulamento específico de cada modalidade.</span>
+      </footer>
+    </article>
+  </div>
+</section>

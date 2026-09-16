@@ -1,0 +1,54 @@
+---
+const guides = [
+  {
+    title: 'Personagem oficial · parte 1',
+    kicker: 'Exemplo 01',
+    description: 'Ângulos principais, versão correta do personagem e referências limpas para identificação visual.',
+    src: '/assets/highlights/Guia de Referencia Cosplay/GuiadeReferencia01.png',
+    alt: 'Guia de referência de cosplay com frente, costas, perfil, visão 3/4, rosto, detalhes e paleta de cores de um personagem oficial.'
+  },
+  {
+    title: 'Personagem oficial · parte 2',
+    kicker: 'Exemplo 01',
+    description: 'Detalhes de rosto, cabelo, acessórios, roupa, calçado, arma e outros elementos importantes.',
+    src: '/assets/highlights/Guia de Referencia Cosplay/GuiadeReferencia02.png',
+    alt: 'Guia de referência de cosplay com visão completa, rosto, acessórios, gola, manga, cinto, sapato, arma e emblema.'
+  },
+  {
+    title: 'Personagem original / OC',
+    kicker: 'Exemplo 02',
+    description: 'Para personagens autorais: conceito, universo, versão apresentada e detalhes visuais que expliquem a proposta.',
+    src: '/assets/highlights/Guia de Referencia Cosplay/GuiadeReferencia-PersonagemOriginal.png',
+    alt: 'Guia de referência de cosplay para personagem original com vistas do personagem, close do rosto, detalhes, paleta de cores, conceito e versão apresentada.'
+  }
+] as const;
+---
+
+<section class="section cosplay-reference-guides-section">
+  <div class="container">
+    <div class="cosplay-reference-guides-heading">
+      <div>
+        <p class="eyebrow eyebrow-yellow">Referências para a inscrição</p>
+        <h2>Exemplos de guias para enviar.</h2>
+      </div>
+      <p>Use estes modelos para entender como organizar as imagens do personagem apresentado. Clique em uma imagem para ampliá-la.</p>
+    </div>
+
+    <div class="cosplay-reference-guides-grid">
+      {guides.map((guide) => (
+        <article class="cosplay-reference-guide">
+          <a class="cosplay-reference-guide-image" href={guide.src} target="_blank" rel="noreferrer" aria-label={`Ampliar ${guide.title}`}>
+            <img src={guide.src} alt={guide.alt} loading="lazy" />
+          </a>
+          <div class="cosplay-reference-guide-copy">
+            <p class="card-eyebrow">{guide.kicker}</p>
+            <h3>{guide.title}</h3>
+            <p>{guide.description}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <p class="cosplay-reference-guides-note"><strong>O que enviar:</strong> imagens nítidas e suficientes para mostrar a frente, as costas, os principais ângulos e os detalhes importantes do cosplay. Para personagem original, inclua também o conceito e a versão apresentada.</p>
+  </div>
+</section>

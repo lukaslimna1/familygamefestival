@@ -1,0 +1,303 @@
+---
+import { regulations } from '../data/regulations';
+
+interface Props {
+  pdfUrl?: string;
+}
+
+const { pdfUrl = `/assets/regulamentos/${encodeURIComponent(regulations.cosplay.pdfFile)}` } = Astro.props;
+---
+
+<div class="container regulation-layout">
+        <aside class="regulation-toc" aria-label="Índice do regulamento">
+          <p class="eyebrow eyebrow-pink">Neste documento</p>
+          <h2>Índice</h2>
+          <nav>
+            <a href="#concurso">01 · Do concurso</a>
+            <a href="#inscricoes">02 · Das inscrições</a>
+            <a href="#personagens">03 · Personagens e referências</a>
+            <a href="#apresentacao">04 · Da apresentação</a>
+            <a href="#audios">05 · Dos áudios</a>
+            <a href="#avaliacao">06 · Da avaliação</a>
+            <a href="#desempate">07 · Do desempate</a>
+            <a href="#acessorios">08 · Acessórios e props</a>
+            <a href="#seguranca">09 · Da segurança</a>
+            <a href="#conduta">10 · Da conduta</a>
+            <a href="#penalidades">11 · Das penalidades</a>
+            <a href="#banca">12 · Da banca julgadora</a>
+            <a href="#resultado">13 · Do resultado</a>
+            <a href="#premiacao">14 · Da premiação</a>
+            <a href="#imagem">15 · Do uso de imagem</a>
+            <a href="#menores">16 · Dos menores de idade</a>
+            <a href="#aceite">17 · Do aceite eletrônico</a>
+            <a href="#disposicoes">18 · Disposições finais</a>
+          </nav>
+        </aside>
+
+        <article class="regulation-document">
+          <header class="regulation-document-header">
+            <p class="eyebrow eyebrow-cyan">Family Game Festival 2026</p>
+            <h2>Regulamento Oficial — Concurso Cosplay</h2>
+            <p>Apresentação Cosplay Individual</p>
+          </header>
+
+          <section id="concurso" class="regulation-section">
+            <h3><span>01</span> Do concurso</h3>
+            <ol class="regulation-items">
+              <li><span>1.1.</span><p>O Concurso Cosplay do Family Game Festival 2026 será realizado exclusivamente no formato de <strong>Apresentação Cosplay Individual</strong>.</p></li>
+              <li><span>1.2.</span><p>Cada participante deverá apresentar-se caracterizado como o personagem informado em sua inscrição.</p></li>
+              <li><span>1.3.</span><p>Poderão participar cosplays baseados em personagens de anime, mangá, videogame, filme, série, quadrinho, desenho, literatura ou outras mídias e universos reconhecíveis.</p></li>
+              <li><span>1.4.</span><p>Também serão permitidos personagens originais, OCs, fanarts, skins não oficiais, versões autorais e interpretações alternativas, desde que sejam apresentados materiais suficientes para avaliação.</p></li>
+              <li><span>1.5.</span><p>O concurso terá o limite máximo de <strong>32 participantes</strong>.</p></li>
+              <li><span>1.6.</span><p>Não haverá idade mínima para participação.</p></li>
+              <li><span>1.7.</span><p>Participantes menores de 18 anos deverão possuir autorização de seu responsável legal e permanecer acompanhados por responsável durante o evento.</p></li>
+            </ol>
+          </section>
+
+          <section id="inscricoes" class="regulation-section">
+            <h3><span>02</span> Das inscrições</h3>
+            <ol class="regulation-items">
+              <li><span>2.1.</span><p>Haverá pré-inscrição pelo site oficial do Family Game Festival e possibilidade de inscrição presencial no dia do evento, desde que ainda existam vagas.</p></li>
+              <li><span>2.2.</span><p>As 32 vagas poderão ser preenchidas integralmente pelas pré-inscrições.</p></li>
+              <li><span>2.3.</span><p>Caso todas as vagas sejam preenchidas antecipadamente, não serão abertas novas inscrições presenciais.</p></li>
+              <li><span>2.4.</span><p>O ingresso específico do Concurso Cosplay terá o valor de <strong>R$ 60,00</strong>, acrescido das taxas da plataforma quando adquirido online.</p></li>
+              <li><span>2.5.</span><p>O ingresso específico do Concurso Cosplay dá direito à <strong>entrada no Family Game Festival e à participação no concurso</strong>, observadas as demais condições deste regulamento.</p></li>
+              <li><span>2.6.</span><p>Participantes com outro tipo de ingresso poderão se inscrever, caso ainda existam vagas, mediante pagamento adicional de <strong>R$ 60,00 via PIX</strong> no dia do evento.</p></li>
+              <li><span>2.7.</span><p>As inscrições presenciais serão encerradas <strong>1 hora antes do início do concurso</strong>, portanto às <strong>15h00 do dia 20 de setembro de 2026</strong>.</p></li>
+            </ol>
+            <div class="regulation-callout"><strong>Limite de vagas:</strong> o preenchimento das 32 vagas encerra as inscrições, ainda que isso ocorra antes das 15h00.</div>
+            <h4>Das inscrições — continuação</h4>
+            <ol class="regulation-items" start="8">
+              <li><span>2.8.</span><p>O participante previamente inscrito deverá realizar credenciamento conforme orientação da organização antes do início do concurso.</p></li>
+              <li><span>2.9.</span><p>A inscrição deverá conter, no mínimo: nome completo, data de nascimento, telefone, e-mail, nome do personagem, obra ou universo de origem quando houver, versão apresentada, informações sobre a performance, acessórios, props e referências visuais.</p></li>
+              <li><span>2.10.</span><p>Informações falsas ou incompatíveis com a apresentação poderão resultar em penalidade ou desclassificação, conforme a gravidade.</p></li>
+            </ol>
+          </section>
+
+          <section id="personagens" class="regulation-section">
+            <h3><span>03</span> Dos personagens e referências</h3>
+            <ol class="regulation-items">
+              <li><span>3.1.</span><p>Todo participante deverá enviar referências visuais suficientes para que os jurados compreendam claramente o personagem e a versão representada.</p></li>
+              <li><span>3.2.</span><p>Recomenda-se o envio de referências que permitam visualizar frente, costas, laterais, detalhes da roupa, acessórios, maquiagem, cabelo, armas cenográficas e demais elementos relevantes.</p></li>
+              <li><span>3.3.</span><p>Para personagens oficiais, poderão ser utilizadas imagens oficiais, capturas da obra, modelos tridimensionais, materiais promocionais, figures, estátuas ou outros materiais adequados à identificação visual.</p></li>
+              <li><span>3.4.</span><p>Quando o personagem possuir diferentes roupas, adaptações, temporadas, skins ou versões, as referências deverão corresponder à versão apresentada.</p></li>
+              <li><span>3.5.</span><p>Fanarts, skins não oficiais e versões autorais são permitidas, desde que o participante envie referências específicas daquela versão.</p></li>
+              <li><span>3.6.</span><p>Personagens originais, OCs, também são permitidos.</p></li>
+              <li><span>3.7.</span><p>No caso de OC, o participante deverá fornecer nome do personagem, referências visuais, breve descrição, características relevantes e informações de conceito, personalidade ou universo quando necessárias para compreensão da proposta.</p></li>
+              <li><span>3.8.</span><p>OCs, fanarts, skins não oficiais e versões autorais estarão sujeitos às mesmas exigências de documentação e avaliação aplicadas aos personagens tradicionais.</p></li>
+            </ol>
+            <p class="regulation-note">A aparência física natural do participante não será utilizada como critério de fidelidade. Peso, altura, tipo físico, gênero, etnia, cor da pele, características faciais ou corporais não resultarão em ganho ou perda de pontos.</p>
+          </section>
+
+          <section id="apresentacao" class="regulation-section">
+            <h3><span>04</span> Da apresentação</h3>
+            <ol class="regulation-items">
+              <li><span>4.1.</span><p>A apresentação será exclusivamente individual.</p></li>
+              <li><span>4.2.</span><p>O tempo oficial máximo da apresentação será de 2 minutos e 30 segundos.</p></li>
+              <li><span>4.3.</span><p>Cada participante terá até 30 segundos antes da apresentação para preparação do palco.</p></li>
+              <li><span>4.4.</span><p>Após o encerramento, o participante terá até 30 segundos para retirar acessórios, props, cenários e demais materiais.</p></li>
+              <li><span>4.5.</span><p>Será considerado como início da apresentação o momento em que o áudio começar ou, quando aplicável, o sinal previamente combinado entre participante e organização.</p></li>
+              <li><span>4.6.</span><p>Será concedida tolerância de tempo até 3 minutos, sem penalidade.</p></li>
+              <li><span>4.7.</span><p>Caso a apresentação ultrapasse 3 minutos e termine em até 3 minutos e 30 segundos, será aplicada penalidade única de 5 pontos em Performance, 5 pontos em Cosplay e 5 pontos em Fidelidade.</p></li>
+              <li><span>4.8.</span><p>A penalidade totalizará 15 pontos de desconto na pontuação final e não será cumulativa.</p></li>
+              <li><span>4.9.</span><p>A apresentação que ultrapassar 3 minutos e 30 segundos resultará em desclassificação.</p></li>
+              <li><span>4.10.</span><p>A cronometragem oficial será realizada pela organização.</p></li>
+            </ol>
+            <table class="regulation-table"><thead><tr><th>Faixa de tempo</th><th>Aplicação</th></tr></thead><tbody><tr><td>Até 2m30</td><td>Tempo oficial.</td></tr><tr><td>2m31 a 3m00</td><td>Tolerância sem penalidade.</td></tr><tr><td>Acima de 3m00 até 3m30</td><td>Penalidade única de 15 pontos.</td></tr><tr><td>Acima de 3m30</td><td>Desclassificação.</td></tr></tbody></table>
+          </section>
+
+          <section id="audios" class="regulation-section">
+            <h3><span>05</span> Dos áudios</h3>
+            <ol class="regulation-items">
+              <li><span>5.1.</span><p>O formato oficial de áudio será MP3.</p></li>
+              <li><span>5.2.</span><p>O arquivo poderá ser enviado antecipadamente pelo sistema de inscrição.</p></li>
+              <li><span>5.3.</span><p>Independentemente do envio antecipado, será obrigatório levar o arquivo de apresentação em pen drive no dia do concurso.</p></li>
+              <li><span>5.4.</span><p>O pen drive deverá estar identificado com nome e telefone do participante, por etiqueta física ou identificação clara dentro do dispositivo.</p></li>
+              <li><span>5.5.</span><p>A organização não se responsabilizará pela leitura de cartões de memória, celulares, armazenamento em nuvem ou outros dispositivos diferentes de pen drive.</p></li>
+              <li><span>5.6.</span><p>A organização não realizará exibição de vídeo. Caso haja arquivo MP4 no dispositivo, sua parte visual não será utilizada.</p></li>
+              <li><span>5.7.</span><p>Recomenda-se que o participante leve uma versão em MP3 pronta para reprodução.</p></li>
+              <li><span>5.8.</span><p>O uso de microfone para falas ao vivo poderá ser permitido mediante disponibilidade técnica. A disponibilidade não é garantida.</p></li>
+            </ol>
+          </section>
+
+          <section id="avaliacao" class="regulation-section">
+            <h3><span>06</span> Da avaliação</h3>
+            <ol class="regulation-items">
+              <li><span>6.1.</span><p>A banca julgadora será composta por jurados convidados pela organização do Family Game Festival.</p></li>
+              <li><span>6.2.</span><p>Cada participante será avaliado em Performance, Cosplay e Fidelidade.</p></li>
+              <li><span>6.3.</span><p>Cada jurado atribuirá notas de 0 a 10 pontos para cada critério.</p></li>
+              <li><span>6.4.</span><p>As notas poderão utilizar valores decimais.</p></li>
+              <li><span>6.5.</span><p>Performance, Cosplay e Fidelidade possuirão o mesmo peso na pontuação geral.</p></li>
+              <li><span>6.6.</span><p>A pontuação final será obtida pela soma de todas as notas atribuídas por todos os jurados.</p></li>
+            </ol>
+            <div class="criteria-grid">
+              <article><h4>Performance</h4><p>Interpretação, presença e desenvoltura no palco, execução, criatividade, uso do espaço, sincronização com áudio ou efeitos, coerência e impacto geral da apresentação.</p></article>
+              <article><h4>Cosplay</h4><p>Qualidade, acabamento, detalhes, caracterização, roupa, peruca, maquiagem, acessórios, props, armaduras e demais componentes visuais. Não é obrigatório que o traje tenha sido integralmente confeccionado pelo participante.</p></article>
+              <article><h4>Fidelidade</h4><p>Representação visual e interpretativa do personagem ou conceito informado, utilizando como base as referências fornecidas. Para OCs e versões autorais, serão consideradas as referências do próprio participante.</p></article>
+            </div>
+          </section>
+
+          <section id="desempate" class="regulation-section">
+            <h3><span>07</span> Do desempate</h3>
+            <ol class="regulation-items">
+              <li><span>7.1.</span><p>Em caso de empate na pontuação total, será considerada a soma das notas obtidas em Performance.</p></li>
+              <li><span>7.2.</span><p>Permanecendo o empate, será considerada a soma das notas obtidas em Cosplay.</p></li>
+              <li><span>7.3.</span><p>Persistindo o empate, será considerada a soma das notas obtidas em Fidelidade.</p></li>
+              <li><span>7.4.</span><p>Caso ainda exista empate, a classificação será definida por deliberação conjunta da banca julgadora.</p></li>
+            </ol>
+          </section>
+
+          <section id="acessorios" class="regulation-section">
+            <h3><span>08</span> Dos acessórios, props e armas cênicas</h3>
+            <ol class="regulation-items">
+              <li><span>8.1.</span><p>Serão permitidos acessórios, props e réplicas cenográficas desde que sua utilização seja considerada segura pela organização.</p></li>
+              <li><span>8.2.</span><p>São proibidas armas de fogo reais, armas brancas funcionais, objetos com fio de corte, perfurantes, explosivos, materiais inflamáveis, substâncias tóxicas ou corrosivas e quaisquer itens capazes de provocar ferimentos ou colocar pessoas em risco.</p></li>
+              <li><span>8.3.</span><p>A organização poderá inspecionar qualquer acessório antes da apresentação.</p></li>
+              <li><span>8.4.</span><p>Acessórios metálicos ou outros objetos inadequados para circulação livre, mas seguros para utilização controlada no palco, poderão permanecer sob guarda da organização.</p></li>
+              <li><span>8.5.</span><p>Nessa situação, o item será disponibilizado antes da apresentação e deverá ser devolvido imediatamente após a performance.</p></li>
+              <li><span>8.6.</span><p>Objetos considerados efetivamente perigosos poderão ser proibidos inclusive durante a apresentação.</p></li>
+              <li><span>8.7.</span><p>A decisão final sobre autorização, retenção ou proibição de qualquer acessório caberá à organização.</p></li>
+            </ol>
+            <div class="regulation-callout"><strong>Guarda controlada:</strong> itens liberados exclusivamente para palco poderão ser retidos durante a circulação no evento e recolhidos novamente após a apresentação.</div>
+          </section>
+
+          <section id="seguranca" class="regulation-section">
+            <h3><span>09</span> Da segurança</h3>
+            <ol class="regulation-items">
+              <li><span>9.1.</span><p>Nenhuma apresentação poderá colocar em risco o participante, público, jurados, equipe ou demais pessoas presentes.</p></li>
+              <li><span>9.2.</span><p>Não será permitido o uso de fogo, explosivos, armas reais, substâncias inflamáveis, produtos químicos perigosos, líquidos escorregadios ou materiais capazes de provocar acidentes.</p></li>
+              <li><span>9.3.</span><p>Não será permitido arremessar objetos perigosos para fora da área de apresentação.</p></li>
+              <li><span>9.4.</span><p>Cenários ou acessórios não poderão ser pregados, colados, presos ou fixados à estrutura do palco sem autorização expressa da organização.</p></li>
+              <li><span>9.5.</span><p>Todo material utilizado deverá ser retirado após a apresentação.</p></li>
+              <li><span>9.6.</span><p>Efeitos que produzam resíduos somente poderão ser utilizados mediante autorização e desde que sejam de rápida e fácil remoção.</p></li>
+              <li><span>9.7.</span><p>A organização poderá interromper imediatamente qualquer apresentação que represente risco à segurança.</p></li>
+            </ol>
+          </section>
+
+          <section id="conduta" class="regulation-section">
+            <h3><span>10</span> Da conduta</h3>
+            <ol class="regulation-items">
+              <li><span>10.1.</span><p>O Concurso Cosplay integra um evento destinado a públicos de diferentes idades.</p></li>
+              <li><span>10.2.</span><p>Não serão permitidas apresentações contendo violência real, nudez, conteúdo sexual explícito, discriminação, incitação ao ódio ou condutas capazes de colocar terceiros em risco.</p></li>
+              <li><span>10.3.</span><p>Todos os participantes deverão respeitar os demais competidores, jurados, organização, equipe técnica, público e as instalações da SORRI Bauru.</p></li>
+              <li><span>10.4.</span><p>Comportamentos agressivos, ameaças, ofensas graves, fraudes ou tentativas de interferência indevida no julgamento poderão resultar em desclassificação.</p></li>
+            </ol>
+          </section>
+
+          <section id="penalidades" class="regulation-section">
+            <h3><span>11</span> Das penalidades</h3>
+            <ol class="regulation-items">
+              <li><span>11.1.</span><p>O descumprimento deste regulamento poderá resultar, conforme a gravidade, em advertência, desconto de pontos, proibição de utilização de determinado recurso, interrupção da apresentação ou desclassificação.</p></li>
+              <li><span>11.2.</span><p>Situações que representem risco imediato à segurança poderão resultar em interrupção ou desclassificação sem necessidade de advertência anterior.</p></li>
+              <li><span>11.3.</span><p>A penalidade específica relacionada ao tempo de apresentação seguirá as regras previstas no item 4.</p></li>
+            </ol>
+          </section>
+
+          <section id="banca" class="regulation-section">
+            <h3><span>12</span> Da banca julgadora</h3>
+            <ol class="regulation-items">
+              <li><span>12.1.</span><p>A banca julgadora será formada por convidados selecionados pela organização do Family Game Festival.</p></li>
+              <li><span>12.2.</span><p>Os jurados utilizarão os critérios estabelecidos neste regulamento.</p></li>
+              <li><span>12.3.</span><p>As avaliações de Performance, Cosplay e Fidelidade possuem caráter técnico e também envolvem julgamento subjetivo.</p></li>
+              <li><span>12.4.</span><p>Discordâncias individuais em relação às notas não resultarão automaticamente em nova avaliação.</p></li>
+              <li><span>12.5.</span><p>Eventuais erros materiais, como soma incorreta, registro de nota ou identificação equivocada de participante, poderão ser apresentados à organização para conferência.</p></li>
+              <li><span>12.6.</span><p>Após a verificação e eventual correção de erro material, a decisão da banca julgadora será considerada final.</p></li>
+            </ol>
+          </section>
+
+          <section id="resultado" class="regulation-section">
+            <h3><span>13</span> Do resultado</h3>
+            <ol class="regulation-items">
+              <li><span>13.1.</span><p>O resultado será anunciado ao final do Concurso Cosplay.</p></li>
+              <li><span>13.2.</span><p>Serão reconhecidos o primeiro, segundo e terceiro colocados.</p></li>
+            </ol>
+          </section>
+
+          <section id="premiacao" class="regulation-section">
+            <h3><span>14</span> Da premiação</h3>
+            <ol class="regulation-items">
+              <li><span>14.1.</span><p>Havendo 12 ou mais participantes inscritos, a premiação será: <strong>1º lugar — R$ 1.000,00; 2º lugar — medalha; 3º lugar — medalha.</strong></p></li>
+              <li><span>14.2.</span><p>Eventuais brindes ou premiações adicionais poderão ser oferecidos pela organização ou por parceiros, mas não constituem premiação garantida.</p></li>
+              <li><span>14.3.</span><p>Caso o concurso possua menos de 12 participantes inscritos, o valor da premiação em dinheiro do primeiro colocado será alterado em razão do número de participantes.</p></li>
+              <li><span>14.4.</span><p>O valor aplicável nessa situação deverá ser definido e divulgado pela organização antes do início do concurso.</p></li>
+              <li><span>14.5.</span><p>A forma e o prazo para pagamento da premiação em dinheiro serão informados pela organização.</p></li>
+            </ol>
+            <div class="prize-grid"><div><span>1º LUGAR</span><strong>R$ 1.000</strong></div><div><span>2º LUGAR</span><strong>Medalha</strong></div><div><span>3º LUGAR</span><strong>Medalha</strong></div></div>
+          </section>
+
+          <section id="imagem" class="regulation-section">
+            <h3><span>15</span> Do uso de imagem</h3>
+            <ol class="regulation-items">
+              <li><span>15.1.</span><p>Fotografias, vídeos, transmissões e outros registros audiovisuais poderão ser realizados durante o Concurso Cosplay e durante o Family Game Festival.</p></li>
+              <li><span>15.2.</span><p>A participação no concurso estará condicionada à autorização de uso de imagem.</p></li>
+              <li><span>15.3.</span><p>Ao autorizar o uso de imagem, o participante permitirá que o Family Game Festival e seus parceiros utilizem fotografias, vídeos, áudio e demais registros relacionados à sua participação.</p></li>
+              <li><span>15.4.</span><p>A autorização compreenderá utilização em site, redes sociais, transmissões, vídeos, fotografias, imprensa, materiais gráficos, materiais promocionais, divulgação de futuras edições, arquivo histórico e outros materiais relacionados ao Family Game Festival e seus parceiros.</p></li>
+              <li><span>15.5.</span><p>A autorização será válida por prazo indeterminado.</p></li>
+              <li><span>15.6.</span><p>Não haverá pagamento adicional pela utilização institucional ou promocional desses registros.</p></li>
+              <li><span>15.7.</span><p>Para participantes menores de 18 anos, a autorização deverá ser concedida pelo responsável legal.</p></li>
+              <li><span>15.8.</span><p>O participante que não conceder a autorização obrigatória de uso de imagem não poderá participar do Concurso Cosplay.</p></li>
+            </ol>
+          </section>
+
+          <section id="menores" class="regulation-section">
+            <h3><span>16</span> Dos menores de idade</h3>
+            <ol class="regulation-items">
+              <li><span>16.1.</span><p>Não haverá idade mínima para participação.</p></li>
+              <li><span>16.2.</span><p>Participantes menores de 18 anos deverão apresentar autorização de seu responsável legal.</p></li>
+              <li><span>16.3.</span><p>O responsável legal deverá autorizar separadamente a participação no Concurso Cosplay, o aceite deste regulamento e o uso de imagem do menor.</p></li>
+              <li><span>16.4.</span><p>O menor deverá permanecer acompanhado por responsável durante o evento.</p></li>
+            </ol>
+          </section>
+
+          <section id="aceite" class="regulation-section">
+            <h3><span>17</span> Do aceite eletrônico</h3>
+            <ol class="regulation-items">
+              <li><span>17.1.</span><p>Durante a inscrição, o participante deverá realizar aceite eletrônico deste regulamento.</p></li>
+              <li><span>17.2.</span><p>A autorização para uso de imagem será apresentada de forma separada do aceite do regulamento.</p></li>
+              <li><span>17.3.</span><p>Ambos os aceites serão obrigatórios para conclusão da inscrição.</p></li>
+              <li><span>17.4.</span><p>Para participantes menores de idade, os aceites deverão ser realizados pelo responsável legal.</p></li>
+              <li><span>17.5.</span><p>A organização poderá manter registro eletrônico da inscrição e dos aceites realizados, incluindo identificação do participante, data e horário.</p></li>
+            </ol>
+          </section>
+
+          <section id="disposicoes" class="regulation-section regulation-section-final">
+            <h3><span>18</span> Das disposições finais</h3>
+            <ol class="regulation-items">
+              <li><span>18.1.</span><p>Ao concluir sua inscrição, o participante declara ter lido, compreendido e aceitado integralmente este regulamento.</p></li>
+              <li><span>18.2.</span><p>O participante é responsável pela veracidade das informações fornecidas.</p></li>
+              <li><span>18.3.</span><p>Situações excepcionais não previstas neste regulamento serão analisadas pela organização do Family Game Festival 2026.</p></li>
+              <li><span>18.4.</span><p>As decisões da organização deverão considerar a segurança, a igualdade de tratamento entre os competidores, o bom andamento do concurso e os critérios estabelecidos neste regulamento.</p></li>
+              <li><span>18.5.</span><p>A organização poderá realizar ajustes operacionais necessários ao funcionamento do concurso, desde que não alterem injustificadamente as condições fundamentais de participação e julgamento após o início da competição.</p></li>
+              <li><span>18.6.</span><p>A participação no Concurso Cosplay do Family Game Festival 2026 implica concordância com todas as condições estabelecidas neste regulamento.</p></li>
+            </ol>
+            <p class="regulation-note">Referência técnica: este regulamento foi estruturado com base em critérios e boas práticas presentes em regulamentos de competições oficiais de cosplay, incluindo o World Cosplay Summit Brasil 2026, adaptados ao formato do Family Game Festival. Essa referência não representa afiliação, chancela, seletiva ou etapa oficial do WCS.</p>
+          </section>
+
+          <footer class="regulation-document-footer">
+            <strong>Family Game Festival 2026</strong>
+            <span>20 de setembro · 16h00</span>
+            <span>Arena Tauste — SORRI Bauru · Av. Nações Unidas, 5340 · Bauru/SP</span>
+            <div class="regulation-document-footer-actions">
+              <a href={pdfUrl} download>Baixar o PDF oficial <span aria-hidden="true">↓</span></a>
+              <a href="#topo-da-pagina">Voltar ao topo da página <span aria-hidden="true">↑</span></a>
+            </div>
+          </footer>
+        </article>
+        <a class="regulation-floating-top" href="#topo-da-pagina" data-regulation-back-to-top aria-label="Voltar ao topo da página">
+          <span aria-hidden="true">↑</span>
+          <span>Topo</span>
+        </a>
+</div>
+
+<script>
+  const backToTopControl = document.querySelector('[data-regulation-back-to-top]');
+
+  if (backToTopControl) {
+    const syncBackToTopControl = () => {
+      backToTopControl.classList.toggle('is-visible', window.scrollY > 700);
+    };
+
+    syncBackToTopControl();
+    window.addEventListener('scroll', syncBackToTopControl, { passive: true });
+  }
+</script>

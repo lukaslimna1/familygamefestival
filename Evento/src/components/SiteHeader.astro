@@ -1,0 +1,94 @@
+---
+import { event, navItems } from '../data/event';
+
+interface Props {
+  current?: string;
+}
+
+const { current } = Astro.props;
+const resolveHref = (href: string) => Astro.url.pathname === '/' ? href : href.startsWith('#') ? `/${href}` : href;
+const isGroupCurrent = (item: (typeof navItems)[number]) => item.label === current || item.children.some((child) => child.label === current);
+const getNavId = (label: string) => `nav-${label.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '-')}`;
+---
+
+<div id="topo-da-pagina" class="page-top-anchor" aria-hidden="true"></div>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href={resolveHref('#inicio')} aria-label="Family Game Festival · início">
+      <img src="/assets/logo.svg" alt="Family Game Festival" />
+    </a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
+      <span></span><span></span><span></span>
+      <span class="sr-only">Abrir menu</span>
+    </button>
+    <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
+      {navItems.map((item) => item.children.length > 0 ? (
+        <div class:list={['nav-dropdown', isGroupCurrent(item) && 'is-current']} data-nav-dropdown>
+          <div class="nav-dropdown-heading">
+            <a class="nav-dropdown-link" href={resolveHref(item.href)}>{item.label}</a>
+            <button class="nav-dropdown-trigger" type="button" aria-label={`Abrir submenu de ${item.label}`} aria-expanded="false" aria-controls={getNavId(item.label)}>
+              <span class="nav-dropdown-chevron" aria-hidden="true">⌄</span>
+            </button>
+          </div>
+          <div class="nav-dropdown-menu" id={getNavId(item.label)}>
+            <div class="nav-dropdown-menu-panel">
+              {item.children.map((child) => <a class={child.label === current ? 'is-current' : undefined} href={resolveHref(child.href)}>{child.label}</a>)}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <a class={item.label === current ? 'is-current' : undefined} href={resolveHref(item.href)}>{item.label}</a>
+      ))}
+      <a class="button button-small button-yellow nav-cta" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const navDropdowns = document.querySelectorAll('[data-nav-dropdown]');
+  const hoverQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+  navDropdowns.forEach((dropdown) => {
+    const toggle = dropdown.querySelector('.nav-dropdown-trigger');
+    const setOpen = (open) => {
+      dropdown.classList.toggle('is-open', open);
+      toggle?.setAttribute('aria-expanded', String(open));
+    };
+
+    dropdown.addEventListener('pointerenter', () => {
+      if (hoverQuery.matches) toggle?.setAttribute('aria-expanded', 'true');
+    });
+    dropdown.addEventListener('pointerleave', () => {
+      if (hoverQuery.matches) toggle?.setAttribute('aria-expanded', 'false');
+    });
+    dropdown.addEventListener('focusin', () => {
+      if (hoverQuery.matches) setOpen(true);
+    });
+    dropdown.addEventListener('focusout', (event) => {
+      if (!dropdown.contains(event.relatedTarget)) setOpen(false);
+    });
+    toggle?.addEventListener('pointerdown', (event) => {
+      if (hoverQuery.matches && event.pointerType === 'mouse') event.preventDefault();
+    });
+    toggle?.addEventListener('click', () => {
+      if (!hoverQuery.matches) setOpen(!dropdown.classList.contains('is-open'));
+    });
+    dropdown.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setOpen(false)));
+  });
+
+  document.querySelectorAll('.main-nav a').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      const href = link.getAttribute('href');
+      if (!href?.startsWith('#')) return;
+
+      const target = document.querySelector(href);
+      if (!target) return;
+
+      event.preventDefault();
+      const headerHeight = document.querySelector('.site-header')?.getBoundingClientRect().height ?? 0;
+      const targetTop = target.getBoundingClientRect().top + window.scrollY - headerHeight - 14;
+      window.history.pushState({}, '', href);
+      window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+    });
+  });
+</script>

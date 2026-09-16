@@ -1,0 +1,33 @@
+---
+interface Props {
+  entry: {
+    tournament: {
+      title: string;
+      accent: string;
+    };
+    art: {
+      image: string;
+      alt: string;
+      fit: string;
+    };
+    pageUrl: string;
+  };
+}
+
+const { entry } = Astro.props;
+const imageClass = `competition-art-fit-${entry.art.fit || 'contain'}`;
+---
+
+<a class={`competition-card competition-card-${entry.tournament.accent}`} href={entry.pageUrl} aria-label={`Abrir página de ${entry.tournament.title}`}>
+  <span class="competition-card-art" style={entry.art.image ? `--art-image: url("${entry.art.image}")` : undefined}>
+    {entry.art.image ? (
+      <img class={imageClass} src={entry.art.image} alt="" loading="lazy" />
+    ) : (
+      <span class="competition-card-art-empty"><span>{entry.tournament.title}</span></span>
+    )}
+  </span>
+  <span class="competition-card-body">
+    <span class="competition-card-title">{entry.tournament.title}</span>
+    <span class="competition-card-arrow" aria-hidden="true">↗</span>
+  </span>
+</a>

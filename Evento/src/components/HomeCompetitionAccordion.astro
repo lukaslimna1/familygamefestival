@@ -1,0 +1,51 @@
+---
+interface Props {
+  entry: any;
+  categoryLabel?: string;
+  number?: number;
+  featured?: boolean;
+}
+
+const { entry, categoryLabel = entry.tournament.category, number, featured = false } = Astro.props;
+const detailId = `home-${entry.tournament.id}-details`;
+const titleId = `home-${entry.tournament.id}-title`;
+const description = entry.tournament.detail || 'Informações e formato da disputa serão divulgados pela organização.';
+const imageClass = `competition-art-fit-${entry.art.fit || 'cover'}`;
+---
+
+<article class={`home-competition-item home-competition-item-${entry.tournament.accent} ${featured ? 'home-competition-item-featured' : ''}`} data-home-competition-item>
+  <button class="home-competition-summary" type="button" aria-expanded="false" aria-controls={detailId} data-home-competition-toggle>
+    {number && <span class="home-competition-number" aria-hidden="true">{String(number).padStart(2, '0')}</span>}
+    <span class="home-competition-summary-art" aria-hidden="true">
+      {entry.art.image ? <img class={imageClass} src={entry.art.image} alt="" loading="lazy" /> : <span class="home-competition-summary-art-empty">{entry.tournament.title}</span>}
+    </span>
+    <span class="home-competition-summary-copy">
+      <small>{categoryLabel}</small>
+      <strong>{entry.tournament.title}</strong>
+      <span>{entry.schedule.date} · {entry.schedule.time}</span>
+    </span>
+    <span class="home-competition-summary-prize"><small>PRÊMIO</small><strong>{entry.tournament.prize || 'A definir'}</strong></span>
+    <span class="home-competition-toggle-icon" aria-hidden="true">+</span>
+  </button>
+
+  <div class="home-competition-details" id={detailId} aria-labelledby={titleId} data-home-competition-details hidden>
+    <div class="home-competition-details-art" aria-hidden="true">
+      {entry.art.image ? <img class={imageClass} src={entry.art.image} alt="" loading="lazy" /> : <span>{entry.tournament.title}</span>}
+    </div>
+    <div class="home-competition-details-copy">
+      <p class="card-eyebrow">{categoryLabel}</p>
+      <h3 id={titleId}>{entry.tournament.title}</h3>
+      <p class="home-competition-details-description">{description}</p>
+
+      <dl class="home-competition-details-facts">
+        <div><dt>DATA</dt><dd>{entry.schedule.date}</dd></div>
+        <div><dt>HORÁRIO</dt><dd>{entry.schedule.time}</dd></div>
+        <div><dt>PREMIAÇÃO</dt><dd>{entry.tournament.prize || 'A definir'}</dd></div>
+      </dl>
+
+      <div class="home-competition-details-actions">
+        <a class="home-competition-page-link" href={entry.pageUrl}>Página do campeonato <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </div>
+</article>

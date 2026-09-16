@@ -6,12 +6,32 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "db:migrate:dry": "node scripts/db-migrate.mjs --dry-run",
+    "db:sync-competitions": "node scripts/sync-competitions.mjs",
+    "test:registration-drive": "tsx scripts/test-registration-drive.ts",
+    "drive:bootstrap": "node scripts/drive-bootstrap.mjs",
+    "drive:repair-root": "node scripts/drive-repair-root.mjs"
   },
   "dependencies": {
-    "@vercel/analytics": "^2.0.1"
+    "@astrojs/vercel": "^11.0.10",
+    "@libsql/client": "^0.18.0",
+    "@vercel/analytics": "^2.0.1",
+    "bcryptjs": "^3.0.3",
+    "drizzle-orm": "^0.45.2",
+    "googleapis": "^181.0.0",
+    "jose": "^6.2.12",
+    "pdf-lib": "^1.17.1",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
-    "astro": "^7.3.2"
+    "astro": "^7.3.2",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "path-to-regexp": "6.3.0"
   }
 }

@@ -1,8 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { event, navItems, sponsorTiers, sponsorBenefits, directSponsorOptions, supportOptions } from '../../data/event';
+import SiteHeader from '../../components/SiteHeader.astro';
+import { event, sponsorTiers, sponsorBenefits, directSponsorOptions, supportOptions } from '../../data/event';
 
-const navLinks = navItems.map((item) => ({ ...item, href: item.href.startsWith('#') ? `/${item.href}` : item.href }));
+export const prerender = true;
+
 ---
 
 <BaseLayout
@@ -10,16 +12,7 @@ const navLinks = navItems.map((item) => ({ ...item, href: item.href.startsWith('
   description="Veja as cotas, contrapartidas e formatos de parceria do Family Game Festival 2026."
   canonical="https://familygamefestival.vercel.app/patrocinadores/como-participar"
 >
-  <header class="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="/" aria-label="Family Game Festival · início"><img src="/assets/logo.svg" alt="Family Game Festival" /></a>
-      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav"><span></span><span></span><span></span><span class="sr-only">Abrir menu</span></button>
-      <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
-        {navLinks.map((item) => <a class={item.label === 'Patrocinadores' ? 'is-current' : undefined} href={item.href}>{item.label}</a>)}
-        <a class="button button-small button-yellow nav-cta" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a>
-      </nav>
-    </div>
-  </header>
+  <SiteHeader current="Patrocinadores" />
 
   <main>
     <section class="sponsor-guide-hero">

@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CompetitionDayView from '../../components/CompetitionDayView.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import { event } from '../../data/event';
+import { competitionDays } from '../../data/championships';
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return competitionDays.map((day) => ({ params: { day: day.slug }, props: { day } }));
+}
+
+const { day } = Astro.props;
+const pageTitle = `Campeonatos de ${day.day.toLowerCase()} | ${event.name}`;
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={`Veja os campeonatos de ${day.day.toLowerCase()} do Family Game Festival 2026, com horários, premiações, regulamentos e inscrições.`}
+  canonical={`https://familygamefestival.vercel.app/campeonatos/${day.slug}`}
+>
+  <SiteHeader current="Campeonatos" />
+
+  <main class="championship-site-page championship-day-site-page">
+    <section class={`championship-page-hero championship-page-hero-${day.accent}`}>
+      <div class="container championship-page-hero-grid">
+        <div>
+          <p class="eyebrow eyebrow-yellow">Programação · {day.day}</p>
+          <h1>Campeonatos de <em>{day.day.toLowerCase()}.</em></h1>
+          <p>{day.date} · Escolha uma disputa para consultar todas as informações do campeonato.</p>
+        </div>
+        <div class="championship-page-hero-mark" aria-hidden="true"><span>{day.date.slice(0, 5)}</span><strong>{day.day === 'SÁBADO' ? 'SÁB' : 'DOM'}</strong><small>11H—21H<br />ARENA TAUSTE</small></div>
+      </div>
+    </section>
+
+    <section class="championship-directory-page section section-navy">
+      <div class="container">
+        <CompetitionDayView day={day} />
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-top"><a class="brand" href="/"><img src="/assets/logo.svg" alt="Family Game Festival" /></a><p>Games, cultura geek e impacto local.<br />Bauru · 19—20 setembro 2026</p><a class="button button-yellow button-small" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a></div>
+    <div class="container footer-bottom"><span>© 2026 Family Game Festival</span><a href={event.instagramUrl} target="_blank" rel="noreferrer">{event.instagram}</a><span>{event.socialImpact}</span><span class="footer-credit">Desenvolvido pela <a href="https://www.instagram.com/usealterstate/" target="_blank" rel="noreferrer">ALTERSTATE</a></span></div>
+  </footer>
+</BaseLayout>

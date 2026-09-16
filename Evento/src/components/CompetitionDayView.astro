@@ -1,0 +1,53 @@
+---
+import CompetitionCard from './CompetitionCard.astro';
+import { getChampionshipCount } from '../data/championships';
+
+interface Props {
+  day: any;
+  home?: boolean;
+}
+
+const { day, home = false } = Astro.props;
+const prefix = home ? 'home' : 'page';
+---
+
+<section class={`competition-day competition-day-${day.accent} ${home ? 'competition-day-home' : 'competition-day-page'}`} aria-labelledby={`${prefix}-${day.slug}-title`}>
+  <header class="competition-day-heading">
+    <div>
+      <p class="eyebrow eyebrow-yellow">{day.day}</p>
+      <h3 id={`${prefix}-${day.slug}-title`}>{day.date}</h3>
+    </div>
+    <div class="competition-day-heading-meta">
+      <strong>{getChampionshipCount(day)} campeonatos</strong>
+      {home ? (
+        <a href={`/campeonatos/${day.slug}`}>Abrir encarte de {day.day.toLowerCase()} <span aria-hidden="true">↗</span></a>
+      ) : null}
+    </div>
+  </header>
+
+  <div class="competition-day-groups">
+    {day.groups.map((group) => (
+      <section class={`competition-group competition-group-${group.accent}`}>
+        <div class="competition-group-heading">
+          <div><p class="card-eyebrow">{group.kicker}</p><h4>{group.title}</h4></div>
+          <span>{group.entries.length} {group.entries.length === 1 ? 'disputa' : 'disputas'}</span>
+        </div>
+        <div class="competition-card-grid">
+          {group.entries.map((entry) => <CompetitionCard entry={entry} />)}
+        </div>
+      </section>
+    ))}
+  </div>
+
+  {day.panels.length > 0 && (
+    <div class="competition-day-panels">
+      <p class="card-eyebrow">Além dos campeonatos</p>
+      {day.panels.map((panel) => (
+        <article class="competition-panel">
+          <time>{panel.time}</time>
+          <div><span>{panel.category}</span><h4>{panel.title}</h4></div>
+        </article>
+      ))}
+    </div>
+  )}
+</section>

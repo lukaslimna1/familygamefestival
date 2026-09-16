@@ -9,23 +9,31 @@ interface Props {
 
 const { carousel = false } = Astro.props;
 
-const logoDirectory = path.join(process.cwd(), 'public', 'assets', 'logos', 'parceiros');
+const logoDirectories = [
+  { directory: path.join(process.cwd(), 'public', 'assets', 'logos', 'parceiros'), publicPath: '/assets/logos/parceiros' },
+  { directory: path.join(process.cwd(), 'public', 'assets', 'logos', 'lojas'), publicPath: '/assets/logos/lojas' }
+] as const;
 const logoCandidates: Record<string, string[]> = {
   'Family Games': ['Family Games Festival.svg', 'family-games.svg', 'family-games.png', 'family-games-logo.svg'],
   'Edge 3D Studio': ['Edge 3D Studio.webp', 'edge-3d-studio.svg', 'edge-3d-studio.png', 'Edge 3D Studio.svg', 'Edge 3D Studio.png'],
   Alterstate: ['01 - ALTERSTATE.png', 'ALTERSTATE.png', 'alterstate.svg', 'alterstate.png'],
-  'SORRI Bauru': ['Sorri Bauru.png', 'sorri-bauru.svg', 'sorri-bauru.png']
+  'SORRI Bauru': ['Sorri Bauru.png', 'sorri-bauru.svg', 'sorri-bauru.png'],
+  'Bauru Box': ['Bauru Box.png', 'bauru-box.png'],
+  'Facai Games': ['Facai.png', 'facai.png'],
+  NayCraftlab: ['NayCraftLabs3d.png', 'naycraftlab.png']
 };
 
 const getLogo = (name: string) => {
-  const filename = logoCandidates[name]?.find((candidate) => fs.existsSync(path.join(logoDirectory, candidate)));
-  if (filename) return `/assets/logos/parceiros/${filename.split('/').map(encodeURIComponent).join('/')}`;
+  const candidates = logoCandidates[name] ?? [];
+  for (const location of logoDirectories) {
+    const filename = candidates.find((candidate) => fs.existsSync(path.join(location.directory, candidate)));
+    if (filename) return `${location.publicPath}/${filename.split('/').map(encodeURIComponent).join('/')}`;
+  }
   return name === 'Family Games' ? '/assets/logo.svg' : '';
 };
 
 const realizationPartner = partners.find((partner) => partner.level === 'Realização');
 const supportPartners = partners.filter((partner) => partner.level === 'Apoio');
-const merchantPartners = partners.filter((partner) => partner.merchant);
 const hierarchyTiers = [
   { key: 'legend', title: 'Legend', partners: partners.filter((partner) => partner.level === 'Legend') },
   { key: 'champion', title: 'Champion', partners: partners.filter((partner) => partner.level === 'Champion') },
@@ -86,15 +94,4 @@ const displayLevel = (level: string) => level === 'Power-up' ? 'Power Up' : leve
   )}
 
   <slot name="after-hierarchy" />
-
-  <section class="merchant-panel" aria-labelledby="merchant-panel-title">
-    <div class="merchant-panel-copy"><p class="eyebrow eyebrow-cyan">Lojistas / expositores</p><h3 id="merchant-panel-title">Quem você encontra na arena.</h3></div>
-    <div class="merchant-logo-grid">
-      {merchantPartners.length > 0 ? merchantPartners.map((partner) => (
-        <a class="merchant-logo-card" href={partner.href || undefined} target={partner.href ? '_blank' : undefined} rel={partner.href ? 'noreferrer' : undefined} aria-label={`Ver o lojista ${partner.name}`} title={partner.name}>
-          <span class="merchant-logo-frame">{getLogo(partner.name) ? <img src={getLogo(partner.name)} alt={`Logo ${partner.name}`} /> : <span class="hierarchy-logo-fallback" aria-hidden="true">{partner.name.slice(0, 1)}</span>}</span>
-        </a>
-      )) : <p class="merchant-empty">As logos dos lojistas confirmados aparecerão aqui.</p>}
-    </div>
-  </section>
 </div>

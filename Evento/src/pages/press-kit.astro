@@ -1,8 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { event, navItems, guests, pressKitAngles, pressKitSnippets } from '../data/event';
+import SiteHeader from '../components/SiteHeader.astro';
+import { event, guests, tournaments, pressKitAngles, pressKitSnippets } from '../data/event';
 
-const navLinks = navItems.map((item) => ({ ...item, href: item.href.startsWith('#') ? `/${item.href}` : item.href }));
+export const prerender = true;
 
 const pressMaterials = [
   { number: '01', title: 'Release oficial', text: 'Texto-base para adaptar a portais, jornais, blogs e agendas culturais.', accent: 'yellow' },
@@ -12,7 +13,7 @@ const pressMaterials = [
 ] as const;
 
 const programHighlights = [
-  { title: 'Campeonatos', text: 'Cosplay, Just Dance, Fight Games, FC 26, eFootball e Top Gear 1.' },
+  { title: 'Campeonatos', text: `${tournaments.map((tournament) => tournament.title).join(', ')}.` },
   { title: 'Experiências', text: 'Free Play atual e retrô, K-pop, Random Play Dance e expositores.' },
   { title: 'Atrações', text: 'Raul Schlosser, Lana VGS e uma programação feita para toda a família.' }
 ] as const;
@@ -23,21 +24,7 @@ const programHighlights = [
   description="Informações oficiais, releases e materiais de divulgação do Family Game Festival 2026."
   canonical="https://familygamefestival.vercel.app/press-kit"
 >
-  <header class="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="/" aria-label="Family Game Festival · início">
-        <img src="/assets/logo.svg" alt="Family Game Festival" />
-      </a>
-      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">
-        <span></span><span></span><span></span>
-        <span class="sr-only">Abrir menu</span>
-      </button>
-      <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
-        {navLinks.map((item) => <a href={item.href}>{item.label}</a>)}
-        <a class="button button-small button-yellow nav-cta" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a>
-      </nav>
-    </div>
-  </header>
+  <SiteHeader />
 
   <main>
     <section class="sponsor-page-hero press-kit-hero">

@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CompetitionDayView from '../../components/CompetitionDayView.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import { event } from '../../data/event';
+import { competitionDays } from '../../data/championships';
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title={`Campeonatos | ${event.name}`}
+  description="Confira os campeonatos do Family Game Festival 2026 por dia, horário, premiação e categoria."
+  canonical="https://familygamefestival.vercel.app/campeonatos"
+>
+  <SiteHeader current="Campeonatos" />
+
+  <main class="championship-site-page">
+    <section class="championship-page-hero">
+      <div class="container championship-page-hero-grid">
+        <div>
+          <p class="eyebrow eyebrow-yellow">Arena de campeonatos · FGF / 26</p>
+          <h1>Escolha seu <em>campeonato.</em></h1>
+          <p>Encontre a disputa pelo dia do evento e abra a página de cada campeonato para consultar as informações oficiais, o regulamento e a inscrição.</p>
+        </div>
+        <div class="championship-page-hero-mark" aria-hidden="true"><span>19—20</span><strong>SET</strong><small>ARENA TAUSTE<br />SORRI BAURU</small></div>
+      </div>
+    </section>
+
+    <section class="championship-directory-page section section-navy">
+      <div class="container">
+        <nav class="championship-day-links" aria-label="Escolher dia dos campeonatos">
+          {competitionDays.map((day) => <a class={`button button-small button-${day.accent === 'red' ? 'red' : 'yellow'}`} href={`/campeonatos/${day.slug}`}>{day.day} · {day.date.slice(0, 5)} <span aria-hidden="true">↗</span></a>)}
+        </nav>
+        <div class="competition-days competition-days-page">
+          {competitionDays.map((day) => <CompetitionDayView day={day} />)}
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-top"><a class="brand" href="/"><img src="/assets/logo.svg" alt="Family Game Festival" /></a><p>Games, cultura geek e impacto local.<br />Bauru · 19—20 setembro 2026</p><a class="button button-yellow button-small" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a></div>
+    <div class="container footer-bottom"><span>© 2026 Family Game Festival</span><a href={event.instagramUrl} target="_blank" rel="noreferrer">{event.instagram}</a><span>{event.socialImpact}</span><span class="footer-credit">Desenvolvido pela <a href="https://www.instagram.com/usealterstate/" target="_blank" rel="noreferrer">ALTERSTATE</a></span></div>
+  </footer>
+</BaseLayout>
