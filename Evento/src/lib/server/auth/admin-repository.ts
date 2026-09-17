@@ -111,3 +111,15 @@ export async function updateAdminPassword(
     .set({ passwordHash, mustChangePassword, updatedAt: at })
     .where(eq(admins.id, adminId));
 }
+
+export async function updateAdminDisplayName(adminId: string, displayName: string, at = new Date().toISOString()) {
+  const normalized = displayName.trim();
+  if (normalized.length < 3 || normalized.length > 160) {
+    throw new Error('O nome de exibição deve ter entre 3 e 160 caracteres.');
+  }
+
+  await getDatabase()
+    .update(admins)
+    .set({ displayName: normalized, updatedAt: at })
+    .where(eq(admins.id, adminId));
+}

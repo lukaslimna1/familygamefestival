@@ -6,9 +6,11 @@ interface Props {
   subtitle?: string;
   action?: { label: string; href: string };
   admin?: { displayName: string };
+  search?: { action: string; value?: string; placeholder?: string };
+  notificationCount?: number;
 }
 
-const { title, subtitle, action, admin } = Astro.props;
+const { title, subtitle, action, admin, search, notificationCount = 0 } = Astro.props;
 const initials = admin?.displayName
   ?.split(/\s+/)
   .filter(Boolean)
@@ -37,6 +39,18 @@ const initials = admin?.displayName
   </div>
 
   <div class="admin-topbar-actions">
+    {search && (
+      <form class="admin-topbar-search" method="get" action={search.action} role="search">
+        <AdminIcon name="search" />
+        <input name="q" value={search.value ?? ''} placeholder={search.placeholder ?? 'Buscar'} aria-label={search.placeholder ?? 'Buscar'} />
+      </form>
+    )}
+    {notificationCount > 0 && (
+      <a class="admin-topbar-notification" href="/admin/menores?status=pending" aria-label={String(notificationCount) + ' pendências'}>
+        <span class="admin-notification-dot" aria-hidden="true"></span>
+        <strong>{notificationCount > 99 ? '99+' : notificationCount}</strong>
+      </a>
+    )}
     {action && (
       <a class="admin-topbar-action" href={action.href}>
         <span>{action.label}</span>
@@ -44,13 +58,20 @@ const initials = admin?.displayName
       </a>
     )}
     {admin && (
-      <div class="admin-topbar-user" aria-label={`Administrador ${admin.displayName}`}>
-        <span class="admin-topbar-avatar" aria-hidden="true">{initials || 'A'}</span>
-        <span class="admin-topbar-user-copy">
-          <strong>{admin.displayName}</strong>
-          <small>Administrador</small>
-        </span>
-      </div>
+      <details class="admin-account-menu">
+        <summary class="admin-topbar-user" aria-label={'Menu da conta de ' + admin.displayName}>
+          <span class="admin-topbar-avatar" aria-hidden="true">{initials || 'A'}</span>
+          <span class="admin-topbar-user-copy">
+            <strong>{admin.displayName}</strong>
+            <small>Administrador</small>
+          </span>
+        </summary>
+        <div class="admin-account-menu-panel">
+          <a href="/admin/configuracoes">Minha conta</a>
+          <a href="/admin/account/password">Trocar senha</a>
+          <form method="post" action="/api/admin/logout"><button type="submit">Sair</button></form>
+        </div>
+      </details>
     )}
   </div>
 </header>

@@ -1,0 +1,51 @@
+---
+interface Option {
+  value: string;
+  label: string;
+}
+
+interface Props {
+  name: string;
+  label: string;
+  options: readonly Option[];
+  value?: string;
+}
+
+const { name, label, options, value = '' } = Astro.props;
+const selectedOption = options.find((option) => option.value === value);
+const idBase = `admin-select-${name.replace(/[^a-z0-9_-]/gi, '-')}`;
+const triggerId = `${idBase}-trigger`;
+const menuId = `${idBase}-menu`;
+---
+
+<div class="admin-select-field">
+  <label class="admin-select-label" for={triggerId}>{label}</label>
+  <div class="admin-select" data-admin-select>
+    <input type="hidden" name={name} value={value} data-admin-select-input />
+    <button
+      class="admin-select-trigger"
+      id={triggerId}
+      type="button"
+      aria-haspopup="listbox"
+      aria-expanded="false"
+      aria-controls={menuId}
+      data-admin-select-trigger
+    >
+      <span data-admin-select-label>{selectedOption?.label ?? options[0]?.label ?? ''}</span>
+      <span class="admin-select-chevron" aria-hidden="true">⌄</span>
+    </button>
+    <div class="admin-select-menu" id={menuId} role="listbox" aria-label={label} hidden data-admin-select-menu>
+      {options.map((option) => (
+        <button
+          class="admin-select-option"
+          type="button"
+          role="option"
+          aria-selected={option.value === value ? 'true' : 'false'}
+          data-value={option.value}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  </div>
+</div>

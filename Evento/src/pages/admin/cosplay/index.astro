@@ -1,0 +1,59 @@
+---
+import AdminIcon from '../../../components/admin/AdminIcon.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getAdminCompetitionSummaries, listAdminRegistrations } from '../../../lib/server/admin/data';
+
+const admin = Astro.locals.admin;
+if (!admin) return Astro.redirect('/admin/login');
+if (admin.mustChangePassword) return Astro.redirect('/admin/account/password');
+
+const search = Astro.url.searchParams.get('q') ?? '';
+const requestedStatus = Astro.url.searchParams.get('status') ?? '';
+const [allRows, competitions] = await Promise.all([
+  listAdminRegistrations({ competitionId: 'cosplay', search, status: ['pending', 'synced', 'failed'].includes(requestedStatus) ? requestedStatus : undefined, limit: 1000 }),
+  getAdminCompetitionSummaries()
+]);
+const rows = allRows.filter((row) => requestedStatus !== 'without_audio' || !row.hasAudio);
+const cosplaySummary = competitions.find((competition) => competition.id === 'cosplay');
+const statusLabel = (status: string) => ({ pending: 'Pendente', synced: 'Sincronizada', failed: 'Falha' }[status] ?? status);
+---
+
+<AdminLayout
+  title="Cosplay | Family Game Festival"
+  subtitle="Módulo especializado do concurso e seus arquivos."
+  admin={admin}
+  search={{ action: '/admin/cosplay', value: search, placeholder: 'Buscar cosplayer, personagem ou código' }}
+  notificationCount={rows.filter((row) => row.needsAttention).length}
+>
+  <div class="admin-v2-page admin-v2-cosplay-page">
+    <section class="admin-v2-page-intro admin-v2-cosplay-intro">
+      <div><p class="admin-eyebrow">Módulo especializado · concurso</p><h2>Cosplay</h2><p>Personagem, apresentação, referências, áudio e documentação em uma visão feita para a curadoria.</p></div>
+      {cosplaySummary && <div class="admin-v2-cosplay-capacity"><span>Ocupação</span><strong>{cosplaySummary.enrolled}<small>/{cosplaySummary.capacity}</small></strong><i><span style={'width: ' + Math.min(100, cosplaySummary.enrolled / cosplaySummary.capacity * 100) + '%'}></span></i><small>{cosplaySummary.remaining} vagas restantes</small></div>}
+    </section>
+
+    <section class="admin-v2-cosplay-toolbar">
+      <div class="admin-v2-segmented"><a class:list={{ 'is-active': !requestedStatus }} href="/admin/cosplay">Todos</a><a class:list={{ 'is-active': requestedStatus === 'pending' }} href="/admin/cosplay?status=pending">Pendentes</a><a class:list={{ 'is-active': requestedStatus === 'without_audio' }} href="/admin/cosplay?status=without_audio">Sem áudio</a><a class:list={{ 'is-active': requestedStatus === 'failed' }} href="/admin/cosplay?status=failed">Com falha</a></div>
+      <span class="admin-v2-toolbar-count">{rows.length} inscriç{rows.length === 1 ? 'ão' : 'ões'}</span>
+    </section>
+
+    <section class="admin-v2-card" aria-labelledby="cosplay-list-title">
+      <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Curadoria e operação</p><h2 id="cosplay-list-title">Inscritos do concurso</h2><p>Abra uma ficha para navegar pelas informações sem perder os arquivos de apoio.</p></div></div>
+      {rows.length ? (
+        <div class="admin-v2-table-wrap">
+          <table class="admin-v2-table admin-v2-cosplay-table">
+            <thead><tr><th>Código</th><th>Cosplayer</th><th>Personagem / obra</th><th>Apresentação</th><th>Arquivos</th><th>Perfil</th><th>Status</th></tr></thead>
+            <tbody>{rows.map((row) => <tr>
+              <td><a class="admin-v2-code" href={'/admin/cosplay/' + row.registrationId}>{row.publicCode ?? '—'}</a></td>
+              <td><a href={'/admin/cosplay/' + row.registrationId}><strong>{row.fullName}</strong><small>{row.instagram ?? 'Instagram não informado'}</small></a></td>
+              <td><strong>{row.characterName || 'Não informado'}</strong><small>{row.sourceWork || 'Obra não informada'}{row.stageName ? ' · ' + row.stageName : ''}</small></td>
+              <td><span class="admin-v2-compact-label">{row.hasAudio ? 'Áudio enviado' : 'Sem áudio'}</span><small>{row.isMinor ? 'Menor de idade' : 'Maior de idade'}</small></td>
+              <td><span class="admin-v2-file-count">{row.referenceCount} ref.</span><small>{row.hasAudio ? '1 áudio' : 'Nenhum áudio'}</small></td>
+              <td><span class:list={['admin-v2-age-badge', row.isMinor ? 'is-minor' : 'is-adult']}>{row.isMinor ? 'Menor' : 'Maior'}</span></td>
+              <td><span class:list={['admin-v2-status', 'status-' + row.status]}>{statusLabel(row.status)}</span></td>
+            </tr>)}</tbody>
+          </table>
+        </div>
+      ) : <div class="admin-v2-empty"><span class="admin-v2-empty-icon"><AdminIcon name="spark" /></span><strong>Nenhuma inscrição de Cosplay encontrada.</strong><p>A lista usa os registros reais do banco e respeita o filtro selecionado.</p><a href="/admin/cosplay">Limpar filtros <AdminIcon name="arrow" /></a></div>}
+    </section>
+  </div>
+</AdminLayout>

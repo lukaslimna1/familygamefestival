@@ -1,0 +1,67 @@
+---
+import AdminIcon from '../../../components/admin/AdminIcon.astro';
+import AdminSelect from '../../../components/admin/AdminSelect.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { formatAdminDate, getAdminCompetitionSummaries, getAdminMinorRows } from '../../../lib/server/admin/data';
+
+const admin = Astro.locals.admin;
+if (!admin) return Astro.redirect('/admin/login');
+if (admin.mustChangePassword) return Astro.redirect('/admin/account/password');
+
+const query = Astro.url.searchParams;
+const competitionId = query.get('competition') ?? '';
+const requestedStatus = query.get('status') ?? '';
+const [allCompetitions, initialRows] = await Promise.all([
+  getAdminCompetitionSummaries(),
+  getAdminMinorRows({ competitionId: competitionId || undefined })
+]);
+let rows = initialRows;
+const competitionOptions = [{ value: '', label: 'Todas as competições' }, ...allCompetitions.map((competition) => ({ value: competition.id, label: competition.title }))];
+const statusOptions = [{ value: '', label: 'Todos os status' }, { value: 'needs_attention', label: 'Atualização necessária' }, { value: 'pending', label: 'Pendente' }, { value: 'uploaded', label: 'Documento enviado' }, { value: 'physical_pending', label: 'Entrega física' }, { value: 'received', label: 'Recebida' }, { value: 'rejected', label: 'Rejeitada' }];
+if (requestedStatus === 'needs_attention') {
+  rows = rows.filter((row) => row.needsAttention);
+} else if (requestedStatus === 'pending') {
+  rows = rows.filter((row) => !row.authorization || row.authorization.status === 'pending');
+} else if (requestedStatus) {
+  rows = rows.filter((row) => row.authorization?.status === requestedStatus);
+}
+const pending = rows.filter((row) => !row.authorization || ['pending', 'physical_pending', 'rejected'].includes(row.authorization.status)).length;
+const statusLabel = (status: string | null | undefined) => ({ pending: 'Pendente', uploaded: 'Documento enviado', physical_pending: 'Entrega física', received: 'Recebida', rejected: 'Rejeitada' }[status ?? ''] ?? 'Sem autorização');
+---
+
+<AdminLayout
+  title="Menores | Family Game Festival"
+  subtitle="Acompanhe autorizações e entregas de responsáveis."
+  admin={admin}
+  notificationCount={pending}
+>
+  <div class="admin-v2-page">
+    <section class="admin-v2-page-intro">
+      <div><p class="admin-eyebrow">Conformidade · responsáveis</p><h2>Menores</h2><p>Uma fila única para revisar autorizações, conferir versões e registrar documentos recebidos no evento.</p></div>
+      <div class="admin-v2-intro-meta"><strong>{rows.length}</strong><span>registro{rows.length === 1 ? '' : 's'} com responsável</span></div>
+    </section>
+
+    <section class="admin-v2-minor-summary"><div><span class="summary-mark summary-red"><AdminIcon name="shield" /></span><span><strong>{pending}</strong><small>precisam de atenção</small></span></div><div><span class="summary-mark summary-yellow"><AdminIcon name="folder" /></span><span><strong>{rows.filter((row) => row.authorization?.status === 'physical_pending').length}</strong><small>aguardam entrega física</small></span></div><div><span class="summary-mark summary-green"><AdminIcon name="spark" /></span><span><strong>{rows.filter((row) => row.authorization?.status === 'received').length}</strong><small>recebidas</small></span></div></section>
+
+    <section class="admin-v2-card admin-v2-filter-card">
+      <form class="admin-v2-filter-form" method="get">
+        <AdminSelect name="competition" label="Competição" options={competitionOptions} value={competitionId} />
+        <AdminSelect name="status" label="Status" options={statusOptions} value={requestedStatus} />
+        <button class="admin-button admin-button-primary" type="submit">Aplicar filtros</button><a class="admin-button admin-button-secondary" href="/admin/menores">Limpar</a>
+      </form>
+    </section>
+
+    <section class="admin-v2-card" aria-labelledby="minor-list-title">
+      <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Fila de conferência</p><h2 id="minor-list-title">Autorizações</h2><p>As versões antigas permanecem preservadas no histórico da inscrição.</p></div><span class="admin-v2-count-badge">{rows.length}</span></div>
+      {rows.length ? <div class="admin-v2-table-wrap"><table class="admin-v2-table admin-v2-minor-table"><thead><tr><th>Participante</th><th>Competição</th><th>Responsável</th><th>Versão</th><th>Situação</th><th>Atualização</th><th>Ações</th></tr></thead><tbody>{rows.map((row) => <tr>
+        <td><a href={'/admin/inscricoes/' + row.registrationId}><strong>{row.fullName}</strong><small>{row.publicCode ?? 'Sem código'} · {row.age} anos</small></a></td>
+        <td>{row.competitionTitle}<small>{row.competitionEventDay} · {row.competitionStartTime}</small></td>
+        <td>{row.authorization ? 'Cadastrado' : 'Não encontrado'}<small>{row.authorization?.deliveryType === 'physical' ? 'Entrega física' : 'Envio online'}</small></td>
+        <td><span class="admin-v2-version-badge">V{row.authorization?.version ?? '—'}</span></td>
+        <td><span class:list={['admin-v2-status', 'status-' + (row.authorization?.status ?? 'pending')]}>{statusLabel(row.authorization?.status)}</span>{row.authorization?.rejectionReason && <small class="admin-v2-alert-text">{row.authorization.rejectionReason}</small>}</td>
+        <td>{formatAdminDate(row.authorization?.receivedAt ?? row.registrationUpdatedAt)}</td>
+        <td><div class="admin-v2-row-actions"><a class="admin-v2-icon-link" href={'/admin/inscricoes/' + row.registrationId} aria-label="Abrir inscrição"><AdminIcon name="arrow" /></a>{row.authorization && row.authorization.status !== 'received' && <form method="post" action={'/api/admin/minors/' + row.authorization.id}><input type="hidden" name="action" value="received" /><button class="admin-v2-action-button is-receive" type="submit">Receber</button></form>}{row.authorization && row.authorization.status !== 'rejected' && <form method="post" action={'/api/admin/minors/' + row.authorization.id}><input type="hidden" name="action" value="rejected" /><input type="hidden" name="rejectionReason" value="Revisão necessária pela administração." /><button class="admin-v2-action-button is-reject" type="submit">Rejeitar</button></form>}</div></td>
+      </tr>)}</tbody></table></div> : <div class="admin-v2-empty"><span class="admin-v2-empty-icon"><AdminIcon name="shield" /></span><strong>Nenhuma autorização encontrada.</strong><p>Quando houver inscrições de menores, elas aparecerão aqui com situação e versão do documento.</p><a href="/admin/menores">Limpar filtros <AdminIcon name="arrow" /></a></div>}
+    </section>
+  </div>
+</AdminLayout>

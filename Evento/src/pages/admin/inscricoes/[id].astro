@@ -1,0 +1,111 @@
+---
+import AdminIcon from '../../../components/admin/AdminIcon.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import {
+  driveFileUrl,
+  formatAdminDate,
+  getAdminRegistrationDetails
+} from '../../../lib/server/admin/data';
+
+const admin = Astro.locals.admin;
+if (!admin) return Astro.redirect('/admin/login');
+if (admin.mustChangePassword) return Astro.redirect('/admin/account/password');
+
+const registration = Astro.params.id ? await getAdminRegistrationDetails(Astro.params.id) : null;
+if (!registration) return new Response('Inscrição não encontrada.', { status: 404 });
+
+const statusLabel = (status: string) => ({ pending: 'Pendente', synced: 'Sincronizada', failed: 'Falha', cancelled: 'Cancelada', uploaded: 'Enviada', received: 'Recebida', physical_pending: 'Entrega física pendente', rejected: 'Rejeitada' }[status] ?? status);
+const fileLabel = (type: string) => ({ registration_sheet: 'Ficha de inscrição', guardian_authorization: 'Autorização do menor', guardian_authorization_signed: 'Autorização assinada', cosplay_reference: 'Referência', cosplay_audio: 'Áudio' }[type] ?? type);
+const saveState = Astro.url.searchParams.get('saved');
+const needsAttention = registration.driveSyncStatus === 'failed'
+  || registration.files.some((file) => file.syncStatus === 'failed')
+  || (registration.isMinor && (!registration.minorAuthorization || !['uploaded', 'received'].includes(registration.minorAuthorization.status)));
+---
+
+<AdminLayout
+  title="Detalhe da inscrição | Family Game Festival"
+  subtitle={registration.publicCode ?? registration.fullName}
+  admin={admin}
+  action={{ label: 'Voltar para inscrições', href: '/admin/inscricoes' }}
+  notificationCount={needsAttention ? 1 : 0}
+>
+  <div class="admin-v2-page">
+    <div class="admin-v2-breadcrumb"><a href="/admin">Dashboard</a><span>/</span><a href="/admin/inscricoes">Inscrições</a><span>/</span><strong>{registration.publicCode ?? 'Detalhe'}</strong></div>
+    {saveState === '1' && <p class="admin-v2-feedback is-success">Dados pessoais atualizados com validação do servidor.</p>}
+    {saveState === 'error' && <p class="admin-v2-feedback is-error">Não foi possível atualizar os dados. Verifique os campos e tente novamente.</p>}
+
+    <section class="admin-v2-detail-hero">
+      <div>
+        <p class="admin-eyebrow">{registration.competitionCategory} · {registration.competitionTitle}</p>
+        <h2>{registration.fullName}</h2>
+        <p class="admin-v2-detail-code">{registration.publicCode ?? 'Código ainda não gerado'} · criada em {formatAdminDate(registration.registrationCreatedAt)}</p>
+      </div>
+      <div class="admin-v2-detail-hero-tags"><span class:list={['admin-v2-status', 'status-' + registration.status]}>{statusLabel(registration.status)}</span><span class:list={['admin-v2-age-badge', registration.isMinor ? 'is-minor' : 'is-adult']}>{registration.isMinor ? 'Menor de idade' : 'Maior de idade'} · {registration.age} anos</span></div>
+    </section>
+
+    <div class="admin-v2-detail-grid">
+      <section class="admin-v2-card admin-v2-detail-main" aria-labelledby="participant-data-title">
+        <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Cadastro</p><h2 id="participant-data-title">Dados do participante</h2><p>Correções são validadas e normalizadas no backend.</p></div></div>
+        <form method="post" action={'/api/admin/registrations/' + registration.registrationId} class="admin-v2-edit-form">
+          <div class="admin-v2-form-grid">
+            <label class="field-span-2">Nome completo<input name="fullName" value={registration.fullName} required maxlength="160" /></label>
+            <label>CPF<input name="cpf" value={registration.cpf} inputmode="numeric" required maxlength="18" /></label>
+            <label>Data de nascimento<input name="dateOfBirth" value={registration.dateOfBirth} type="date" required /></label>
+            <label>Telefone<input name="phone" value={registration.phone} inputmode="tel" maxlength="30" /></label>
+            <label>E-mail<input name="email" value={registration.email} type="email" maxlength="254" /></label>
+            <label>Cidade<input name="city" value={registration.city} required maxlength="120" /></label>
+            <label>Estado<input name="state" value={registration.state} required maxlength="80" /></label>
+          </div>
+          <div class="admin-v2-form-divider"><span>Redes sociais</span></div>
+          <div class="admin-v2-form-grid">
+            <label>Instagram<input name="instagram" value={registration.instagram ?? ''} maxlength="240" /></label>
+            <label>TikTok<input name="tiktok" value={registration.tiktok ?? ''} maxlength="240" /></label>
+            <label>Facebook<input name="facebook" value={registration.facebook ?? ''} maxlength="240" /></label>
+            <label>Outros links<input name="otherSocials" value={registration.otherSocials ?? ''} maxlength="1000" /></label>
+          </div>
+          <button class="admin-button admin-button-primary" type="submit">Salvar dados <AdminIcon name="arrow" /></button>
+        </form>
+      </section>
+
+      <aside class="admin-v2-detail-side">
+        <section class="admin-v2-card" aria-labelledby="registration-meta-title">
+          <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Contexto</p><h2 id="registration-meta-title">Inscrição</h2></div></div>
+          <dl class="admin-v2-definition-list">
+            <div><dt>Competição</dt><dd>{registration.competitionTitle}</dd></div>
+            <div><dt>Data do evento</dt><dd>{registration.competitionEventDate} · {registration.competitionEventDay}</dd></div>
+            <div><dt>Horário</dt><dd>{registration.competitionStartTime}</dd></div>
+            <div><dt>Origem</dt><dd>{registration.source === 'online' ? 'Online' : registration.source}</dd></div>
+            <div><dt>Drive</dt><dd><span class:list={['admin-v2-status', 'status-' + registration.driveSyncStatus]}>{statusLabel(registration.driveSyncStatus)}</span></dd></div>
+          </dl>
+          {registration.driveLastError && <p class="admin-v2-error-note">{registration.driveLastError}</p>}
+        </section>
+
+        {registration.guardian && (
+          <section class="admin-v2-card" aria-labelledby="guardian-title">
+            <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Responsável legal</p><h2 id="guardian-title">{registration.guardian.fullName}</h2></div></div>
+            <dl class="admin-v2-definition-list"><div><dt>Parentesco</dt><dd>{registration.guardian.relationship}</dd></div><div><dt>Telefone</dt><dd>{registration.guardian.phone}</dd></div><div><dt>E-mail</dt><dd>{registration.guardian.email}</dd></div><div><dt>Autorização</dt><dd>{registration.minorAuthorization ? statusLabel(registration.minorAuthorization.status) + ' · V' + registration.minorAuthorization.version : 'Não encontrada'}</dd></div></dl>
+          </section>
+        )}
+        {registration.minorAuthorizationHistory.length > 0 && (
+          <section class="admin-v2-card" aria-labelledby="authorization-history-title">
+            <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Versionamento</p><h2 id="authorization-history-title">Histórico da autorização</h2></div></div>
+            <div class="admin-v2-history-list">{registration.minorAuthorizationHistory.map((authorization) => <div class="admin-v2-history-row"><span class="admin-v2-version-badge">V{authorization.version}</span><span><strong>{statusLabel(authorization.status)}</strong><small>{authorization.competitionIds.length ? authorization.competitionIds.join(' · ') : 'Evento'}</small></span><span class="admin-v2-history-actions">{driveFileUrl(authorization.generatedFileId) && <a href={driveFileUrl(authorization.generatedFileId)!} target="_blank" rel="noreferrer">Gerada</a>}{driveFileUrl(authorization.signedDriveFileId) && <a href={driveFileUrl(authorization.signedDriveFileId)!} target="_blank" rel="noreferrer">Assinada</a>}</span></div>)}</div>
+          </section>
+        )}
+      </aside>
+    </div>
+
+    <div class="admin-v2-detail-grid admin-v2-detail-grid-lower">
+      <section class="admin-v2-card" aria-labelledby="documents-title">
+        <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Arquivos</p><h2 id="documents-title">Documentação e Drive</h2><p>O Drive é a origem secundária; a situação operacional vem do banco.</p></div></div>
+        {registration.files.length ? <div class="admin-v2-file-list">{registration.files.map((file) => <div class="admin-v2-file-row"><span class="admin-v2-file-icon"><AdminIcon name={file.fileType === 'cosplay_audio' ? 'spark' : 'folder'} /></span><span><strong>{fileLabel(file.fileType)}</strong><small>{file.originalName} · {(file.sizeBytes / 1024).toFixed(0)} KB · {statusLabel(file.syncStatus)}</small></span>{driveFileUrl(file.driveFileId) && <a href={driveFileUrl(file.driveFileId)!} target="_blank" rel="noreferrer" class="admin-v2-icon-link" aria-label={'Abrir ' + fileLabel(file.fileType)}><AdminIcon name="external" /></a>}</div>)}</div> : <div class="admin-v2-inline-empty">Nenhum arquivo registrado para esta inscrição.</div>}
+      </section>
+
+      <section class="admin-v2-card" aria-labelledby="consents-title">
+        <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Conformidade</p><h2 id="consents-title">Aceites</h2></div></div>
+        {registration.consents.length ? <div class="admin-v2-consent-list">{registration.consents.map((consent) => <div><span class="admin-v2-check">✓</span><span><strong>{consent.type}</strong><small>Versão {consent.policyVersion} · {formatAdminDate(consent.grantedAt)}</small></span></div>)}</div> : <div class="admin-v2-inline-empty">Nenhum aceite registrado.</div>}
+        {registration.links.length > 0 && <div class="admin-v2-links-block"><strong>Links enviados</strong>{registration.links.map((link) => <a href={link.url} target="_blank" rel="noreferrer">{link.label} <AdminIcon name="external" /></a>)}</div>}
+      </section>
+    </div>
+  </div>
+</AdminLayout>
