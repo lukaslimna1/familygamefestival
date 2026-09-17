@@ -8,6 +8,7 @@ import {
   getCompetitionDefinitionBySlug,
   getRegistrationCapacity,
   getRegistrationWindowStatus,
+  ONLINE_REGISTRATION_CLOSED_NOTICE,
   isValidCpf,
   isValidPhone,
   normalizeCpf,
@@ -284,7 +285,7 @@ export async function createRegistrationDraft(input: RegistrationDraft) {
   const registrationStatus = await getCompetitionRegistrationStatus(draft.competitionId);
   if (!registrationStatus) throw new RegistrationError('unavailable', 'Não foi possível consultar a competição.');
   if (!registrationStatus.onlineOpen) {
-    throw new RegistrationError('online_closed', 'Inscrições online encerradas.');
+    throw new RegistrationError('online_closed', ONLINE_REGISTRATION_CLOSED_NOTICE);
   }
   if (registrationStatus.full) {
     throw new RegistrationError('full', 'Vagas preenchidas.');
@@ -720,7 +721,7 @@ export type PublicRegistrationUpdate = z.infer<typeof publicRegistrationUpdateSc
 
 export async function updatePublicRegistration(registrationId: string, input: PublicRegistrationUpdate) {
   if (!getRegistrationWindowStatus().open) {
-    throw new RegistrationError('online_closed', 'Inscrições online encerradas.');
+    throw new RegistrationError('online_closed', ONLINE_REGISTRATION_CLOSED_NOTICE);
   }
   let update: PublicRegistrationUpdate;
   try {

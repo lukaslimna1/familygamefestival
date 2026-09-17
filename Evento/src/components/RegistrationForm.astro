@@ -99,6 +99,7 @@ const consentStep = isCosplay ? '07' : '04';
 </section>
 
 <script>
+  import { ONLINE_REGISTRATION_CLOSED_NOTICE, isOnlineRegistrationOpen } from '../config/registration-deadline';
   import { buildRegistrationPayload, formatCpf, formatPhone, getRegistrationApi, isMinorDate, isValidCpf, isValidPhone, normalizeCpf, normalizePhone, postRegistrationForm, RegistrationApiError } from '../lib/registration-api';
 
   const registrationForms = document.querySelectorAll<HTMLFormElement>('[data-registration-form]');
@@ -122,6 +123,7 @@ const consentStep = isCosplay ? '07' : '04';
     let statusLoaded = false;
     let statusUnavailable = false;
     let onlineOpen = false;
+    let onlineClosedMessage = ONLINE_REGISTRATION_CLOSED_NOTICE;
     let full = false;
 
     const cpfInputs = form.querySelectorAll<HTMLInputElement>('[data-cpf], [name="responsibleCpf"]');
@@ -227,7 +229,8 @@ const consentStep = isCosplay ? '07' : '04';
         const registration = result.registration;
         statusLoaded = true;
         statusUnavailable = false;
-        onlineOpen = registration.onlineOpen;
+        onlineOpen = registration.onlineOpen && isOnlineRegistrationOpen();
+        onlineClosedMessage = registration.onlineMessage || ONLINE_REGISTRATION_CLOSED_NOTICE;
         full = registration.full;
         const isClosed = full || !onlineOpen;
         if (statusCard) {
@@ -243,7 +246,7 @@ const consentStep = isCosplay ? '07' : '04';
           statusClosed.hidden = !isClosed;
           statusClosed.textContent = full
             ? 'O limite desta competição foi atingido. Consulte a organização sobre a possibilidade de inscrição presencial.'
-            : `${registration.onlineMessage} Consulte a organização sobre a inscrição presencial.`;
+            : onlineClosedMessage;
         }
         if (statusAvailability) statusAvailability.textContent = `${registration.registered}/${registration.capacity} inscritos · ${registration.remaining} vagas restantes`;
       } catch {
@@ -284,7 +287,7 @@ const consentStep = isCosplay ? '07' : '04';
       if (!onlineOpen || full) {
         if (submitFeedback) submitFeedback.textContent = full
           ? 'As vagas desta competição foram preenchidas. Consulte a organização sobre a inscrição presencial.'
-          : 'As inscrições online foram encerradas. Consulte a organização sobre a inscrição presencial.';
+          : onlineClosedMessage;
         return;
       }
       if (!form.checkValidity()) {

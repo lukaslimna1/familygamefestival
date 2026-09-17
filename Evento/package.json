@@ -17,6 +17,7 @@
     "test:universal-authorization": "tsx scripts/test-universal-authorization.ts",
     "test:public-registration": "tsx scripts/test-public-registration.ts",
     "test:generic-registration": "tsx scripts/test-generic-registration.ts",
+    "test:registration-deadline": "tsx scripts/test-registration-deadline.ts",
     "drive:bootstrap": "node scripts/drive-bootstrap.mjs",
     "drive:repair-root": "node scripts/drive-repair-root.mjs",
     "astro:check": "astro check"

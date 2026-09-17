@@ -1,5 +1,6 @@
 import { event, gameArt, schedulePanels, tournamentCategories, tournamentSchedule, tournaments } from './event';
 import { regulations } from './regulations';
+import { ONLINE_REGISTRATION_DEADLINE_LABEL, ONLINE_REGISTRATION_ONSITE_NOTICE } from '../config/registration-deadline';
 
 const videogameCategories = ['Fight Games', 'Esport Games', 'Retrô Games'];
 
@@ -20,9 +21,10 @@ export const championshipEntries = tournaments.map((tournament) => {
   const format = 'format' in tournament ? tournament.format : 'Formato a confirmar';
   const participants = 'participants' in tournament ? tournament.participants : 'Vagas a confirmar';
   const prizeNote = 'prizeNote' in tournament ? tournament.prizeNote : undefined;
+  const onlineRegistrationCopy = `Inscrições online até ${ONLINE_REGISTRATION_DEADLINE_LABEL}. ${ONLINE_REGISTRATION_ONSITE_NOTICE}`;
   const eventAccessNote = registrationFree
-    ? 'A inscrição é gratuita e pode ser feita online ou presencialmente até uma hora antes da seletiva. É necessário comprar o ingresso do evento.'
-    : `O ingresso competidor dá direito à entrada no evento em ${schedule.date} (${schedule.day.toLowerCase()}) e à participação na competição. A inscrição pode ser feita online ou presencialmente até uma hora antes da competição, conforme as vagas e as regras da modalidade.`;
+    ? `A inscrição é gratuita. ${onlineRegistrationCopy} É necessário comprar o ingresso do evento.`
+    : `O ingresso competidor dá direito à entrada no evento em ${schedule.date} (${schedule.day.toLowerCase()}) e à participação na competição. ${onlineRegistrationCopy}`;
 
   return {
     tournament,

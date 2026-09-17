@@ -12,7 +12,7 @@ const dialogId = `registration-choice-${entry.tournament.id}`;
 const titleId = `${dialogId}-title`;
 ---
 
-<div class="registration-choice" data-registration-choice>
+<div class="registration-choice" data-registration-choice data-registration-choice-competition={entry.tournament.id}>
   <button class:list={['button', 'button-yellow', compact && 'button-small']} type="button" aria-haspopup="dialog" aria-controls={dialogId} data-registration-choice-trigger>
     {label} <span aria-hidden="true">↗</span>
   </button>
@@ -23,9 +23,10 @@ const titleId = `${dialogId}-title`;
       <p class="eyebrow eyebrow-cyan">Inscrição no campeonato</p>
       <h2 id={titleId}>Como você quer continuar?</h2>
       <p class="registration-choice-intro"><strong>{entry.tournament.title}</strong> já está selecionado para o próximo passo.</p>
+      <p class="registration-choice-status" data-registration-choice-status aria-live="polite" hidden></p>
 
       <div class="registration-choice-options">
-        <a class="registration-choice-option" href={registrationRoutes.new(entry.tournament.id)} data-registration-choice-link>
+        <a class="registration-choice-option" href={registrationRoutes.new(entry.tournament.id)} data-registration-choice-link data-registration-choice-new-link>
           <span class="registration-choice-index" aria-hidden="true">01</span>
           <span class="registration-choice-option-copy">
             <strong>NOVA INSCRIÇÃO</strong>
@@ -47,10 +48,15 @@ const titleId = `${dialogId}-title`;
 </div>
 
 <script>
+  import { ONLINE_REGISTRATION_CLOSED_NOTICE } from '../config/registration-deadline';
+
   document.querySelectorAll('[data-registration-choice]').forEach((root) => {
     const trigger = root.querySelector('[data-registration-choice-trigger]');
     const dialog = root.querySelector('[data-registration-choice-dialog]');
     const close = root.querySelector('[data-registration-choice-close]');
+    const newLink = root.querySelector('[data-registration-choice-new-link]');
+    const status = root.querySelector('[data-registration-choice-status]');
+    const competition = root.getAttribute('data-registration-choice-competition');
 
     if (!(trigger instanceof HTMLButtonElement) || !(dialog instanceof HTMLDialogElement)) return;
 
@@ -62,5 +68,45 @@ const titleId = `${dialogId}-title`;
     dialog.querySelectorAll('[data-registration-choice-link]').forEach((link) => {
       link.addEventListener('click', () => dialog.close());
     });
+
+    newLink?.addEventListener('click', (event) => {
+      if (newLink.getAttribute('aria-disabled') === 'true') {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    });
+
+    const loadRegistrationStatus = async () => {
+      if (!competition) return;
+      try {
+        const response = await fetch(`/api/inscricoes/${encodeURIComponent(competition)}/status`, {
+          headers: { Accept: 'application/json' },
+          cache: 'no-store'
+        });
+        if (!response.ok) throw new Error('status_unavailable');
+        const payload = await response.json() as { data?: { registration?: { onlineOpen?: boolean; full?: boolean; onlineMessage?: string } } };
+        const registration = payload.data?.registration;
+        if (!registration) throw new Error('status_invalid');
+
+        const closed = registration.full === true || registration.onlineOpen !== true;
+        if (newLink instanceof HTMLAnchorElement) {
+          newLink.classList.toggle('is-disabled', closed);
+          newLink.setAttribute('aria-disabled', String(closed));
+        }
+        if (status instanceof HTMLElement) {
+          status.hidden = false;
+          status.textContent = closed && registration.full
+            ? 'As vagas desta competição foram preenchidas. Consulte a organização sobre a possibilidade de inscrição presencial.'
+            : registration.onlineMessage || ONLINE_REGISTRATION_CLOSED_NOTICE;
+        }
+      } catch {
+        if (status instanceof HTMLElement) {
+          status.hidden = false;
+          status.textContent = 'Não foi possível consultar a disponibilidade agora. O sistema oficial validará a inscrição no envio.';
+        }
+      }
+    };
+
+    void loadRegistrationStatus();
   });
 </script>

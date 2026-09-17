@@ -8,6 +8,7 @@ import SponsorHierarchy from '../components/SponsorHierarchy.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import { event, guests, attractions, artistAlleyArtists, stores, mediaPartners, experiences, tickets, vipTickets, competitorTickets } from '../data/event';
 import { competitionDays, getChampionshipEntry } from '../data/championships';
+import { ONLINE_REGISTRATION_DEADLINE_LABEL, ONLINE_REGISTRATION_ONSITE_NOTICE } from '../config/registration-deadline';
 
 export const prerender = true;
 
@@ -403,7 +404,7 @@ const guestVideos = existsSync(guestVideoDirectory)
         <div class="competitor-tickets">
           <div class="competitor-heading">
             <div><p class="eyebrow eyebrow-pink">Ingressos de competição</p><h3>Compre seu ingresso competidor.</h3></div>
-            <p>Compre o ingresso competidor ou o ingresso comum do evento. A inscrição para competir pode ser feita online ou presencialmente até uma hora antes de cada competição, conforme as vagas e as regras da modalidade. O ingresso competidor já inclui a entrada no evento no dia da disputa.</p>
+            <p>Compre o ingresso competidor ou o ingresso comum do evento. Inscrições online até {ONLINE_REGISTRATION_DEADLINE_LABEL}. {ONLINE_REGISTRATION_ONSITE_NOTICE} O ingresso competidor já inclui a entrada no evento no dia da disputa.</p>
           </div>
           <div class="competitor-day-panels">
             {competitorTicketDays.map((ticketDay) => (

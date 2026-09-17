@@ -1,6 +1,24 @@
 import competitionDefinitions from '../../../config/competitions.json';
 
 export {
+  REGISTRATION_TIME_ZONE,
+  ONLINE_REGISTRATION_DEADLINE_ISO,
+  ONLINE_REGISTRATION_DEADLINE,
+  ONLINE_REGISTRATION_CUTOFF,
+  ONLINE_REGISTRATION_DEADLINE_LABEL,
+  ONLINE_REGISTRATION_DEADLINE_ADMIN_LABEL,
+  ONLINE_REGISTRATION_ONSITE_NOTICE,
+  ONLINE_REGISTRATION_OPEN_NOTICE,
+  ONLINE_REGISTRATION_CLOSED_NOTICE,
+  getRegistrationWindowStatus,
+  getOnlineRegistrationClosedNotice,
+  isOnlineRegistrationOpen,
+  formatRegistrationDateTime
+} from '../../../config/registration-deadline';
+
+export type { RegistrationWindowStatus } from '../../../config/registration-deadline';
+
+export {
   formatCpf,
   formatPhone,
   isValidCpf,
@@ -10,8 +28,6 @@ export {
 } from '../../registration-validation';
 
 export const DEFAULT_REGISTRATION_CAPACITY = 32;
-export const ONLINE_REGISTRATION_DEADLINE_ISO = '2026-09-18T18:00:00.000Z';
-export const REGISTRATION_TIME_ZONE = 'America/Sao_Paulo';
 export const PUBLIC_REGISTRATION_ACCESS_COOKIE = 'fgf_registration_access';
 export const PUBLIC_REGISTRATION_ACCESS_TTL_SECONDS = 60 * 60;
 export const COSPLAY_REFERENCE_FILE_LIMIT = 5;
@@ -33,42 +49,7 @@ export const MINOR_AUTHORIZATION_NOTICE =
 export const SOCIALS_HELP_TEXT =
   'Informe suas redes sociais caso queira ser marcado nas fotos e publicações oficiais do Family Game Festival.';
 
-export const ONLINE_REGISTRATION_DEADLINE = new Date(ONLINE_REGISTRATION_DEADLINE_ISO);
-
 export type CompetitionDefinition = (typeof competitionDefinitions)[number];
-
-export type RegistrationWindowStatus = {
-  open: boolean;
-  deadline: Date;
-  deadlineLabel: string;
-  message: string;
-};
-
-const deadlineFormatter = new Intl.DateTimeFormat('pt-BR', {
-  timeZone: REGISTRATION_TIME_ZONE,
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: false
-});
-
-export function getRegistrationWindowStatus(now = new Date()): RegistrationWindowStatus {
-  const open = now.getTime() < ONLINE_REGISTRATION_DEADLINE.getTime();
-  return {
-    open,
-    deadline: ONLINE_REGISTRATION_DEADLINE,
-    deadlineLabel: deadlineFormatter.format(ONLINE_REGISTRATION_DEADLINE),
-    message: open
-      ? `Inscrições online abertas até ${deadlineFormatter.format(ONLINE_REGISTRATION_DEADLINE)}.`
-      : 'Inscrições online encerradas.'
-  };
-}
-
-export function getOnlineRegistrationClosedNotice() {
-  return 'Inscrições presenciais poderão ser realizadas no evento, conforme disponibilidade de vagas, até uma hora antes do início do evento.';
-}
 
 export function calculateAge(dateOfBirth: string, now = new Date()) {
   const birthDate = new Date(`${dateOfBirth}T00:00:00.000Z`);
@@ -108,13 +89,4 @@ export function getRegistrationCapacity(
 ) {
   const capacity = databaseMaxParticipants ?? configuredMaxParticipants ?? DEFAULT_REGISTRATION_CAPACITY;
   return Number.isInteger(capacity) && capacity > 0 ? capacity : DEFAULT_REGISTRATION_CAPACITY;
-}
-
-export function isOnlineRegistrationOpen(now = new Date()) {
-  return getRegistrationWindowStatus(now).open;
-}
-
-export function formatRegistrationDateTime(value: string | Date) {
-  const date = value instanceof Date ? value : new Date(value);
-  return Number.isNaN(date.getTime()) ? String(value) : deadlineFormatter.format(date);
 }

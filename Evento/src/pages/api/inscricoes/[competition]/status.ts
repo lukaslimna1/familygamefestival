@@ -3,8 +3,8 @@ import { getCompetitionRegistrationStatusBySlug } from '../../../../lib/server/d
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ params }) => {
-  const status = await getCompetitionRegistrationStatusBySlug(params.competition ?? '');
+export async function createCompetitionStatusResponse(competitionSlug: string, now = new Date()) {
+  const status = await getCompetitionRegistrationStatusBySlug(competitionSlug, now);
   if (!status) {
     return new Response(JSON.stringify({ error: { code: 'not_found', message: 'Competição não encontrada.' } }), {
       status: 404,
@@ -36,4 +36,6 @@ export const GET: APIRoute = async ({ params }) => {
   }), {
     headers: { 'Cache-Control': 'no-store', 'Content-Type': 'application/json; charset=utf-8' }
   });
-};
+}
+
+export const GET: APIRoute = async ({ params }) => createCompetitionStatusResponse(params.competition ?? '');

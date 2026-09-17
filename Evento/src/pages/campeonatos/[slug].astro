@@ -7,6 +7,7 @@ import CosplayReferenceGuides from '../../components/CosplayReferenceGuides.astr
 import RegistrationChoiceDialog from '../../components/RegistrationChoiceDialog.astro';
 import { event } from '../../data/event';
 import { championshipEntries } from '../../data/championships';
+import { ONLINE_REGISTRATION_DEADLINE_LABEL, ONLINE_REGISTRATION_ONSITE_NOTICE } from '../../config/registration-deadline';
 
 export const prerender = true;
 
@@ -32,12 +33,13 @@ const participationTitle = registrationFree
   : registrationUrl
     ? 'Compre seu ingresso competidor'
     : 'Ingresso competidor em breve';
+const onlineRegistrationCopy = `Inscrições online até ${ONLINE_REGISTRATION_DEADLINE_LABEL}. ${ONLINE_REGISTRATION_ONSITE_NOTICE}`;
 const participationCopy = registrationFree
-  ? 'Compre o ingresso do evento. A inscrição na seletiva é gratuita e pode ser feita online ou presencialmente até uma hora antes da atividade.'
+  ? `Compre o ingresso do evento. A inscrição na seletiva é gratuita. ${onlineRegistrationCopy}`
   : isCosplay
-    ? 'Compre o ingresso competidor ou o ingresso comum do evento. Depois, preencha a inscrição online para enviar seus dados e informações da apresentação. O ingresso competidor já inclui a entrada no evento no dia do concurso.'
+    ? `Compre o ingresso competidor ou o ingresso comum do evento. ${onlineRegistrationCopy} O ingresso competidor já inclui a entrada no evento no dia do concurso.`
   : registrationUrl
-    ? 'Compre o ingresso competidor ou o ingresso comum do evento. A inscrição para competir pode ser feita online ou presencialmente até uma hora antes da competição, conforme as vagas e as regras da modalidade. O ingresso competidor já inclui a entrada no evento no dia da competição.'
+    ? `Compre o ingresso competidor ou o ingresso comum do evento. ${onlineRegistrationCopy} O ingresso competidor já inclui a entrada no evento no dia da competição.`
     : 'As informações de compra e inscrição serão publicadas assim que a organização confirmar a abertura.';
 ---
 

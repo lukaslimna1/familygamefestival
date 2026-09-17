@@ -105,7 +105,8 @@ try {
   const tekkenStatus = await getCompetitionRegistrationStatus('tekken-8');
   const streetStatus = await getCompetitionRegistrationStatus('street-fighter-6');
   assertCondition(tekkenStatus?.capacity === 32 && streetStatus?.capacity === 32, 'O limite padrão não é 32 por competição.');
-  assertCondition(getRegistrationWindowStatus(new Date('2026-09-18T18:00:00.000Z')).open === false, 'O prazo não encerra no instante configurado.');
+  assertCondition(getRegistrationWindowStatus(new Date('2026-09-18T23:59:00-03:00')).open === true, 'O prazo deveria permanecer aberto às 23:59 de 18/09.');
+  assertCondition(getRegistrationWindowStatus(new Date('2026-09-19T00:00:00-03:00')).open === false, 'O prazo deveria estar encerrado à 00:00 de 19/09.');
 
   const adult = await submitCommon('tekken-8', {
     fullName: 'TESTE GENERICO ADULTO - REMOVER',

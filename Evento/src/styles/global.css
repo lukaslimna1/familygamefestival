@@ -1790,11 +1790,14 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .registration-choice-options { display: grid; gap: 10px; }
 .registration-choice-option { display: grid; grid-template-columns: 38px minmax(0, 1fr) 24px; align-items: center; gap: 13px; min-height: 82px; padding: 15px 17px; border: 1px solid rgba(255,255,255,.18); color: #fff; background: rgba(255,255,255,.045); transition: border-color .2s ease, background .2s ease, transform .2s ease; }
 .registration-choice-option:hover, .registration-choice-option:focus-visible { border-color: var(--yellow); background: rgba(255,201,40,.1); outline: none; transform: translateX(4px); }
+.registration-choice-option.is-disabled { border-color: rgba(255,255,255,.1); color: rgba(255,255,255,.42); background: rgba(255,255,255,.02); cursor: not-allowed; opacity: .68; }
+.registration-choice-option.is-disabled:hover, .registration-choice-option.is-disabled:focus-visible { border-color: rgba(255,255,255,.1); background: rgba(255,255,255,.02); outline: none; transform: none; }
 .registration-choice-index { color: var(--cyan); font-family: var(--display); font-size: 25px; }
 .registration-choice-option-copy { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
 .registration-choice-option-copy strong { font-size: 13px; letter-spacing: .06em; }
 .registration-choice-option-copy small { color: rgba(255,255,255,.62); font-size: 12px; }
 .registration-choice-arrow { color: var(--yellow); font-size: 21px; }
+.registration-choice-status { margin: 0 0 20px; color: rgba(255,255,255,.72); font-size: 13px; line-height: 1.5; }
 
 .registration-page { min-height: calc(100vh - 74px); color: #fff; background: var(--navy); }
 .registration-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .38fr); align-items: end; gap: 40px; padding-top: clamp(54px, 8vw, 104px); padding-bottom: 46px; }

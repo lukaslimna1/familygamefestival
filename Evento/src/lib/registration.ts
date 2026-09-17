@@ -1,4 +1,5 @@
 import { getChampionshipEntry } from '../data/championships';
+import { ONLINE_REGISTRATION_DEADLINE_ISO, ONLINE_REGISTRATION_DEADLINE_LABEL } from '../config/registration-deadline';
 
 export const registrationRoutes = {
   new: (competitionId: string) => `/inscricao/${encodeURIComponent(competitionId)}`,
@@ -7,8 +8,8 @@ export const registrationRoutes = {
 } as const;
 
 export const registrationDeadline = {
-  iso: '2026-09-18T15:00:00-03:00',
-  label: '18/09/2026 · 15h (horário de Brasília)'
+  iso: ONLINE_REGISTRATION_DEADLINE_ISO,
+  label: `${ONLINE_REGISTRATION_DEADLINE_LABEL} (horário de Brasília)`
 } as const;
 
 export const imageUseConsentText = 'Li e autorizo o uso da minha imagem nos termos apresentados pelo Family Game Festival.';
