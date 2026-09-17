@@ -69,18 +69,27 @@ const snapConfigJson = JSON.stringify(snapConfig);
                 <button type="button" data-snap-delete class="snap-menu-delete">Excluir</button>
               </div>
             </div>
+
+            <nav class="snap-editor-sidebar" aria-label="Ferramentas do editor" data-snap-editor-sidebar>
+              <button class="snap-editor-sidebar-btn" type="button" data-snap-category="frame" aria-pressed="false" aria-label="Escolher moldura">
+                <span class="snap-sidebar-icon" aria-hidden="true">🖼️</span>
+                <span class="snap-sidebar-label">Moldura</span>
+              </button>
+              <button class="snap-editor-sidebar-btn" type="button" data-snap-category="pose" aria-pressed="false" aria-label="Escolher mascote">
+                <span class="snap-sidebar-icon" aria-hidden="true">🎮</span>
+                <span class="snap-sidebar-label">Mascote</span>
+              </button>
+              <button class="snap-editor-sidebar-btn" type="button" data-snap-category="sticker" aria-pressed="false" aria-label="Escolher figurinhas">
+                <span class="snap-sidebar-icon" aria-hidden="true">✨</span>
+                <span class="snap-sidebar-label">Stickers</span>
+              </button>
+            </nav>
           </div>
 
           <div class="snap-editor-sheet-backdrop" data-snap-sheet-backdrop hidden aria-hidden="true"></div>
 
           <aside class="snap-editor-sheet" data-snap-sheet data-sheet-state="closed" aria-label="Ferramentas do editor">
             <button class="snap-editor-sheet-handle" type="button" data-snap-sheet-handle aria-label="Abrir ferramentas" aria-expanded="false"><span aria-hidden="true"></span></button>
-
-            <nav class="snap-editor-category-nav" aria-label="Categorias de edição">
-              <button type="button" data-snap-category="frame" aria-pressed="false">MOLDURA</button>
-              <button type="button" data-snap-category="pose" aria-pressed="false">MASCOTE</button>
-              <button type="button" data-snap-category="sticker" aria-pressed="false">FIGURINHAS</button>
-            </nav>
 
             <div class="snap-editor-sheet-content" data-snap-sheet-content hidden>
               <div class="snap-editor-sheet-heading">
@@ -89,6 +98,7 @@ const snapConfigJson = JSON.stringify(snapConfig);
               </div>
 
               <div class="snap-editor-category-panel" data-snap-category-panel="frame" hidden>
+                <p class="snap-editor-frame-notice" data-snap-frame-notice hidden>Molduras disponíveis no formato Story 9:16.</p>
                 <div class="snap-editor-asset-row">
                   <button class="snap-v2-frame-chip" type="button" data-snap-frame-id="none" aria-pressed="false"><span>Sem moldura</span></button>
                   {snapConfig.modes.map((mode) => (
@@ -124,9 +134,17 @@ const snapConfigJson = JSON.stringify(snapConfig);
       </section>
 
       <section class="snap-v2-result-panel snap-v2-panel" data-snap-result-screen hidden aria-label="Seu Snap está pronto.">
-        <p class="snap-v2-eyebrow">SEU SNAP ESTÁ PRONTO.</p>
-        <div class="snap-v2-result-image-wrap"><img data-snap-result alt="Foto composta com elementos do FGF Snap" /></div>
-        <div class="snap-v2-result-actions"><button class="snap-v2-button snap-v2-button-primary" type="button" data-snap-share>COMPARTILHAR <span aria-hidden="true">↗</span></button><button class="snap-v2-button snap-v2-button-outline" type="button" data-snap-download>SALVAR</button><button class="snap-v2-button snap-v2-button-outline" type="button" data-snap-edit-again>EDITAR</button></div>
+        <header class="snap-v2-result-header">
+          <p class="snap-v2-eyebrow">SEU SNAP ESTÁ PRONTO.</p>
+        </header>
+        <div class="snap-v2-result-image-wrap">
+          <img data-snap-result alt="Foto composta com elementos do FGF Snap" />
+        </div>
+        <div class="snap-v2-result-actions">
+          <button class="snap-v2-button snap-v2-button-primary" type="button" data-snap-share>COMPARTILHAR <span aria-hidden="true">↗</span></button>
+          <button class="snap-v2-button snap-v2-button-outline" type="button" data-snap-download>SALVAR</button>
+          <button class="snap-v2-button snap-v2-button-outline" type="button" data-snap-edit-again>EDITAR</button>
+        </div>
       </section>
 
       <input class="snap-v2-hidden" type="file" accept="image/*" capture="environment" data-snap-camera-input />

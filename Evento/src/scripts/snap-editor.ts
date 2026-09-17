@@ -38,6 +38,7 @@ const sheetClose = document.querySelector<HTMLButtonElement>('[data-snap-sheet-c
 const sheetHandle = document.querySelector<HTMLButtonElement>('[data-snap-sheet-handle]');
 const sheetBackdrop = document.querySelector<HTMLElement>('[data-snap-sheet-backdrop]');
 const sheetHeading = document.querySelector<HTMLElement>('.snap-editor-sheet-heading');
+const frameNotice = document.querySelector<HTMLElement>('[data-snap-frame-notice]');
 const contextToolbar = document.querySelector<HTMLElement>('[data-snap-context-toolbar]');
 const moreMenu = document.querySelector<HTMLElement>('[data-snap-more-menu]');
 const trash = document.querySelector<HTMLElement>('[data-snap-trash]');
@@ -401,14 +402,29 @@ const updateFormatLabel = (format: SnapFormat) => {
 };
 
 const fitStage = () => {
-  if (!stage || !stageContainer) return;
-  const containerWidth = stageContainer.clientWidth || 360;
-  const aspect = virtualHeight / virtualWidth;
-  const containerHeight = Math.round(containerWidth * aspect);
-  const scale = containerWidth / virtualWidth;
+  if (!stage || !stageContainer || !canvasWrap) return;
 
-  stage.width(containerWidth);
-  stage.height(containerHeight);
+  const vv = window.visualViewport;
+  const viewportWidth = vv ? vv.width : window.innerWidth;
+  const viewportHeight = vv ? vv.height : window.innerHeight;
+
+  // Margens de respiro para que a composição nunca encoste nas bordas da tela nem sob as barras
+  const horizontalMargin = 20;
+  const verticalMargin = 20;
+
+  const availWidth = Math.max(180, viewportWidth - horizontalMargin);
+  const availHeight = Math.max(260, viewportHeight - verticalMargin);
+
+  // Contain estrito: menor fator entre largura e altura disponíveis
+  const scale = Math.min(availWidth / virtualWidth, availHeight / virtualHeight);
+  const stageWidth = Math.round(virtualWidth * scale);
+  const stageHeight = Math.round(virtualHeight * scale);
+
+  canvasWrap.style.width = `${stageWidth}px`;
+  canvasWrap.style.height = `${stageHeight}px`;
+
+  stage.width(stageWidth);
+  stage.height(stageHeight);
   stage.scale({ x: scale, y: scale });
   stage.batchDraw();
   updateContextPosition();
@@ -422,6 +438,21 @@ const updateFormat = (formatId: string) => {
   virtualWidth = format.width;
   virtualHeight = format.height;
   updateFormatLabel(format);
+
+  const isPost = formatId === 'post';
+  if (frameNotice) frameNotice.hidden = !isPost;
+  document.querySelectorAll<HTMLButtonElement>('[data-snap-frame-id]').forEach((btn) => {
+    if (btn.dataset.snapFrameId !== 'none') {
+      btn.disabled = isPost;
+      btn.style.opacity = isPost ? '0.35' : '1';
+      btn.style.pointerEvents = isPost ? 'none' : 'auto';
+    }
+  });
+
+  if (isPost && activeFrame !== 'none') {
+    void setFrame('none');
+  }
+
   if (stage) {
     fitStage();
     if (baseNode && sourceImage) baseNode.setAttrs(coverAttributes(sourceImage));
@@ -820,10 +851,22 @@ document.querySelector('[data-snap-edit-again]')?.addEventListener('click', () =
   setStatus('Continue editando seu Snap.');
 });
 
-window.addEventListener('resize', () => {
-  fitStage();
-  configureTransformer();
-});
+let resizeDebounceTimer: number | null = null;
+const handleViewportResize = () => {
+  if (resizeDebounceTimer) window.clearTimeout(resizeDebounceTimer);
+  resizeDebounceTimer = window.setTimeout(() => {
+    fitStage();
+    configureTransformer();
+    resizeDebounceTimer = null;
+  }, 60);
+};
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', handleViewportResize);
+  window.visualViewport.addEventListener('scroll', handleViewportResize);
+}
+window.addEventListener('resize', handleViewportResize);
+window.addEventListener('orientationchange', handleViewportResize);
 
 setSheetCategory(activeCategory);
 setSheetState('closed');
