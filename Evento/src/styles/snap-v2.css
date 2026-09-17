@@ -1,10 +1,20 @@
 /* SNAP is intentionally scoped to /snap. It must not affect the public site or the ADM. */
+html.snap-page,
+body.snap-page {
+  background-color: #050c18 !important;
+  background: #050c18 !important;
+  color: #f7f9fc;
+  min-height: 100%;
+  overscroll-behavior-y: none;
+}
+
 .snap-v2-shell {
   min-height: 100svh;
   padding: 0 24px 28px;
   color: #f7f9fc;
   background: #050c18;
   font-family: var(--body);
+  contain: paint;
 }
 
 .snap-v2-shell h1,
@@ -46,7 +56,7 @@
 .snap-v2-button-outline { color: #fff; border-color: rgba(255,255,255,.34); background: transparent; }
 .snap-v2-button-outline:hover, .snap-v2-button-outline:focus-visible { color: var(--navy); border-color: var(--yellow); background: var(--yellow); }
 .snap-v2-note { margin: 18px 0 0; color: #8494a8; font-size: 12px; }
-.snap-v2-hero-art { position: relative; display: grid; place-items: end center; min-height: 390px; overflow: hidden; border: 1px solid rgba(255,255,255,.18); background: #0a1728; box-shadow: 16px 16px 0 rgba(25,198,242,.12); isolation: isolate; }
+.snap-v2-hero-art { position: relative; display: grid; place-items: end center; min-height: 390px; overflow: clip; contain: paint; border: 1px solid rgba(255,255,255,.18); background: #0a1728; box-shadow: 16px 16px 0 rgba(25,198,242,.12); isolation: isolate; }
 .snap-v2-art-grid { position: absolute; inset: 0; z-index: -1; background: linear-gradient(140deg, rgba(25,198,242,.18), transparent 42%), repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px, transparent 1px 46px), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 46px); transform: perspective(500px) rotateX(52deg) scale(1.25); transform-origin: center bottom; }
 .snap-v2-hero-art img { width: min(76%, 335px); height: auto; filter: drop-shadow(0 18px 20px rgba(0,0,0,.35)); }
 .snap-v2-art-tag { position: absolute; top: 21px; left: 25px; color: var(--cyan); font-size: 10px; font-weight: 800; letter-spacing: .14em; }
@@ -812,8 +822,20 @@ body.snap-editor-active { overflow: hidden; }
   justify-content: center;
   padding: 20px;
 }
-.snap-v2-install-modal-backdrop[hidden] {
+.snap-v2-install-modal-backdrop[hidden],
+.snap-v2-install-modal-backdrop:not(.is-open) {
   display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+  contain: strict !important;
 }
 .snap-v2-install-modal {
   background: #0d1b2e;

@@ -9,6 +9,7 @@ import '../styles/snap-v2.css';
   title="FGF Snap | Family Game Festival 2026"
   description={snapPwa.description}
   manifest="/snap/manifest.webmanifest"
+  bodyClass="snap-page"
 >
   <main class="snap-v2-shell">
     <SnapHeader />
@@ -51,32 +52,32 @@ import '../styles/snap-v2.css';
     </section>
 
     <footer class="snap-v2-footer"><span>FGF SNAP · FAMILY GAME FESTIVAL 2026</span></footer>
-
-    <div class="snap-v2-install-modal-backdrop" data-snap-ios-modal hidden aria-hidden="true">
-      <div class="snap-v2-install-modal" role="dialog" aria-modal="true" aria-labelledby="snap-install-modal-title">
-        <header class="snap-v2-install-modal-header">
-          <h2 id="snap-install-modal-title">INSTALE O FGF SNAP</h2>
-          <button type="button" class="snap-v2-install-modal-close" data-snap-ios-modal-close aria-label="Fechar">×</button>
-        </header>
-        <p class="snap-v2-install-modal-desc">Adicione o Snap à sua Tela de Início e volte quando quiser.</p>
-        <ol class="snap-v2-install-steps">
-          <li>
-            <span class="snap-v2-step-num">1</span>
-            <div>Toque em <strong>Compartilhar</strong> <span class="snap-v2-step-icon" aria-hidden="true">⎋</span> (na barra do navegador)</div>
-          </li>
-          <li>
-            <span class="snap-v2-step-num">2</span>
-            <div>Escolha <strong>“Adicionar à Tela de Início”</strong> <span class="snap-v2-step-icon" aria-hidden="true">⊞</span></div>
-          </li>
-          <li>
-            <span class="snap-v2-step-num">3</span>
-            <div>Toque em <strong>“Adicionar”</strong> no canto superior</div>
-          </li>
-        </ol>
-        <button type="button" class="snap-v2-button snap-v2-button-primary snap-v2-install-modal-ok" data-snap-ios-modal-close>ENTENDI</button>
-      </div>
-    </div>
   </main>
+
+  <div class="snap-v2-install-modal-backdrop" data-snap-ios-modal hidden aria-hidden="true">
+    <div class="snap-v2-install-modal" role="dialog" aria-modal="true" aria-labelledby="snap-install-modal-title">
+      <header class="snap-v2-install-modal-header">
+        <h2 id="snap-install-modal-title">INSTALE O FGF SNAP</h2>
+        <button type="button" class="snap-v2-install-modal-close" data-snap-ios-modal-close aria-label="Fechar">×</button>
+      </header>
+      <p class="snap-v2-install-modal-desc">Adicione o Snap à sua Tela de Início e volte quando quiser.</p>
+      <ol class="snap-v2-install-steps">
+        <li>
+          <span class="snap-v2-step-num">1</span>
+          <div>Toque em <strong>Compartilhar</strong> <span class="snap-v2-step-icon" aria-hidden="true">⎋</span> (na barra do navegador)</div>
+        </li>
+        <li>
+          <span class="snap-v2-step-num">2</span>
+          <div>Escolha <strong>“Adicionar à Tela de Início”</strong> <span class="snap-v2-step-icon" aria-hidden="true">⊞</span></div>
+        </li>
+        <li>
+          <span class="snap-v2-step-num">3</span>
+          <div>Toque em <strong>“Adicionar”</strong> no canto superior</div>
+        </li>
+      </ol>
+      <button type="button" class="snap-v2-button snap-v2-button-primary snap-v2-install-modal-ok" data-snap-ios-modal-close>ENTENDI</button>
+    </div>
+  </div>
 
   <script is:inline>
     (() => {
@@ -98,9 +99,6 @@ import '../styles/snap-v2.css';
       installCard.hidden = false;
 
       let deferredPrompt = null;
-      const isIOS =
-        /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-        (navigator.maxTouchPoints > 1 && /Macintosh/i.test(navigator.userAgent));
 
       window.addEventListener('beforeinstallprompt', (event) => {
         event.preventDefault();
@@ -113,6 +111,20 @@ import '../styles/snap-v2.css';
         installCard.hidden = true;
       });
 
+      const openModal = () => {
+        if (!iosModal) return;
+        iosModal.hidden = false;
+        iosModal.classList.add('is-open');
+        iosModal.removeAttribute('aria-hidden');
+      };
+
+      const closeModal = () => {
+        if (!iosModal) return;
+        iosModal.hidden = true;
+        iosModal.classList.remove('is-open');
+        iosModal.setAttribute('aria-hidden', 'true');
+      };
+
       installCard.addEventListener('click', async () => {
         if (deferredPrompt) {
           deferredPrompt.prompt();
@@ -121,22 +133,18 @@ import '../styles/snap-v2.css';
             installCard.hidden = true;
           }
           deferredPrompt = null;
-        } else if (isIOS) {
-          if (iosModal) iosModal.hidden = false;
         } else {
-          if (iosModal) iosModal.hidden = false;
+          openModal();
         }
       });
 
       iosCloseBtns.forEach((btn) => {
-        btn.addEventListener('click', () => {
-          if (iosModal) iosModal.hidden = true;
-        });
+        btn.addEventListener('click', closeModal);
       });
 
       iosModal?.addEventListener('click', (event) => {
         if (event.target === iosModal) {
-          iosModal.hidden = true;
+          closeModal();
         }
       });
     })();
