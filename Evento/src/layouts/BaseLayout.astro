@@ -7,12 +7,16 @@ interface Props {
   title?: string;
   description?: string;
   canonical?: string;
+  manifest?: string;
+  bodyClass?: string;
 }
 
 const {
   title = event.name,
   description = 'Games, cultura geek, campeonatos e experiências para toda a família em Bauru.',
   canonical = 'https://familygamefestival.vercel.app/',
+  manifest,
+  bodyClass,
 } = Astro.props;
 
 const jsonLd = {
@@ -40,7 +44,7 @@ const jsonLd = {
 };
 ---
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" class={bodyClass ? bodyClass : undefined}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -48,6 +52,7 @@ const jsonLd = {
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+    {manifest && <link rel="manifest" href={manifest} />}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
@@ -59,7 +64,7 @@ const jsonLd = {
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <Analytics />
   </head>
-  <body>
+  <body class={bodyClass}>
     <slot />
   </body>
 </html>

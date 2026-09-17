@@ -1,0 +1,152 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SnapHeader from '../components/SnapHeader.astro';
+import { snapPwa } from '../config/snap';
+import '../styles/snap-v2.css';
+---
+
+<BaseLayout
+  title="FGF Snap | Family Game Festival 2026"
+  description={snapPwa.description}
+  manifest="/snap/manifest.webmanifest"
+  bodyClass="snap-page"
+>
+  <main class="snap-v2-shell">
+    <SnapHeader />
+
+    <section class="snap-v2-hero" aria-labelledby="snap-home-title">
+      <div class="snap-v2-hero-copy">
+        <p class="snap-v2-eyebrow">ATIVAÇÃO OFICIAL · FGF 2026</p>
+        <h1 id="snap-home-title">VIVA O FESTIVAL.<br /><em>CRIE SEU SNAP.</em></h1>
+        <p class="snap-v2-lede">Escolha uma experiência e registre seu momento no Family Game Festival.</p>
+      </div>
+      <div class="snap-v2-hero-art" aria-hidden="true">
+        <div class="snap-v2-art-grid"></div>
+        <span class="snap-v2-art-tag">#FAMILYGAMEFESTIVAL2026</span>
+        <img src="/assets/mascots/icon-mascote.png" alt="" width="500" height="500" />
+        <strong>SEU MOMENTO<br /><b>DO SEU JEITO</b></strong>
+      </div>
+    </section>
+
+    <section class="snap-v2-feature-grid" aria-label="Experiências do FGF Snap">
+      <a class="snap-v2-feature-card snap-v2-feature-card-yellow" href="/snap/foto">
+        <span class="snap-v2-feature-number">01</span>
+        <div><h2>CRIAR SUA FOTO</h2><p>Personalize sua foto com molduras, mascotes e figurinhas oficiais.</p></div>
+        <span class="snap-v2-feature-arrow" aria-hidden="true">↗</span>
+      </a>
+      <a class="snap-v2-feature-card snap-v2-feature-card-cyan" href="/snap/ar">
+        <span class="snap-v2-feature-number">02</span>
+        <div><h2>MASCOTE EM AR</h2><p>Coloque o mascote do FGF no seu ambiente e tire uma foto com ele.</p></div>
+        <span class="snap-v2-feature-arrow" aria-hidden="true">↗</span>
+      </a>
+      <a class="snap-v2-feature-card snap-v2-feature-card-pink" href="/snap/figurinhas">
+        <span class="snap-v2-feature-number">03</span>
+        <div><h2>FIGURINHAS OFICIAIS</h2><p>Adicione o pacote oficial do FGF ao seu WhatsApp.</p></div>
+        <span class="snap-v2-feature-arrow" aria-hidden="true">↗</span>
+      </a>
+      <button class="snap-v2-feature-card snap-v2-feature-card-install" type="button" data-snap-install-card hidden aria-label="Instale o FGF Snap">
+        <span class="snap-v2-feature-number">04</span>
+        <div><h2>INSTALE O FGF SNAP</h2><p>Tenha o FGF Snap na sua tela inicial e volte quando quiser.</p></div>
+        <span class="snap-v2-feature-arrow" aria-hidden="true">＋</span>
+      </button>
+    </section>
+
+    <footer class="snap-v2-footer"><span>FGF SNAP · FAMILY GAME FESTIVAL 2026</span></footer>
+  </main>
+
+  <div class="snap-v2-install-modal-backdrop" data-snap-ios-modal hidden aria-hidden="true">
+    <div class="snap-v2-install-modal" role="dialog" aria-modal="true" aria-labelledby="snap-install-modal-title">
+      <header class="snap-v2-install-modal-header">
+        <h2 id="snap-install-modal-title">INSTALE O FGF SNAP</h2>
+        <button type="button" class="snap-v2-install-modal-close" data-snap-ios-modal-close aria-label="Fechar">×</button>
+      </header>
+      <p class="snap-v2-install-modal-desc">Adicione o Snap à sua Tela de Início e volte quando quiser.</p>
+      <ol class="snap-v2-install-steps">
+        <li>
+          <span class="snap-v2-step-num">1</span>
+          <div>Toque em <strong>Compartilhar</strong> <span class="snap-v2-step-icon" aria-hidden="true">⎋</span> (na barra do navegador)</div>
+        </li>
+        <li>
+          <span class="snap-v2-step-num">2</span>
+          <div>Escolha <strong>“Adicionar à Tela de Início”</strong> <span class="snap-v2-step-icon" aria-hidden="true">⊞</span></div>
+        </li>
+        <li>
+          <span class="snap-v2-step-num">3</span>
+          <div>Toque em <strong>“Adicionar”</strong> no canto superior</div>
+        </li>
+      </ol>
+      <button type="button" class="snap-v2-button snap-v2-button-primary snap-v2-install-modal-ok" data-snap-ios-modal-close>ENTENDI</button>
+    </div>
+  </div>
+
+  <script is:inline>
+    (() => {
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('/snap/sw.js', { scope: '/snap/' }).catch(() => {}));
+      }
+
+      const isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true ||
+        document.referrer.includes('android-app://');
+
+      const installCard = document.querySelector('[data-snap-install-card]');
+      const iosModal = document.querySelector('[data-snap-ios-modal]');
+      const iosCloseBtns = document.querySelectorAll('[data-snap-ios-modal-close]');
+
+      if (isStandalone || !installCard) return;
+
+      installCard.hidden = false;
+
+      let deferredPrompt = null;
+
+      window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredPrompt = event;
+        installCard.hidden = false;
+      });
+
+      window.addEventListener('appinstalled', () => {
+        deferredPrompt = null;
+        installCard.hidden = true;
+      });
+
+      const openModal = () => {
+        if (!iosModal) return;
+        iosModal.hidden = false;
+        iosModal.classList.add('is-open');
+        iosModal.removeAttribute('aria-hidden');
+      };
+
+      const closeModal = () => {
+        if (!iosModal) return;
+        iosModal.hidden = true;
+        iosModal.classList.remove('is-open');
+        iosModal.setAttribute('aria-hidden', 'true');
+      };
+
+      installCard.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            installCard.hidden = true;
+          }
+          deferredPrompt = null;
+        } else {
+          openModal();
+        }
+      });
+
+      iosCloseBtns.forEach((btn) => {
+        btn.addEventListener('click', closeModal);
+      });
+
+      iosModal?.addEventListener('click', (event) => {
+        if (event.target === iosModal) {
+          closeModal();
+        }
+      });
+    })();
+  </script>
+</BaseLayout>
