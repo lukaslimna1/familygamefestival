@@ -33,11 +33,11 @@ const snapConfigJson = JSON.stringify(snapConfig);
       <section class="snap-editor-screen" data-snap-editor-screen hidden aria-label="Editor de foto">
         <div class="snap-editor-shell" data-snap-editor-shell data-sheet-state="closed">
           <header class="snap-editor-topbar">
-            <button class="snap-editor-back" type="button" data-snap-editor-back aria-label="Voltar para escolher outra foto">← <span>SNAP</span></button>
+            <button class="snap-editor-back" type="button" data-snap-editor-back aria-label="Voltar para escolher outra foto"><span class="snap-back-arrow" aria-hidden="true">←</span></button>
 
             <div class="snap-editor-format-control">
               <button class="snap-editor-format-toggle" type="button" data-snap-format-toggle aria-expanded="false" aria-controls="snap-format-menu">
-                <span data-snap-format-label>STORY 9:16</span><span aria-hidden="true">⌄</span>
+                <span data-snap-format-label>9:16</span><span class="snap-format-chevron" aria-hidden="true">⌄</span>
               </button>
               <div class="snap-editor-format-menu" id="snap-format-menu" data-snap-format-menu hidden>
                 {snapConfig.formats.map((format) => (
@@ -70,6 +70,8 @@ const snapConfigJson = JSON.stringify(snapConfig);
               </div>
             </div>
           </div>
+
+          <div class="snap-editor-sheet-backdrop" data-snap-sheet-backdrop hidden aria-hidden="true"></div>
 
           <aside class="snap-editor-sheet" data-snap-sheet data-sheet-state="closed" aria-label="Ferramentas do editor">
             <button class="snap-editor-sheet-handle" type="button" data-snap-sheet-handle aria-label="Abrir ferramentas" aria-expanded="false"><span aria-hidden="true"></span></button>

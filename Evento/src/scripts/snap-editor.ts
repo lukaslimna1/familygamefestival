@@ -36,6 +36,8 @@ const sheetContent = document.querySelector<HTMLElement>('[data-snap-sheet-conte
 const sheetTitle = document.querySelector<HTMLElement>('[data-snap-sheet-title]');
 const sheetClose = document.querySelector<HTMLButtonElement>('[data-snap-sheet-close]');
 const sheetHandle = document.querySelector<HTMLButtonElement>('[data-snap-sheet-handle]');
+const sheetBackdrop = document.querySelector<HTMLElement>('[data-snap-sheet-backdrop]');
+const sheetHeading = document.querySelector<HTMLElement>('.snap-editor-sheet-heading');
 const contextToolbar = document.querySelector<HTMLElement>('[data-snap-context-toolbar]');
 const moreMenu = document.querySelector<HTMLElement>('[data-snap-more-menu]');
 const trash = document.querySelector<HTMLElement>('[data-snap-trash]');
@@ -62,6 +64,23 @@ let trashActive = false;
 let sheetDragStartY: number | null = null;
 let sheetDragMoved = false;
 let suppressSheetClick = false;
+let focusModeTimeout: number | null = null;
+
+const enterFocusMode = () => {
+  if (focusModeTimeout) {
+    window.clearTimeout(focusModeTimeout);
+    focusModeTimeout = null;
+  }
+  editorShell?.classList.add('snap-focus-mode');
+};
+
+const exitFocusMode = () => {
+  if (focusModeTimeout) window.clearTimeout(focusModeTimeout);
+  focusModeTimeout = window.setTimeout(() => {
+    editorShell?.classList.remove('snap-focus-mode');
+    focusModeTimeout = null;
+  }, 150);
+};
 
 const setStatus = (message: string, tone = '') => {
   if (!status) return;
@@ -74,6 +93,7 @@ const setSheetState = (nextState: SheetState) => {
   if (sheet) sheet.dataset.sheetState = nextState;
   if (editorShell) editorShell.dataset.sheetState = nextState;
   if (sheetContent) sheetContent.hidden = nextState === 'closed';
+  if (sheetBackdrop) sheetBackdrop.hidden = nextState === 'closed';
   const handle = document.querySelector<HTMLButtonElement>('[data-snap-sheet-handle]');
   if (handle) {
     handle.setAttribute('aria-expanded', String(nextState !== 'closed'));
@@ -271,6 +291,7 @@ const bindOverlayEvents = (node: any) => {
   node.on('dragstart', () => {
     selectNode(node);
     showTrash();
+    enterFocusMode();
   });
 
   node.on('dragmove', (event: any) => {
@@ -284,6 +305,7 @@ const bindOverlayEvents = (node: any) => {
   });
 
   node.on('dragend', (event: any) => {
+    exitFocusMode();
     const pointer = event.evt;
     const clientX = pointer?.clientX ?? (pointer?.changedTouches?.[0]?.clientX ?? 0);
     const clientY = pointer?.clientY ?? (pointer?.changedTouches?.[0]?.clientY ?? 0);
@@ -374,7 +396,7 @@ const setSticker = async (stickerId: string) => {
 };
 
 const updateFormatLabel = (format: SnapFormat) => {
-  if (formatLabel) formatLabel.textContent = `${format.label.toUpperCase()} ${format.ratio}`;
+  if (formatLabel) formatLabel.textContent = format.ratio;
   if (canvasWrap) canvasWrap.dataset.snapFormat = format.id;
 };
 
@@ -428,6 +450,7 @@ const setupTouchGestures = () => {
         }
         selectedNode.draggable(false);
         hideTrash();
+        enterFocusMode();
 
         const t1 = event.touches[0];
         const t2 = event.touches[1];
@@ -495,6 +518,7 @@ const setupTouchGestures = () => {
         refreshSelection();
       }
     }
+    exitFocusMode();
   };
 
   stageContainer.addEventListener('touchend', (event: TouchEvent) => {
@@ -521,6 +545,7 @@ const initializeStage = async () => {
     stage.on('click tap', (event: any) => {
       if (event.target === stage || event.target === baseNode || event.target === frameNode) {
         selectNode(null);
+        if (sheetState !== 'closed') setSheetState('closed');
       }
     });
 
@@ -663,54 +688,79 @@ galleryInput?.addEventListener('change', () => {
   galleryInput.value = '';
 });
 
+const toggleCategory = (category: string) => {
+  if (activeCategory === category && sheetState !== 'closed') {
+    setSheetState('closed');
+    return;
+  }
+  setSheetCategory(category);
+};
+
 document.querySelectorAll<HTMLElement>('[data-snap-category]').forEach((button) =>
-  button.addEventListener('click', () => setSheetCategory(button.dataset.snapCategory ?? 'frame')),
+  button.addEventListener('click', () => toggleCategory(button.dataset.snapCategory ?? 'frame')),
 );
+
+sheetBackdrop?.addEventListener('click', () => setSheetState('closed'));
+sheetBackdrop?.addEventListener('touchstart', () => setSheetState('closed'), { passive: true });
 
 sheetHandle?.addEventListener('click', () => {
   if (suppressSheetClick) {
     suppressSheetClick = false;
     return;
   }
-  setSheetState(sheetState === 'closed' ? 'half' : sheetState === 'half' ? 'expanded' : 'half');
+  setSheetState(sheetState === 'closed' ? 'half' : sheetState === 'half' ? 'expanded' : 'closed');
 });
 
-sheetHandle?.addEventListener('pointerdown', (event) => {
+const handleSheetPointerDown = (event: PointerEvent) => {
   sheetDragStartY = event.clientY;
   sheetDragMoved = false;
-  sheetHandle.setPointerCapture(event.pointerId);
-});
+  (event.currentTarget as HTMLElement)?.setPointerCapture?.(event.pointerId);
+};
 
-sheetHandle?.addEventListener('pointermove', (event) => {
+const handleSheetPointerMove = (event: PointerEvent) => {
   if (sheetDragStartY === null) return;
   const distance = event.clientY - sheetDragStartY;
   if (Math.abs(distance) > 8) {
     sheetDragMoved = true;
     event.preventDefault();
   }
-});
+};
 
 const finishSheetDrag = (event: PointerEvent) => {
   if (sheetDragStartY === null) return;
   const distance = event.clientY - sheetDragStartY;
   if (sheetDragMoved) {
     suppressSheetClick = true;
-    if (distance < -44 && sheetState !== 'expanded') setSheetState(sheetState === 'closed' ? 'half' : 'expanded');
-    if (distance > 44 && sheetState !== 'closed') setSheetState(sheetState === 'expanded' ? 'half' : 'closed');
+    if (distance < -30 && sheetState !== 'expanded') {
+      setSheetState(sheetState === 'closed' ? 'half' : 'expanded');
+    }
+    if (distance > 30 && sheetState !== 'closed') {
+      setSheetState(sheetState === 'expanded' ? 'half' : 'closed');
+    }
   }
   sheetDragStartY = null;
   sheetDragMoved = false;
-  if (sheetHandle?.hasPointerCapture(event.pointerId)) sheetHandle.releasePointerCapture(event.pointerId);
+  try {
+    (event.currentTarget as HTMLElement)?.releasePointerCapture?.(event.pointerId);
+  } catch (_) {}
 };
 
+sheetHandle?.addEventListener('pointerdown', handleSheetPointerDown);
+sheetHandle?.addEventListener('pointermove', handleSheetPointerMove);
 sheetHandle?.addEventListener('pointerup', finishSheetDrag);
 sheetHandle?.addEventListener('pointercancel', finishSheetDrag);
+
+sheetHeading?.addEventListener('pointerdown', handleSheetPointerDown);
+sheetHeading?.addEventListener('pointermove', handleSheetPointerMove);
+sheetHeading?.addEventListener('pointerup', finishSheetDrag);
+sheetHeading?.addEventListener('pointercancel', finishSheetDrag);
+
 sheetClose?.addEventListener('click', () => setSheetState('closed'));
 
 document.querySelectorAll<HTMLElement>('[data-snap-frame-id]').forEach((button) =>
   button.addEventListener('click', () => {
     void setFrame(button.dataset.snapFrameId ?? 'none');
-    setSheetState('half');
+    setSheetState('closed');
   }),
 );
 
