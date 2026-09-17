@@ -23,14 +23,16 @@ const initials = admin.displayName
 
 const navItems = [
   { key: 'dashboard', label: 'Dashboard', href: '/admin', icon: 'grid' },
-  { key: 'inscricoes', label: 'Inscrições', href: '/admin#inscricoes', icon: 'clipboard' },
-  { key: 'cosplay', label: 'Cosplay', href: '/admin#cosplay', icon: 'spark' },
-  { key: 'menores', label: 'Menores', href: '/admin#menores', icon: 'shield' },
-  { key: 'documentos', label: 'Documentos', href: '/admin#documentos', icon: 'folder' },
-  { key: 'configuracoes', label: 'Configurações', href: '/admin#configuracoes', icon: 'settings' },
+  { key: 'inscricoes', label: 'Inscrições', href: '/admin/inscricoes', icon: 'clipboard' },
+  { key: 'cosplay', label: 'Cosplay', href: '/admin/cosplay', icon: 'spark' },
+  { key: 'menores', label: 'Menores', href: '/admin/menores', icon: 'shield' },
+  { key: 'configuracoes', label: 'Configurações', href: '/admin/configuracoes', icon: 'settings' },
 ];
 
-const isActive = (item: (typeof navItems)[number]) => item.key === 'dashboard' && activePath === '/admin';
+const isActive = (item: (typeof navItems)[number]) => {
+  if (item.key === 'dashboard') return activePath === '/admin';
+  return activePath === item.href || activePath.startsWith(`${item.href}/`);
+};
 ---
 
 <aside id="admin-sidebar" class="admin-sidebar" data-admin-sidebar aria-label="Navegação administrativa">
@@ -86,18 +88,6 @@ const isActive = (item: (typeof navItems)[number]) => item.key === 'dashboard' &
         </span>
       </div>
     )}
-
-    <a
-      class:list={['admin-account-link', { 'is-active': activePath.startsWith('/admin/account') }]}
-      href="/admin/account/password"
-      aria-current={activePath.startsWith('/admin/account') ? 'page' : undefined}
-    >
-      <span class="admin-nav-icon"><AdminIcon name="lock" /></span>
-      <span>
-        <strong>Segurança da conta</strong>
-        <small>Trocar senha</small>
-      </span>
-    </a>
 
     <div class="admin-user-block">
       <span class="admin-user-avatar" aria-hidden="true">{initials || 'A'}</span>

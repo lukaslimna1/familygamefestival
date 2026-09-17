@@ -1,0 +1,46 @@
+---
+import AdminIcon from '../../components/admin/AdminIcon.astro';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getAdminEventSettings, getAdminServiceStatus } from '../../lib/server/admin/data';
+
+const admin = Astro.locals.admin;
+if (!admin) return Astro.redirect('/admin/login');
+if (admin.mustChangePassword) return Astro.redirect('/admin/account/password');
+
+const settings = getAdminEventSettings();
+const services = getAdminServiceStatus();
+const saved = Astro.url.searchParams.get('saved');
+---
+
+<AdminLayout title="Configurações | Family Game Festival" subtitle="Conta administrativa e parâmetros oficiais do evento." admin={admin}>
+  <div class="admin-v2-page">
+    <section class="admin-v2-page-intro">
+      <div><p class="admin-eyebrow">Administração · ambiente seguro</p><h2>Configurações</h2><p>Preferências da conta e leitura dos parâmetros oficiais usados pelo sistema.</p></div>
+    </section>
+    {saved === '1' && <p class="admin-v2-feedback is-success">Nome de exibição atualizado.</p>}
+    {saved === 'error' && <p class="admin-v2-feedback is-error">Não foi possível salvar a alteração.</p>}
+
+    <div class="admin-v2-settings-grid">
+      <section class="admin-v2-card" aria-labelledby="account-settings-title">
+        <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Minha conta</p><h2 id="account-settings-title">Perfil administrativo</h2><p>O username é a identidade de login e não pode ser alterado aqui.</p></div><span class="admin-v2-card-mark"><AdminIcon name="lock" /></span></div>
+        <form class="admin-v2-edit-form" method="post" action="/api/admin/account/profile">
+          <label>Username<input value={admin.username} readonly aria-readonly="true" /></label>
+          <label>Nome de exibição<input name="displayName" value={admin.displayName} required minlength="3" maxlength="160" /></label>
+          <div class="admin-v2-settings-actions"><button class="admin-button admin-button-primary" type="submit">Salvar nome <AdminIcon name="arrow" /></button><a class="admin-button admin-button-secondary" href="/admin/account/password">Trocar senha</a></div>
+        </form>
+        <div class="admin-v2-security-note"><AdminIcon name="lock" /><span><strong>Sessões protegidas</strong><small>Cookies HttpOnly, expiração e revogação continuam sob responsabilidade do backend.</small></span></div>
+      </section>
+
+      <section class="admin-v2-card" aria-labelledby="event-settings-title">
+        <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Evento</p><h2 id="event-settings-title">Parâmetros oficiais</h2><p>Leitura da configuração usada pelo fluxo de inscrições.</p></div><span class="admin-v2-live"><i></i>Fonte oficial</span></div>
+        <dl class="admin-v2-definition-list admin-v2-definition-list-large"><div><dt>Capacidade padrão</dt><dd>{settings.defaultCapacity} participantes</dd></div><div><dt>Encerramento online</dt><dd>{settings.onlineDeadline} · {settings.timeZone}</dd></div><div><dt>Status das inscrições</dt><dd><span class:list={['admin-v2-status', settings.onlineOpen ? 'status-synced' : 'status-failed']}>{settings.onlineOpen ? 'Abertas' : 'Encerradas'}</span></dd></div><div><dt>Competições cadastradas</dt><dd>{settings.competitionCount}</dd></div><div><dt>Fonte</dt><dd>{settings.source}</dd></div></dl>
+        <p class="admin-v2-readonly-note">Esses valores são exibidos para conferência. Alterações de regra devem continuar sendo feitas na configuração oficial, não por um atalho visual.</p>
+      </section>
+    </div>
+
+    <section class="admin-v2-card admin-v2-config-status" aria-labelledby="config-health-title">
+      <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Infraestrutura</p><h2 id="config-health-title">Disponibilidade do ambiente</h2></div></div>
+      <div class="admin-v2-service-grid"><div><span><AdminIcon name="grid" /></span><strong>Turso</strong><small>{services.turso ? 'Configuração presente' : 'Configuração ausente'}</small><b class:list={{ 'is-ok': services.turso }}>{services.turso ? 'OK' : 'Verificar'}</b></div><div><span><AdminIcon name="folder" /></span><strong>Google Drive</strong><small>{services.drive ? 'Credenciais configuradas' : 'Credenciais ausentes'}</small><b class:list={{ 'is-ok': services.drive }}>{services.drive ? 'OK' : 'Verificar'}</b></div><div><span><AdminIcon name="lock" /></span><strong>Autenticação</strong><small>Sessão atual validada</small><b class="is-ok">OK</b></div></div>
+    </section>
+  </div>
+</AdminLayout>

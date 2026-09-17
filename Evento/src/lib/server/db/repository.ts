@@ -546,39 +546,100 @@ async function getRegistrationById(registrationId: string) {
 
   if (!base) return null;
 
-  const [guardian] = await database
-    .select({
-      id: guardians.id,
-      fullName: guardians.fullName,
-      cpf: guardians.cpf,
-      phone: guardians.phone,
-      email: guardians.email,
-      relationship: guardians.relationship
-    })
-    .from(guardians)
-    .where(eq(guardians.participantId, base.participantId))
-    .limit(1);
-
-  const authorizationRows = await database
-    .select({
-      id: minorAuthorizations.id,
-      registrationId: minorAuthorizations.registrationId,
-      participantId: minorAuthorizations.participantId,
-      guardianId: minorAuthorizations.guardianId,
-      version: minorAuthorizations.version,
-      competitionIds: minorAuthorizations.competitionIds,
-      status: minorAuthorizations.status,
-      driveFileId: minorAuthorizations.driveFileId,
-      signedDriveFileId: minorAuthorizations.signedDriveFileId,
-      deliveryType: minorAuthorizations.deliveryType,
-      requestedAt: minorAuthorizations.requestedAt,
-      uploadedAt: minorAuthorizations.uploadedAt,
-      receivedAt: minorAuthorizations.receivedAt,
-      rejectionReason: minorAuthorizations.rejectionReason
-    })
-    .from(minorAuthorizations)
-    .where(eq(minorAuthorizations.participantId, base.participantId))
-    .orderBy(desc(minorAuthorizations.version));
+  const [guardianRows, authorizationRows, cosplayRows, files, links, consentRows] = await Promise.all([
+    database
+      .select({
+        id: guardians.id,
+        fullName: guardians.fullName,
+        cpf: guardians.cpf,
+        phone: guardians.phone,
+        email: guardians.email,
+        relationship: guardians.relationship
+      })
+      .from(guardians)
+      .where(eq(guardians.participantId, base.participantId))
+      .limit(1),
+    database
+      .select({
+        id: minorAuthorizations.id,
+        registrationId: minorAuthorizations.registrationId,
+        participantId: minorAuthorizations.participantId,
+        guardianId: minorAuthorizations.guardianId,
+        version: minorAuthorizations.version,
+        competitionIds: minorAuthorizations.competitionIds,
+        status: minorAuthorizations.status,
+        driveFileId: minorAuthorizations.driveFileId,
+        signedDriveFileId: minorAuthorizations.signedDriveFileId,
+        deliveryType: minorAuthorizations.deliveryType,
+        requestedAt: minorAuthorizations.requestedAt,
+        uploadedAt: minorAuthorizations.uploadedAt,
+        receivedAt: minorAuthorizations.receivedAt,
+        rejectionReason: minorAuthorizations.rejectionReason
+      })
+      .from(minorAuthorizations)
+      .where(eq(minorAuthorizations.participantId, base.participantId))
+      .orderBy(desc(minorAuthorizations.version)),
+    database
+      .select({
+        id: cosplayEntries.id,
+        stageName: cosplayEntries.stageName,
+        stageCallName: cosplayEntries.stageCallName,
+        characterName: cosplayEntries.characterName,
+        sourceWork: cosplayEntries.sourceWork,
+        presentationType: cosplayEntries.presentationType,
+        cosplayDescription: cosplayEntries.cosplayDescription,
+        presentationDescription: cosplayEntries.presentationDescription,
+        presentationNotes: cosplayEntries.presentationNotes,
+        technicalNotes: cosplayEntries.technicalNotes,
+        judgeNotes: cosplayEntries.judgeNotes,
+        musicTitle: cosplayEntries.musicTitle,
+        updatedAt: cosplayEntries.updatedAt
+      })
+      .from(cosplayEntries)
+      .where(eq(cosplayEntries.registrationId, registrationId))
+      .limit(1),
+    database
+      .select({
+        id: registrationFiles.id,
+        fileType: registrationFiles.fileType,
+        originalName: registrationFiles.originalName,
+        mimeType: registrationFiles.mimeType,
+        sizeBytes: registrationFiles.sizeBytes,
+        contentHash: registrationFiles.contentHash,
+        driveFileId: registrationFiles.driveFileId,
+        drivePath: registrationFiles.drivePath,
+        authorizationVersion: registrationFiles.authorizationVersion,
+        syncStatus: registrationFiles.syncStatus,
+        lastError: registrationFiles.lastError,
+        createdAt: registrationFiles.createdAt,
+        updatedAt: registrationFiles.updatedAt
+      })
+      .from(registrationFiles)
+      .where(eq(registrationFiles.registrationId, registrationId))
+      .orderBy(registrationFiles.fileType, desc(registrationFiles.updatedAt)),
+    database
+      .select({
+        id: registrationLinks.id,
+        label: registrationLinks.label,
+        url: registrationLinks.url,
+        createdAt: registrationLinks.createdAt,
+        updatedAt: registrationLinks.updatedAt
+      })
+      .from(registrationLinks)
+      .where(eq(registrationLinks.registrationId, registrationId))
+      .orderBy(registrationLinks.createdAt),
+    database
+      .select({
+        type: consents.consentType,
+        granted: consents.granted,
+        policyVersion: consents.policyVersion,
+        grantedAt: consents.grantedAt
+      })
+      .from(consents)
+      .where(eq(consents.registrationId, registrationId))
+      .orderBy(consents.grantedAt)
+  ]);
+  const guardian = guardianRows[0];
   const authorizationHistory = authorizationRows.map((authorization) => ({
     ...authorization,
     competitionIds: parseAuthorizationCompetitionIds(authorization.competitionIds),
@@ -587,68 +648,7 @@ async function getRegistrationById(registrationId: string) {
   }));
   const minorAuthorization = authorizationHistory[0] ?? null;
 
-  const [cosplay] = await database
-    .select({
-      id: cosplayEntries.id,
-      stageName: cosplayEntries.stageName,
-      stageCallName: cosplayEntries.stageCallName,
-      characterName: cosplayEntries.characterName,
-      sourceWork: cosplayEntries.sourceWork,
-      presentationType: cosplayEntries.presentationType,
-      cosplayDescription: cosplayEntries.cosplayDescription,
-      presentationDescription: cosplayEntries.presentationDescription,
-      presentationNotes: cosplayEntries.presentationNotes,
-      technicalNotes: cosplayEntries.technicalNotes,
-      judgeNotes: cosplayEntries.judgeNotes,
-      musicTitle: cosplayEntries.musicTitle,
-      updatedAt: cosplayEntries.updatedAt
-    })
-    .from(cosplayEntries)
-    .where(eq(cosplayEntries.registrationId, registrationId))
-    .limit(1);
-
-  const files = await database
-    .select({
-      id: registrationFiles.id,
-      fileType: registrationFiles.fileType,
-      originalName: registrationFiles.originalName,
-      mimeType: registrationFiles.mimeType,
-      sizeBytes: registrationFiles.sizeBytes,
-      contentHash: registrationFiles.contentHash,
-      driveFileId: registrationFiles.driveFileId,
-      drivePath: registrationFiles.drivePath,
-      authorizationVersion: registrationFiles.authorizationVersion,
-      syncStatus: registrationFiles.syncStatus,
-      lastError: registrationFiles.lastError,
-      createdAt: registrationFiles.createdAt,
-      updatedAt: registrationFiles.updatedAt
-    })
-    .from(registrationFiles)
-    .where(eq(registrationFiles.registrationId, registrationId))
-    .orderBy(registrationFiles.fileType, desc(registrationFiles.updatedAt));
-
-  const links = await database
-    .select({
-      id: registrationLinks.id,
-      label: registrationLinks.label,
-      url: registrationLinks.url,
-      createdAt: registrationLinks.createdAt,
-      updatedAt: registrationLinks.updatedAt
-    })
-    .from(registrationLinks)
-    .where(eq(registrationLinks.registrationId, registrationId))
-    .orderBy(registrationLinks.createdAt);
-
-  const consentRows = await database
-    .select({
-      type: consents.consentType,
-      granted: consents.granted,
-      policyVersion: consents.policyVersion,
-      grantedAt: consents.grantedAt
-    })
-    .from(consents)
-    .where(eq(consents.registrationId, registrationId))
-    .orderBy(consents.grantedAt);
+  const cosplay = cosplayRows[0];
 
   return {
     ...base,

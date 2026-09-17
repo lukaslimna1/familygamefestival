@@ -1,0 +1,65 @@
+---
+import AdminIcon from '../../../components/admin/AdminIcon.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { driveFileUrl, formatAdminDate, getAdminRegistrationDetails } from '../../../lib/server/admin/data';
+
+const admin = Astro.locals.admin;
+if (!admin) return Astro.redirect('/admin/login');
+if (admin.mustChangePassword) return Astro.redirect('/admin/account/password');
+
+const registration = Astro.params.id ? await getAdminRegistrationDetails(Astro.params.id) : null;
+if (!registration) return new Response('Inscrição de Cosplay não encontrada.', { status: 404 });
+if (!registration.cosplay) return Astro.redirect('/admin/inscricoes/' + registration.registrationId);
+
+const cosplay = registration.cosplay;
+const fileLabel = (type: string) => ({ registration_sheet: 'Ficha de inscrição', guardian_authorization: 'Autorização do menor', guardian_authorization_signed: 'Autorização assinada', cosplay_reference: 'Referência', cosplay_audio: 'Áudio da apresentação' }[type] ?? type);
+const refs = registration.files.filter((file) => file.fileType === 'cosplay_reference');
+const audio = registration.files.find((file) => file.fileType === 'cosplay_audio');
+const documentFiles = registration.files.filter((file) => !['cosplay_reference', 'cosplay_audio'].includes(file.fileType));
+const needsAttention = registration.driveSyncStatus === 'failed'
+  || registration.files.some((file) => file.syncStatus === 'failed')
+  || (registration.isMinor && (!registration.minorAuthorization || !['uploaded', 'received'].includes(registration.minorAuthorization.status)))
+  || !audio;
+---
+
+<AdminLayout
+  title="Ficha de Cosplay | Family Game Festival"
+  subtitle={registration.publicCode ?? registration.fullName}
+  admin={admin}
+  action={{ label: 'Voltar para Cosplay', href: '/admin/cosplay' }}
+  notificationCount={needsAttention ? 1 : 0}
+>
+  <div class="admin-v2-page admin-v2-cosplay-detail">
+    <div class="admin-v2-breadcrumb"><a href="/admin">Dashboard</a><span>/</span><a href="/admin/cosplay">Cosplay</a><span>/</span><strong>{registration.publicCode ?? 'Ficha'}</strong></div>
+    <section class="admin-v2-detail-hero cosplay-hero">
+      <div><p class="admin-eyebrow">Ficha de curadoria · {registration.publicCode ?? 'sem código'}</p><h2>{cosplay.stageName || registration.fullName}</h2><p class="admin-v2-detail-code">{cosplay.characterName} · {cosplay.sourceWork} · enviada em {formatAdminDate(registration.submittedAt ?? registration.registrationCreatedAt)}</p></div>
+      <div class="admin-v2-detail-hero-tags"><span class="admin-v2-cosplay-chip">{cosplay.presentationType}</span><span class:list={['admin-v2-age-badge', registration.isMinor ? 'is-minor' : 'is-adult']}>{registration.isMinor ? 'Menor de idade' : 'Maior de idade'}</span><a class="admin-button admin-button-secondary" href={'/admin/inscricoes/' + registration.registrationId}>Editar cadastro</a></div>
+    </section>
+
+    <nav class="admin-v2-detail-tabs" aria-label="Seções da ficha de Cosplay"><a class="is-active" href="#visao-geral">Visão geral</a><a href="#cosplay">Cosplay</a><a href="#apresentacao">Apresentação</a><a href="#referencias">Referências</a><a href="#audio">Áudio</a><a href="#redes">Redes</a><a href="#documentacao">Documentação</a></nav>
+
+    <div class="admin-v2-detail-grid admin-v2-cosplay-content">
+      <section id="visao-geral" class="admin-v2-card admin-v2-cosplay-overview">
+        <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Resumo</p><h2>Visão geral</h2></div></div>
+        <div class="admin-v2-highlight-grid"><div><small>Nome civil</small><strong>{registration.fullName}</strong></div><div><small>Nome artístico</small><strong>{cosplay.stageName || 'Não informado'}</strong></div><div><small>Personagem</small><strong>{cosplay.characterName}</strong></div><div><small>Obra / franquia</small><strong>{cosplay.sourceWork}</strong></div><div><small>Chamada de palco</small><strong>{cosplay.stageCallName}</strong></div><div><small>Música</small><strong>{cosplay.musicTitle || 'Não informado'}</strong></div></div>
+      </section>
+
+      <aside class="admin-v2-detail-side">
+        <section id="redes" class="admin-v2-card"><div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Contato</p><h2>Redes</h2></div></div><div class="admin-v2-social-list">{registration.instagram && <a href={registration.instagram.startsWith('http') ? registration.instagram : 'https://instagram.com/' + registration.instagram.replace('@', '')} target="_blank" rel="noreferrer"><span>Instagram</span><strong>{registration.instagram}</strong><AdminIcon name="external" /></a>}{registration.tiktok && <a href={registration.tiktok.startsWith('http') ? registration.tiktok : 'https://tiktok.com/@' + registration.tiktok.replace('@', '')} target="_blank" rel="noreferrer"><span>TikTok</span><strong>{registration.tiktok}</strong><AdminIcon name="external" /></a>}{!registration.instagram && !registration.tiktok && <div class="admin-v2-inline-empty">Nenhuma rede informada.</div>}</div></section>
+        {registration.guardian && <section class="admin-v2-card"><div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Menor</p><h2>Responsável</h2></div></div><p class="admin-v2-side-person"><strong>{registration.guardian.fullName}</strong><span>{registration.guardian.relationship} · {registration.guardian.phone}</span></p><span class:list={['admin-v2-status', 'status-' + (registration.minorAuthorization?.status ?? 'pending')]}>{registration.minorAuthorization?.status ?? 'Sem autorização'}</span></section>}
+      </aside>
+    </div>
+
+    <div class="admin-v2-copy-grid">
+      <section id="cosplay" class="admin-v2-card"><div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Identidade</p><h2>Cosplay</h2></div></div><div class="admin-v2-long-field"><span>Descrição do Cosplay</span><p>{cosplay.cosplayDescription || 'Não informado.'}</p></div></section>
+      <section id="apresentacao" class="admin-v2-card"><div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Palco</p><h2>Apresentação</h2></div></div><div class="admin-v2-long-field"><span>Descrição da apresentação</span><p>{cosplay.presentationDescription || 'Não informado.'}</p></div><div class="admin-v2-long-field"><span>Observações da apresentação</span><p>{cosplay.presentationNotes || 'Não informado.'}</p></div><div class="admin-v2-long-field"><span>Notas técnicas</span><p>{cosplay.technicalNotes || 'Não informado.'}</p></div><div class="admin-v2-long-field"><span>Observações para jurados</span><p>{cosplay.judgeNotes || 'Não informado.'}</p></div></section>
+    </div>
+
+    <div class="admin-v2-detail-grid admin-v2-detail-grid-lower">
+      <section id="referencias" class="admin-v2-card"><div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Material visual</p><h2>Referências <span class="admin-v2-heading-count">{refs.length}</span></h2></div></div>{refs.length ? <div class="admin-v2-reference-grid">{refs.map((file, index) => <a class="admin-v2-reference-card" href={driveFileUrl(file.driveFileId) ?? '#'} target={file.driveFileId ? '_blank' : undefined} rel={file.driveFileId ? 'noreferrer' : undefined}><span class="admin-v2-reference-number">0{index + 1}</span><strong>{file.originalName}</strong><small>{file.mimeType} · {(file.sizeBytes / 1024).toFixed(0)} KB</small><span>{file.driveFileId ? 'Abrir no Drive' : 'Aguardando sincronização'} <AdminIcon name={file.driveFileId ? 'external' : 'arrow'} /></span></a>)}</div> : <div class="admin-v2-empty admin-v2-empty-compact"><strong>Nenhuma referência enviada.</strong><p>O participante ainda não anexou imagens de referência.</p></div>}</section>
+      <section id="audio" class="admin-v2-card"><div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Trilha da apresentação</p><h2>Áudio</h2></div></div>{audio ? <div class="admin-v2-audio-card"><span class="admin-v2-audio-icon"><AdminIcon name="spark" /></span><div><strong>{audio.originalName}</strong><small>{audio.mimeType} · {(audio.sizeBytes / 1024 / 1024).toFixed(2)} MB · {audio.syncStatus}</small></div>{audio.driveFileId && <audio class="admin-v2-audio-player" controls preload="metadata" src={'/api/admin/files/' + audio.id}>Seu navegador não suporta o player de áudio.</audio>}{driveFileUrl(audio.driveFileId) && <a class="admin-button admin-button-secondary" href={driveFileUrl(audio.driveFileId)!} target="_blank" rel="noreferrer">Abrir <AdminIcon name="external" /></a>}</div> : <div class="admin-v2-empty admin-v2-empty-compact"><strong>Nenhum áudio enviado.</strong><p>Esta pendência também aparece no dashboard.</p></div>}</section>
+    </div>
+
+    <section id="documentacao" class="admin-v2-card"><div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Conferência</p><h2>Documentação e versões</h2><p>Arquivos de inscrição, autorização e ficha gerada pelo sistema.</p></div></div>{documentFiles.length ? <div class="admin-v2-file-list">{documentFiles.map((file) => <div class="admin-v2-file-row"><span class="admin-v2-file-icon"><AdminIcon name="folder" /></span><span><strong>{fileLabel(file.fileType)}</strong><small>{file.originalName} · {file.syncStatus} · atualizado em {formatAdminDate(file.updatedAt)}</small></span>{driveFileUrl(file.driveFileId) && <a href={driveFileUrl(file.driveFileId)!} target="_blank" rel="noreferrer" class="admin-v2-icon-link"><AdminIcon name="external" /></a>}</div>)}</div> : <div class="admin-v2-inline-empty">Nenhum documento adicional registrado.</div>}</section>
+  </div>
+</AdminLayout>

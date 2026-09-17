@@ -1,119 +1,177 @@
 ---
 import AdminIcon from '../../components/admin/AdminIcon.astro';
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import AdminQuickAction from '../../components/admin/AdminQuickAction.astro';
-import AdminStatCard from '../../components/admin/AdminStatCard.astro';
-import AdminStatusCard from '../../components/admin/AdminStatusCard.astro';
+import {
+  formatAdminDate,
+  getAdminDashboardData,
+  getAdminServiceStatus
+} from '../../lib/server/admin/data';
 
 const admin = Astro.locals.admin;
 if (!admin) return Astro.redirect('/admin/login');
 if (admin.mustChangePassword) return Astro.redirect('/admin/account/password');
 
-const stats = [
-  { label: 'Total de inscrições', value: '0', hint: 'base geral', accent: 'yellow', icon: 'clipboard' },
-  { label: 'Inscrições de Cosplay', value: '0', hint: 'modalidade', accent: 'magenta', icon: 'spark' },
-  { label: 'Menores de idade', value: '0', hint: 'participantes', accent: 'cyan', icon: 'shield' },
-  { label: 'Autorizações pendentes', value: '0', hint: 'atenção', accent: 'red', icon: 'folder' },
-] as const;
+const data = await getAdminDashboardData();
+const services = getAdminServiceStatus();
+const pendingTotal = data.attention.authorizations + data.attention.physical + data.attention.driveErrors + data.attention.cosplayWithoutAudio;
+
+const statusLabel = (status: string) => ({
+  pending: 'Pendente',
+  synced: 'Sincronizada',
+  failed: 'Falha',
+  cancelled: 'Cancelada'
+}[status] ?? status);
+
+const formatCount = (value: number) => value.toLocaleString('pt-BR');
 ---
 
 <AdminLayout
-  title="Painel administrativo | Family Game Festival"
-  subtitle="Visão geral do evento e da operação administrativa."
+  title="Dashboard | Family Game Festival"
+  subtitle="Acompanhe inscrições, vagas e pendências do evento."
   admin={admin}
-  action={{ label: 'Trocar senha', href: '/admin/account/password' }}
+  action={{ label: 'Ver inscrições', href: '/admin/inscricoes' }}
+  notificationCount={pendingTotal}
 >
-  <div class="admin-dashboard">
-    <section class="admin-dashboard-intro" aria-labelledby="admin-welcome-title">
-      <div class="admin-dashboard-intro-copy">
-        <p class="admin-eyebrow">Family Game Festival 2026 · visão geral</p>
-        <h2 id="admin-welcome-title">Olá, {admin.displayName}.</h2>
-        <p>Este é o ponto de partida para acompanhar a operação do Family Game Festival e preparar as próximas etapas do painel.</p>
+  <div class="admin-v2-page admin-v2-dashboard">
+    <section class="admin-v2-hero">
+      <div>
+        <p class="admin-eyebrow">Family Game Festival 2026 · operação</p>
+        <h2>Olá, {admin.displayName}.</h2>
+        <p>Uma visão rápida do que entrou, do que precisa de atenção e de como estão as competições.</p>
       </div>
-      <div class="admin-event-chip">
-        <span class="admin-event-chip-label">Próxima edição</span>
-        <strong>19–20 SET</strong>
-        <span class="admin-event-chip-label">Bauru · SP</span>
-      </div>
-    </section>
-
-    <section id="inscricoes" class="admin-panel-section" aria-labelledby="admin-summary-title">
-      <div class="admin-section-heading">
-        <div>
-          <p class="admin-section-kicker">Resumo operacional</p>
-          <h2 id="admin-summary-title">Panorama do painel</h2>
-        </div>
-        <p>Os indicadores serão preenchidos pelas inscrições do evento.</p>
-      </div>
-      <div class="admin-stat-grid">
-        {stats.map((stat) => <AdminStatCard {...stat} />)}
+      <div class="admin-v2-hero-date">
+        <span>Próxima edição</span>
+        <strong>19—20 SET</strong>
+        <small>Bauru · SP</small>
       </div>
     </section>
 
-    <div class="admin-dashboard-grid">
-      <section id="cosplay" class="admin-panel" aria-labelledby="admin-shortcuts-title">
-        <div class="admin-panel-header">
+    <section class="admin-v2-kpi-grid" aria-label="Indicadores principais">
+      <a class="admin-v2-kpi kpi-yellow" href="/admin/inscricoes">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="clipboard" /></span>
+        <span class="admin-v2-kpi-value">{formatCount(data.stats.total)}</span>
+        <span class="admin-v2-kpi-label">Inscrições totais</span>
+        <small>Base ativa do evento</small>
+      </a>
+      <a class="admin-v2-kpi kpi-cyan" href="/admin/inscricoes?today=1">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="arrow" /></span>
+        <span class="admin-v2-kpi-value">{formatCount(data.stats.today)}</span>
+        <span class="admin-v2-kpi-label">Entraram hoje</span>
+        <small>Por data de envio</small>
+      </a>
+      <a class="admin-v2-kpi kpi-magenta" href="/admin/menores">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="shield" /></span>
+        <span class="admin-v2-kpi-value">{formatCount(data.stats.minors)}</span>
+        <span class="admin-v2-kpi-label">Participantes menores</span>
+        <small>Responsável necessário</small>
+      </a>
+      <a class="admin-v2-kpi kpi-red" href="/admin/menores?status=pending">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="folder" /></span>
+        <span class="admin-v2-kpi-value">{formatCount(data.stats.pendingAuthorizations)}</span>
+        <span class="admin-v2-kpi-label">Autorizações pendentes</span>
+        <small>Requerem acompanhamento</small>
+      </a>
+      <a class="admin-v2-kpi kpi-purple" href="/admin/inscricoes?full=1">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="grid" /></span>
+        <span class="admin-v2-kpi-value">{formatCount(data.stats.fullCompetitions)}</span>
+        <span class="admin-v2-kpi-label">Competições cheias</span>
+        <small>Limite alcançado</small>
+      </a>
+      <a class="admin-v2-kpi kpi-green" href="/admin/inscricoes">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="spark" /></span>
+        <span class="admin-v2-kpi-value">{formatCount(data.stats.remainingSlots)}</span>
+        <span class="admin-v2-kpi-label">Vagas restantes</span>
+        <small>Somatório das modalidades</small>
+      </a>
+    </section>
+
+    <div class="admin-v2-dashboard-grid">
+      <section class="admin-v2-card admin-v2-chart-card" aria-labelledby="competition-pulse-title">
+        <div class="admin-v2-card-heading">
           <div>
-            <p class="admin-section-kicker">Navegação rápida</p>
-            <h2 id="admin-shortcuts-title">Acesse uma área</h2>
-            <p>Organize o trabalho por frente de operação.</p>
+            <p class="admin-section-kicker">Capacidade</p>
+            <h2 id="competition-pulse-title">Ocupação por competição</h2>
+            <p>Dados reais do banco · clique em uma modalidade para abrir a lista.</p>
           </div>
-          <span class="admin-panel-header-icon"><AdminIcon name="arrow" /></span>
+          <span class="admin-v2-card-mark">{data.competitions.length}</span>
         </div>
-        <div class="admin-quick-grid">
-          <AdminQuickAction title="Inscrições" description="Acompanhar entradas" href="/admin#inscricoes" accent="yellow" icon="clipboard" />
-          <AdminQuickAction title="Cosplay" description="Concurso e arquivos" href="/admin#cosplay" accent="magenta" icon="spark" />
-          <AdminQuickAction title="Menores" description="Autorizações" href="/admin#menores" accent="cyan" icon="shield" />
-          <AdminQuickAction title="Documentos" description="Arquivos do evento" href="/admin#documentos" accent="red" icon="folder" />
+        <div class="admin-v2-competition-chart">
+          {data.competitions.map((competition) => (
+            <a class="admin-v2-competition-row" href={'/admin/inscricoes?competition=' + competition.id}>
+              <span class="admin-v2-competition-name">
+                <strong>{competition.title}</strong>
+                <small>{competition.category}</small>
+              </span>
+              <span class="admin-v2-bar"><span style={'width: ' + Math.min(100, competition.capacity ? (competition.enrolled / competition.capacity) * 100 : 0) + '%'}></span></span>
+              <span class="admin-v2-competition-count"><strong>{competition.enrolled}</strong><small>/{competition.capacity}</small></span>
+            </a>
+          ))}
         </div>
       </section>
 
-      <section id="documentos" class="admin-panel" aria-labelledby="admin-status-title">
-        <div class="admin-panel-header">
+      <section class="admin-v2-card" aria-labelledby="attention-title">
+        <div class="admin-v2-card-heading">
           <div>
-            <p class="admin-section-kicker">Infraestrutura</p>
-            <h2 id="admin-status-title">Status do sistema</h2>
-            <p>Serviços usados pela operação administrativa.</p>
+            <p class="admin-section-kicker">Fila de trabalho</p>
+            <h2 id="attention-title">Pendências</h2>
           </div>
-          <span class="admin-auth-status"><span class="admin-auth-status-dot" aria-hidden="true"></span>Online</span>
+          <span class:list={['admin-v2-count-badge', { 'is-clear': pendingTotal === 0 }]}>{pendingTotal}</span>
         </div>
-        <div class="admin-status-list">
-          <AdminStatusCard label="Banco de dados" value="Conectado" description="Turso · conexão ativa" state="connected" icon="grid" />
-          <AdminStatusCard label="Google Drive" value="Conectado" description="OAuth server-side configurado" state="connected" icon="folder" />
-          <AdminStatusCard label="Sessão administrativa" value="Ativa" description="Acesso validado com segurança" state="active" icon="lock" />
-          <AdminStatusCard label="Ambiente" value="Desenvolvimento" description="Branch feature/admin-panel" state="local" icon="settings" />
+        <div class="admin-v2-attention-list">
+          <a href="/admin/menores?status=pending"><span class="attention-icon attention-red"><AdminIcon name="shield" /></span><span><strong>Autorizações de menores</strong><small>Documentos sem assinatura validada</small></span><b>{data.attention.authorizations}</b></a>
+          <a href="/admin/menores?status=physical_pending"><span class="attention-icon attention-yellow"><AdminIcon name="folder" /></span><span><strong>Entrega física</strong><small>Aguardando conferência no evento</small></span><b>{data.attention.physical}</b></a>
+          <a href="/admin/inscricoes?status=drive_failed"><span class="attention-icon attention-magenta"><AdminIcon name="folder" /></span><span><strong>Sincronização de arquivos</strong><small>Falhas registradas pelo Drive</small></span><b>{data.attention.driveErrors}</b></a>
+          <a href="/admin/cosplay?status=without_audio"><span class="attention-icon attention-cyan"><AdminIcon name="spark" /></span><span><strong>Cosplay sem áudio</strong><small>Arquivo ainda não localizado</small></span><b>{data.attention.cosplayWithoutAudio}</b></a>
         </div>
       </section>
     </div>
 
-    <section id="menores" class="admin-panel admin-next-steps" aria-labelledby="admin-next-steps-title">
-      <div class="admin-panel-header">
-        <div>
-          <p class="admin-section-kicker">Acompanhamento</p>
-          <h2 id="admin-next-steps-title">Próximas etapas</h2>
-          <p>O painel está preparado para receber os módulos operacionais.</p>
+    <div class="admin-v2-dashboard-grid admin-v2-dashboard-grid-lower">
+      <section class="admin-v2-card" aria-labelledby="latest-title">
+        <div class="admin-v2-card-heading">
+          <div>
+            <p class="admin-section-kicker">Movimentação</p>
+            <h2 id="latest-title">Últimas inscrições</h2>
+          </div>
+          <a class="admin-v2-text-link" href="/admin/inscricoes">Ver todas <AdminIcon name="arrow" /></a>
         </div>
-      </div>
-      <ul class="admin-next-steps-list">
-        <li class="admin-next-step">
-          <span class="admin-next-step-mark">01</span>
-          <span class="admin-next-step-copy"><strong>Inscrições públicas</strong><small>Conectar os fluxos de cadastro às modalidades do festival.</small></span>
-          <span class="admin-next-step-status">Em preparação</span>
-        </li>
-        <li class="admin-next-step">
-          <span class="admin-next-step-mark">02</span>
-          <span class="admin-next-step-copy"><strong>Documentos e arquivos</strong><small>Organizar os materiais recebidos por participante no Drive.</small></span>
-          <span class="admin-next-step-status">Planejado</span>
-        </li>
-        <li class="admin-next-step">
-          <span class="admin-next-step-mark">03</span>
-          <span class="admin-next-step-copy"><strong>Autorizações</strong><small>Revisar pendências de menores e consentimentos.</small></span>
-          <span class="admin-next-step-status">Planejado</span>
-        </li>
-      </ul>
-      <div id="configuracoes" class="admin-panel-footer-link">
-        <a class="admin-inline-link" href="/admin/account/password">Gerenciar segurança da conta <AdminIcon name="arrow" /></a>
-      </div>
-    </section>
+        {data.latest.length ? (
+          <div class="admin-v2-table-wrap">
+            <table class="admin-v2-table">
+              <thead><tr><th>Código</th><th>Participante</th><th>Competição</th><th>Envio</th><th>Status</th></tr></thead>
+              <tbody>
+                {data.latest.map((row) => (
+                  <tr>
+                    <td><a href={'/admin/inscricoes/' + row.registrationId} class="admin-v2-code">{row.publicCode ?? '—'}</a></td>
+                    <td><a href={'/admin/inscricoes/' + row.registrationId}><strong>{row.fullName}</strong><small>{row.isMinor ? 'Menor de idade' : 'Maior de idade'}</small></a></td>
+                    <td>{row.competitionTitle}</td>
+                    <td>{formatAdminDate(row.submittedAt ?? row.registrationCreatedAt)}</td>
+                    <td><span class:list={['admin-v2-status', 'status-' + row.status]}>{statusLabel(row.status)}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div class="admin-v2-empty"><span class="admin-v2-empty-icon"><AdminIcon name="clipboard" /></span><strong>Nenhuma inscrição registrada ainda.</strong><p>Quando uma inscrição real entrar, ela aparecerá aqui com código, modalidade e status.</p><a href="/admin/inscricoes">Abrir central de inscrições <AdminIcon name="arrow" /></a></div>
+        )}
+      </section>
+
+      <section id="admin-status" class="admin-v2-card" aria-labelledby="system-title">
+        <div class="admin-v2-card-heading">
+          <div>
+            <p class="admin-section-kicker">Saúde da operação</p>
+            <h2 id="system-title">Status do sistema</h2>
+          </div>
+          <span class="admin-v2-live"><i></i>Ativo</span>
+        </div>
+        <div class="admin-v2-system-list">
+          <div><span class="system-icon"><AdminIcon name="grid" /></span><span><strong>Turso</strong><small>Banco de dados</small></span><b class:list={{ 'is-ok': services.turso }}>{services.turso ? 'Conectado' : 'Indisponível'}</b></div>
+          <div><span class="system-icon"><AdminIcon name="folder" /></span><span><strong>Google Drive</strong><small>Arquivos e documentos</small></span><b class:list={{ 'is-ok': services.drive }}>{services.drive ? 'Configurado' : 'Indisponível'}</b></div>
+          <div><span class="system-icon"><AdminIcon name="lock" /></span><span><strong>Sessão administrativa</strong><small>Acesso autenticado</small></span><b class="is-ok">Ativa</b></div>
+          <div><span class="system-icon"><AdminIcon name="arrow" /></span><span><strong>Última sincronização</strong><small>Registro mais recente confirmado</small></span><b>{data.latestSyncAt ? formatAdminDate(data.latestSyncAt) : 'Nenhuma ainda'}</b></div>
+        </div>
+      </section>
+    </div>
   </div>
 </AdminLayout>

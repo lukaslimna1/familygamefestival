@@ -1,0 +1,124 @@
+---
+import AdminIcon from '../../../components/admin/AdminIcon.astro';
+import AdminSelect from '../../../components/admin/AdminSelect.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import {
+  formatAdminDate,
+  getAdminCompetitionSummaries,
+  listAdminRegistrations
+} from '../../../lib/server/admin/data';
+
+const admin = Astro.locals.admin;
+if (!admin) return Astro.redirect('/admin/login');
+if (admin.mustChangePassword) return Astro.redirect('/admin/account/password');
+
+const query = Astro.url.searchParams;
+const search = query.get('q') ?? '';
+const competitionId = query.get('competition') ?? '';
+const age = query.get('age') === 'minor' || query.get('age') === 'adult' ? query.get('age') as 'minor' | 'adult' : '';
+const requestedStatus = query.get('status') ?? '';
+const registrationDate = query.get('date') ?? '';
+const dbStatus = ['pending', 'synced', 'failed', 'cancelled'].includes(requestedStatus) ? requestedStatus : undefined;
+const [competitions, initialRows] = await Promise.all([
+  getAdminCompetitionSummaries(),
+  listAdminRegistrations({ competitionId: competitionId || undefined, search, status: dbStatus, age: age || undefined, limit: 1000 })
+]);
+let rows = initialRows;
+rows = rows.filter((row) => row.competitionId !== 'cosplay');
+
+if (requestedStatus === 'drive_failed') rows = rows.filter((row) => row.hasDriveIssue);
+if (requestedStatus === 'needs_attention') rows = rows.filter((row) => row.needsAttention);
+if (query.get('full') === '1') {
+  const fullIds = new Set(competitions.filter((competition) => competition.full).map((competition) => competition.id));
+  rows = rows.filter((row) => fullIds.has(row.competitionId));
+}
+if (query.get('today') === '1') {
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date());
+  rows = rows.filter((row) => {
+    const value = row.submittedAt ?? row.registrationCreatedAt;
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date(value)) === today;
+  });
+}
+if (registrationDate) {
+  rows = rows.filter((row) => {
+    const value = row.submittedAt ?? row.registrationCreatedAt;
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date(value)) === registrationDate;
+  });
+}
+
+const commonCompetitions = competitions.filter((competition) => competition.type !== 'cosplay');
+const competitionOptions = [{ value: '', label: 'Todas as competições' }, ...commonCompetitions.map((competition) => ({ value: competition.id, label: competition.title }))];
+const ageOptions = [{ value: '', label: 'Maior ou menor' }, { value: 'adult', label: 'Maior de idade' }, { value: 'minor', label: 'Menor de idade' }];
+const statusOptions = [{ value: '', label: 'Todos os status' }, { value: 'needs_attention', label: 'Atualização necessária' }, { value: 'pending', label: 'Pendente' }, { value: 'synced', label: 'Sincronizada' }, { value: 'failed', label: 'Falha' }, { value: 'drive_failed', label: 'Falha de arquivo' }];
+const pendingCount = rows.filter((row) => row.needsAttention).length;
+const statusLabel = (status: string) => ({ pending: 'Pendente', synced: 'Sincronizada', failed: 'Falha', cancelled: 'Cancelada' }[status] ?? status);
+const fieldValue = (value: string) => value || '';
+---
+
+<AdminLayout
+  title="Inscrições | Family Game Festival"
+  subtitle="Central de acompanhamento das modalidades comuns."
+  admin={admin}
+  search={{ action: '/admin/inscricoes', value: search, placeholder: 'Buscar nome, CPF ou código' }}
+  notificationCount={pendingCount}
+>
+  <div class="admin-v2-page">
+    <section class="admin-v2-page-intro">
+      <div>
+        <p class="admin-eyebrow">Operação · modalidades comuns</p>
+        <h2>Inscrições</h2>
+        <p>Consulte participantes, situação da inscrição e origem dos documentos em uma única fila de trabalho.</p>
+      </div>
+      <div class="admin-v2-intro-meta"><strong>{rows.length}</strong><span>resultado{rows.length === 1 ? '' : 's'} nesta visão</span></div>
+    </section>
+
+    <section class="admin-v2-competition-strip" aria-label="Competições comuns">
+      {commonCompetitions.map((competition) => (
+        <a class:list={['admin-v2-competition-card', { 'is-selected': competition.id === competitionId }]} href={'/admin/inscricoes?competition=' + competition.id}>
+          <span><small>{competition.category}</small><strong>{competition.title}</strong></span>
+          <b>{competition.enrolled}<small>/{competition.capacity}</small></b>
+          <i><span style={'width: ' + Math.min(100, competition.capacity ? competition.enrolled / competition.capacity * 100 : 0) + '%'}></span></i>
+        </a>
+      ))}
+    </section>
+
+    <section class="admin-v2-card admin-v2-filter-card" aria-label="Filtros de inscrições">
+      <form class="admin-v2-filter-form" method="get">
+        <label class="admin-v2-filter-wide">Busca<input name="q" value={fieldValue(search)} placeholder="Nome, CPF ou código" /></label>
+        <AdminSelect name="competition" label="Competição" options={competitionOptions} value={competitionId} />
+        <AdminSelect name="age" label="Perfil" options={ageOptions} value={age} />
+        <AdminSelect name="status" label="Status" options={statusOptions} value={requestedStatus} />
+        <label>Data da inscrição<input name="date" type="date" value={registrationDate} /></label>
+        <button class="admin-button admin-button-primary" type="submit">Aplicar filtros</button>
+        <a class="admin-button admin-button-secondary" href="/admin/inscricoes">Limpar</a>
+      </form>
+      <p class="admin-v2-filter-note"><AdminIcon name="spark" /> Cosplay possui uma área especializada própria e não aparece nesta lista.</p>
+    </section>
+
+    <section class="admin-v2-card" aria-labelledby="registrations-list-title">
+      <div class="admin-v2-card-heading">
+        <div><p class="admin-section-kicker">Fila operacional</p><h2 id="registrations-list-title">Participantes inscritos</h2></div>
+        <span class="admin-v2-count-badge">{rows.length}</span>
+      </div>
+      {rows.length ? (
+        <div class="admin-v2-table-wrap">
+          <table class="admin-v2-table admin-v2-registration-table">
+            <thead><tr><th>Código</th><th>Participante</th><th>Competição</th><th>Perfil</th><th>Atualização</th><th>Status</th></tr></thead>
+            <tbody>{rows.map((row) => (
+              <tr>
+                <td><a class="admin-v2-code" href={'/admin/inscricoes/' + row.registrationId}>{row.publicCode ?? '—'}</a></td>
+                <td><a href={'/admin/inscricoes/' + row.registrationId}><strong>{row.fullName}</strong><small>{row.city} · {row.state}</small></a></td>
+                <td><span class="admin-v2-competition-tag">{row.competitionTitle}</span><small>{row.competitionCategory}</small></td>
+                <td><span class:list={['admin-v2-age-badge', row.isMinor ? 'is-minor' : 'is-adult']}>{row.isMinor ? 'Menor' : 'Maior'} · {row.age}</span></td>
+                <td>{formatAdminDate(row.registrationUpdatedAt)}</td>
+                <td><span class:list={['admin-v2-status', 'status-' + row.status]}>{statusLabel(row.status)}</span>{row.hasDriveIssue && <small class="admin-v2-alert-text">Arquivo com falha</small>}</td>
+              </tr>
+            ))}</tbody>
+          </table>
+        </div>
+      ) : (
+        <div class="admin-v2-empty"><span class="admin-v2-empty-icon"><AdminIcon name="clipboard" /></span><strong>Nenhuma inscrição encontrada.</strong><p>Não há dados reais para os filtros atuais. Tente limpar a busca ou aguarde novas inscrições.</p><a href="/admin/inscricoes">Voltar para todas <AdminIcon name="arrow" /></a></div>
+      )}
+    </section>
+  </div>
+</AdminLayout>

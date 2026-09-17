@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import '../styles/admin.css';
+import '../styles/admin-v2.css';
 import AdminSidebar from '../components/admin/AdminSidebar.astro';
 import AdminTopbar from '../components/admin/AdminTopbar.astro';
 
@@ -16,6 +17,8 @@ interface Props {
   admin?: AdminIdentity | null;
   navigation?: boolean;
   action?: { label: string; href: string };
+  search?: { action: string; value?: string; placeholder?: string };
+  notificationCount?: number;
 }
 
 const {
@@ -24,6 +27,8 @@ const {
   admin,
   navigation = true,
   action,
+  search,
+  notificationCount = 0,
 } = Astro.props;
 const showNavigation = Boolean(navigation && admin);
 const activePath = Astro.url.pathname;
@@ -42,9 +47,10 @@ const activePath = Astro.url.pathname;
   <body class:list={['admin-body', { 'admin-auth-body': !showNavigation }]}> 
     {showNavigation ? (
       <div class="admin-app">
+        <div class="admin-navigation-progress" data-admin-navigation-progress aria-hidden="true"></div>
         <AdminSidebar admin={admin!} activePath={activePath} />
         <div class="admin-main">
-          <AdminTopbar title={title.replace(' | Family Game Festival', '')} subtitle={subtitle} action={action} admin={admin!} />
+          <AdminTopbar title={title.replace(' | Family Game Festival', '')} subtitle={subtitle} action={action} admin={admin!} search={search} notificationCount={notificationCount} />
           <main class="admin-content">
             <slot />
           </main>
@@ -76,9 +82,95 @@ const activePath = Astro.url.pathname;
       adminSidebar?.querySelectorAll('a').forEach((link) => {
         link.addEventListener('click', () => setAdminMenuOpen(false));
       });
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') setAdminMenuOpen(false);
+
+      const adminSelects = [...document.querySelectorAll('[data-admin-select]')];
+      const closeAdminSelect = (select) => {
+        const trigger = select.querySelector('[data-admin-select-trigger]');
+        const menu = select.querySelector('[data-admin-select-menu]');
+        select.classList.remove('is-open', 'is-open-up');
+        menu.hidden = true;
+        trigger.setAttribute('aria-expanded', 'false');
+      };
+      const closeOtherAdminSelects = (current) => {
+        adminSelects.filter((select) => select !== current).forEach(closeAdminSelect);
+      };
+      const openAdminSelect = (select) => {
+        const trigger = select.querySelector('[data-admin-select-trigger]');
+        const menu = select.querySelector('[data-admin-select-menu]');
+        closeOtherAdminSelects(select);
+        select.classList.add('is-open');
+        select.classList.remove('is-open-up');
+        menu.hidden = false;
+        trigger.setAttribute('aria-expanded', 'true');
+        const triggerBox = trigger.getBoundingClientRect();
+        const roomBelow = window.innerHeight - triggerBox.bottom;
+        const roomAbove = triggerBox.top;
+        if (roomBelow < Math.min(280, menu.scrollHeight + 24) && roomAbove > roomBelow) select.classList.add('is-open-up');
+        const selected = menu.querySelector('[aria-selected="true"]');
+        selected?.scrollIntoView({ block: 'nearest' });
+      };
+
+      adminSelects.forEach((select) => {
+        const trigger = select.querySelector('[data-admin-select-trigger]');
+        const menu = select.querySelector('[data-admin-select-menu]');
+        const input = select.querySelector('[data-admin-select-input]');
+        const label = select.querySelector('[data-admin-select-label]');
+        const options = [...menu.querySelectorAll('[role="option"]')];
+        const focusOption = (index) => options[Math.max(0, Math.min(index, options.length - 1))]?.focus();
+
+        trigger.addEventListener('click', () => {
+          if (trigger.getAttribute('aria-expanded') === 'true') closeAdminSelect(select);
+          else openAdminSelect(select);
+        });
+        trigger.addEventListener('keydown', (event) => {
+          if (['Enter', ' ', 'ArrowDown', 'ArrowUp'].includes(event.key)) {
+            event.preventDefault();
+            openAdminSelect(select);
+            focusOption(event.key === 'ArrowUp' ? options.length - 1 : options.findIndex((option) => option.getAttribute('aria-selected') === 'true'));
+          }
+        });
+        options.forEach((option, index) => {
+          option.addEventListener('click', () => {
+            input.value = option.dataset.value ?? '';
+            label.textContent = option.textContent.trim();
+            options.forEach((item) => item.setAttribute('aria-selected', item === option ? 'true' : 'false'));
+            closeAdminSelect(select);
+            trigger.focus();
+          });
+          option.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowDown') { event.preventDefault(); focusOption(index + 1); }
+            if (event.key === 'ArrowUp') { event.preventDefault(); focusOption(index - 1); }
+            if (event.key === 'Home') { event.preventDefault(); focusOption(0); }
+            if (event.key === 'End') { event.preventDefault(); focusOption(options.length - 1); }
+            if (event.key === 'Escape') { event.preventDefault(); closeAdminSelect(select); trigger.focus(); }
+            if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); option.click(); }
+          });
+        });
       });
+
+      document.addEventListener('click', (event) => {
+        if (!event.target.closest('[data-admin-select]')) adminSelects.forEach(closeAdminSelect);
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          setAdminMenuOpen(false);
+          adminSelects.forEach(closeAdminSelect);
+        }
+      });
+
+      const navigationProgress = document.querySelector('[data-admin-navigation-progress]');
+      const showNavigationProgress = () => navigationProgress?.classList.add('is-visible');
+      const hideNavigationProgress = () => navigationProgress?.classList.remove('is-visible');
+      document.addEventListener('click', (event) => {
+        const target = event.target;
+        const link = target instanceof Element ? target.closest('a') : null;
+        if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target === '_blank' || link.hasAttribute('download')) return;
+        const destination = new URL(link.href, window.location.href);
+        if (destination.origin !== window.location.origin || (destination.pathname === window.location.pathname && destination.search === window.location.search)) return;
+        showNavigationProgress();
+      });
+      window.addEventListener('pageshow', hideNavigationProgress);
+      window.setTimeout(hideNavigationProgress, 12_000);
     </script>
   </body>
 </html>
