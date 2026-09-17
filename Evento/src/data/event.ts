@@ -91,7 +91,7 @@ export const guests = [
     highlight: 'Painel, fotos, autógrafos e interação com o público · 19/09'
   },
   {
-    name: 'Héliades Cosplay',
+    name: 'Hélia de Cosplay',
     slug: 'heliades',
     handle: '@heliadescosplay',
     instagramUrl: 'https://www.instagram.com/heliadescosplay/',
