@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SnapHeader from '../components/SnapHeader.astro';
+import { snapConfig } from '../data/snap';
+import { snapPwa } from '../config/snap';
+import '../styles/snap-v2.css';
+---
+
+<BaseLayout
+  title="FGF Snap | Family Game Festival 2026"
+  description={snapPwa.description}
+  manifest="/snap/manifest.webmanifest"
+>
+  <main class="snap-v2-shell">
+    <SnapHeader />
+
+    <section class="snap-v2-hero" aria-labelledby="snap-home-title">
+      <div class="snap-v2-hero-copy">
+        <p class="snap-v2-eyebrow">ATIVAÇÃO OFICIAL · FGF 2026</p>
+        <h1 id="snap-home-title">Viva o festival.<br /><em>Crie seu Snap.</em></h1>
+        <p class="snap-v2-lede">Escolha uma experiência, coloque o mascote do seu jeito e compartilhe seu momento no Family Game Festival.</p>
+        <p class="snap-v2-note">Fotos e composições ficam no seu dispositivo. Nada é enviado para o servidor.</p>
+      </div>
+      <div class="snap-v2-hero-art" aria-hidden="true">
+        <div class="snap-v2-art-grid"></div>
+        <span class="snap-v2-art-tag">#FAMILYGAMEFESTIVAL2026</span>
+        <img src="/assets/mascots/icon-mascote.png" alt="" width="500" height="500" />
+        <strong>SEU MOMENTO<br /><b>DO SEU JEITO</b></strong>
+      </div>
+    </section>
+
+    <section class="snap-v2-feature-grid" aria-label="Experiências do FGF Snap">
+      <a class="snap-v2-feature-card snap-v2-feature-card-yellow" href="/snap/foto">
+        <span class="snap-v2-feature-number">01</span>
+        <div><p class="snap-v2-eyebrow">EDITOR LOCAL</p><h2>Criar sua foto</h2><p>Capture ou escolha uma foto, aplique moldura, mascote e figurinhas.</p></div>
+        <span class="snap-v2-feature-arrow" aria-hidden="true">↗</span>
+      </a>
+      <a class="snap-v2-feature-card snap-v2-feature-card-cyan" href="/snap/ar">
+        <span class="snap-v2-feature-number">02</span>
+        <div><p class="snap-v2-eyebrow">EXPERIÊNCIA 3D</p><h2>Mascote em AR</h2><p>Veja o mascote em realidade aumentada direto no celular.</p></div>
+        <span class="snap-v2-feature-arrow" aria-hidden="true">↗</span>
+      </a>
+      <a class="snap-v2-feature-card snap-v2-feature-card-pink" href="/snap/figurinhas">
+        <span class="snap-v2-feature-number">03</span>
+        <div><p class="snap-v2-eyebrow">GALERIA OFICIAL</p><h2>Figurinhas oficiais</h2><p>Escolha sua figurinha e descubra os arquivos oficiais do FGF.</p></div>
+        <span class="snap-v2-feature-arrow" aria-hidden="true">↗</span>
+      </a>
+    </section>
+
+    <section class="snap-v2-facts" aria-label="Conteúdo disponível">
+      <div><strong>{snapConfig.modes.length}</strong><span>molduras</span></div>
+      <div><strong>{snapConfig.poses.length}</strong><span>poses do mascote</span></div>
+      <div><strong>{snapConfig.stickers.length}</strong><span>figurinhas oficiais</span></div>
+    </section>
+
+    <footer class="snap-v2-footer"><span>FGF SNAP · FAMILY GAME FESTIVAL 2026</span></footer>
+  </main>
+
+  <script is:inline>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('/snap/sw.js', { scope: '/snap/' }).catch(() => {}));
+    }
+  </script>
+</BaseLayout>

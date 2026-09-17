@@ -1,0 +1,15 @@
+---
+interface Props {
+  back?: boolean;
+}
+
+const { back = false } = Astro.props;
+---
+
+<header class="snap-v2-header">
+  <div class="snap-v2-brand" aria-label="FGF Snap">
+    <img src="/assets/mascots/icon-mascote.png" alt="" width="52" height="52" />
+    <span><strong>FGF SNAP</strong><small>FAMILY GAME FESTIVAL 2026</small></span>
+  </div>
+  {back && <a class="snap-v2-back" href="/snap" aria-label="Voltar ao SNAP">← <span>SNAP</span></a>}
+</header>

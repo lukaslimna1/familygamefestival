@@ -1,0 +1,147 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SnapHeader from '../../components/SnapHeader.astro';
+import { snapConfig } from '../../data/snap';
+import '../../styles/snap-v2.css';
+
+const snapConfigJson = JSON.stringify(snapConfig);
+---
+
+<BaseLayout
+  title="Criar sua foto | FGF Snap"
+  description="Crie uma foto do Family Game Festival com molduras, mascotes e figurinhas oficiais."
+  manifest="/snap/manifest.webmanifest"
+>
+  <main class="snap-v2-shell">
+    <SnapHeader back />
+    <div class="snap-v2-page">
+      <section class="snap-v2-page-heading" aria-labelledby="snap-foto-title">
+        <p class="snap-v2-eyebrow">EDITOR 100% LOCAL</p>
+        <h1 id="snap-foto-title">Crie sua <em>foto.</em></h1>
+        <p>Capture ou escolha uma imagem primeiro. Depois, monte sua composição com liberdade: arraste, aumente, gire, espelhe e remova cada elemento.</p>
+      </section>
+
+      <section class="snap-v2-capture-card snap-v2-panel" data-snap-capture-screen aria-labelledby="snap-capture-title">
+        <div>
+          <p class="snap-v2-eyebrow">1 · ESCOLHA A IMAGEM</p>
+          <h2 id="snap-capture-title">Capture ou use uma foto da galeria</h2>
+          <p class="snap-v2-panel-copy">A imagem permanece neste dispositivo e só é composta quando você tocar em “Editar foto”.</p>
+        </div>
+        <div class="snap-v2-capture-video-wrap">
+          <video data-snap-video autoplay muted playsinline aria-label="Pré-visualização da câmera"></video>
+          <div class="snap-v2-capture-placeholder" data-snap-capture-placeholder>Escolha uma opção para começar</div>
+        </div>
+        <div class="snap-v2-source-row">
+          <button class="snap-v2-button snap-v2-button-primary" type="button" data-snap-start-camera>Usar câmera <span aria-hidden="true">↗</span></button>
+          <button class="snap-v2-button snap-v2-button-outline" type="button" data-snap-upload>Escolher da galeria</button>
+        </div>
+        <button class="snap-v2-button snap-v2-button-outline snap-v2-switch-camera" type="button" data-snap-switch-camera hidden>Trocar câmera</button>
+        <button class="snap-v2-button snap-v2-button-primary snap-v2-capture-button" type="button" data-snap-capture hidden>● Tirar foto e editar</button>
+        <p class="snap-v2-status" data-snap-status aria-live="polite">Nenhuma imagem escolhida.</p>
+      </section>
+
+      <section class="snap-v2-editor-layout" data-snap-editor-screen hidden aria-labelledby="snap-editor-title">
+        <div class="snap-v2-stage-card">
+          <div class="snap-v2-stage-toolbar"><span><strong data-snap-stage-format>STORY</strong> · 1080 × 1920</span><button class="snap-v2-icon-button" type="button" data-snap-change-source>Trocar foto</button></div>
+          <div class="snap-v2-stage-wrap"><div id="snap-editor-stage" aria-label="Editor de foto interativo"></div></div>
+          <p class="snap-v2-stage-tip">Toque em um elemento para selecionar. Arraste para posicionar e use os cantos para redimensionar.</p>
+        </div>
+
+        <aside class="snap-v2-panel" aria-labelledby="snap-editor-title">
+          <div class="snap-v2-panel-section">
+            <p class="snap-v2-eyebrow">2 · MONTE A COMPOSIÇÃO</p>
+            <h2 id="snap-editor-title">Seu Snap</h2>
+          </div>
+
+          <div class="snap-v2-panel-section">
+            <fieldset>
+              <legend>MOLDURA</legend>
+              <div class="snap-v2-frame-row">
+                <button class="snap-v2-frame-chip" type="button" data-snap-frame-id="none" aria-pressed="false"><span>Sem moldura</span></button>
+                {snapConfig.modes.map((mode) => (
+                  <button class="snap-v2-frame-chip" type="button" data-snap-frame-id={mode.id} aria-pressed={mode.id === snapConfig.modes[0].id}>
+                    <img src={mode.frame} alt="" /><span>{mode.label}</span>
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="snap-v2-panel-section">
+            <fieldset>
+              <legend>MASCOTES</legend>
+              <div class="snap-v2-pose-row">
+                {snapConfig.poses.map((pose) => (
+                  <button class="snap-v2-pose-chip" type="button" data-snap-pose-id={pose.id} aria-pressed={pose.id === snapConfig.poses[0].id}>
+                    <img src={pose.asset} alt="" /><span>{pose.label}</span>
+                  </button>
+                ))}
+              </div>
+              <button class="snap-v2-chip" type="button" data-snap-clear-mascots>LIMPAR MASCOTES</button>
+            </fieldset>
+          </div>
+
+          <div class="snap-v2-panel-section">
+            <fieldset>
+              <legend>FIGURINHAS</legend>
+              <div class="snap-v2-sticker-row">
+                <button class="snap-v2-sticker-chip" type="button" data-snap-sticker-id="none" aria-pressed="true"><span>Sem figurinha</span></button>
+                {snapConfig.stickers.map((sticker) => (
+                  <button class="snap-v2-sticker-chip" type="button" data-snap-sticker-id={sticker.id} aria-pressed="false">
+                    <img src={sticker.asset} alt="" /><span>{sticker.label}</span>
+                  </button>
+                ))}
+              </div>
+              <button class="snap-v2-chip" type="button" data-snap-clear-stickers>LIMPAR FIGURINHAS</button>
+            </fieldset>
+          </div>
+
+          <div class="snap-v2-panel-section">
+            <fieldset>
+              <legend>Elemento selecionado</legend>
+              <div class="snap-v2-tool-row">
+                <button class="snap-v2-icon-button" type="button" data-snap-mirror>Espelhar</button>
+                <button class="snap-v2-icon-button" type="button" data-snap-rotate-right>Girar</button>
+                <button class="snap-v2-icon-button" type="button" data-snap-bring-front>Frente</button>
+                <button class="snap-v2-icon-button" type="button" data-snap-send-back>Atrás</button>
+                <button class="snap-v2-icon-button" type="button" data-snap-duplicate>Duplicar</button>
+                <button class="snap-v2-icon-button" type="button" data-snap-delete>Excluir</button>
+              </div>
+              <div class="snap-v2-range"><label for="snap-element-size">Tamanho</label><output data-snap-element-size-value>—</output><input id="snap-element-size" type="range" min="10" max="180" value="70" data-snap-element-size /></div>
+            </fieldset>
+          </div>
+
+          <div class="snap-v2-panel-section">
+            <fieldset>
+              <legend>Formato de exportação</legend>
+              <div class="snap-v2-chip-row">
+                {snapConfig.formats.map((format) => (
+                  <button class="snap-v2-chip" type="button" data-snap-format-id={format.id} aria-pressed={format.id === 'story'}>{format.label} {format.ratio}</button>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+
+          <button class="snap-v2-button snap-v2-button-primary snap-v2-primary-action" type="button" data-snap-export>Gerar meu Snap <span aria-hidden="true">↗</span></button>
+        </aside>
+      </section>
+
+      <section class="snap-v2-result-panel snap-v2-panel" data-snap-result-screen hidden aria-labelledby="snap-result-title">
+        <p class="snap-v2-eyebrow">3 · PRONTO PARA COMPARTILHAR</p>
+        <h2 id="snap-result-title">Seu Snap ficou pronto.</h2>
+        <div class="snap-v2-result-image-wrap"><img data-snap-result alt="Foto composta com elementos do FGF Snap" /></div>
+        <div class="snap-v2-result-actions"><button class="snap-v2-button snap-v2-button-primary" type="button" data-snap-share>Compartilhar <span aria-hidden="true">↗</span></button><button class="snap-v2-button snap-v2-button-outline" type="button" data-snap-download>Salvar no dispositivo</button><button class="snap-v2-button snap-v2-button-outline" type="button" data-snap-edit-again>Editar de novo</button></div>
+      </section>
+
+      <input class="snap-v2-hidden" type="file" accept="image/*" capture="environment" data-snap-upload-input />
+      <script id="snap-config" type="application/json" is:inline set:html={snapConfigJson}></script>
+    </div>
+  </main>
+
+  <script is:inline>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('/snap/sw.js', { scope: '/snap/' }).catch(() => {}));
+    }
+  </script>
+  <script src="../../scripts/snap-editor.ts"></script>
+</BaseLayout>

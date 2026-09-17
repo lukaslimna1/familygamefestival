@@ -1,0 +1,19 @@
+{
+  "name": "FGF Snap — Family Game Festival 2026",
+  "short_name": "FGF Snap",
+  "description": "Crie e compartilhe sua foto no Family Game Festival 2026.",
+  "start_url": "/snap",
+  "scope": "/snap/",
+  "display": "standalone",
+  "background_color": "#050c18",
+  "theme_color": "#08111f",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/assets/mascots/icon-mascote.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

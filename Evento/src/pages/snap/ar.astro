@@ -1,0 +1,63 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SnapHeader from '../../components/SnapHeader.astro';
+import '../../styles/snap-v2.css';
+
+const modelGlb = '/assets/snap/3d/mascote-fgf-3d.glb.glb';
+const modelUsdz = '/assets/snap/3d/mascote-fgf-3d.usdz';
+---
+
+<BaseLayout
+  title="Mascote em AR | FGF Snap"
+  description="Coloque o mascote do Family Game Festival no seu espaço com realidade aumentada."
+  manifest="/snap/manifest.webmanifest"
+>
+  <main class="snap-v2-shell">
+    <SnapHeader back />
+    <div class="snap-v2-page">
+      <section class="snap-v2-page-heading" aria-labelledby="snap-ar-title">
+        <p class="snap-v2-eyebrow">EXPERIÊNCIA 3D · NO SEU ESPAÇO</p>
+        <h1 id="snap-ar-title">Mascote <em>em AR.</em></h1>
+        <p>Veja o mascote do FGF no ambiente ao seu redor. Em um celular compatível, toque em “ABRIR MASCOTE EM AR” para iniciar a experiência.</p>
+      </section>
+
+      <section class="snap-v2-model-card" aria-label="Visualizador 3D do mascote">
+        <model-viewer
+          src={modelGlb}
+          ios-src={modelUsdz}
+          alt="Mascote do Family Game Festival em 3D"
+          ar
+          ar-modes="webxr scene-viewer quick-look"
+          ar-placement="floor"
+          camera-controls
+          touch-action="pan-y"
+          shadow-intensity="1"
+          exposure="1"
+          environment-image="neutral"
+          loading="lazy"
+        >
+          <button class="snap-v2-button snap-v2-button-primary" slot="ar-button">ABRIR MASCOTE EM AR <span aria-hidden="true">↗</span></button>
+        </model-viewer>
+      </section>
+      <div class="snap-v2-ar-actions"><a class="snap-v2-button snap-v2-button-outline" href="/snap/foto">Usar mascote em uma foto <span aria-hidden="true">↗</span></a></div>
+      <p class="snap-v2-ar-note">Se a realidade aumentada não estiver disponível, você ainda pode girar e explorar o modelo 3D acima ou usar o mascote no editor de fotos.</p>
+      <p class="snap-v2-ar-fallback" data-snap-ar-fallback>Este dispositivo ou navegador não oferece realidade aumentada. O visualizador 3D continua disponível.</p>
+    </div>
+  </main>
+
+  <script>
+    import '@google/model-viewer';
+
+    document.body.classList.add('snap-page');
+    const viewer = document.querySelector('model-viewer');
+    const fallback = document.querySelector('[data-snap-ar-fallback]');
+    if (viewer && fallback) {
+      customElements.whenDefined('model-viewer').then(() => {
+        if (!(viewer as HTMLElement & { canActivateAR?: boolean }).canActivateAR) fallback.classList.add('is-visible');
+      }).catch(() => fallback.classList.add('is-visible'));
+    }
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('/snap/sw.js', { scope: '/snap/' }).catch(() => {}));
+    }
+  </script>
+</BaseLayout>

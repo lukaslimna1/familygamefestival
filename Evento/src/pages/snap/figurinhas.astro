@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SnapHeader from '../../components/SnapHeader.astro';
+import { snapConfig } from '../../data/snap';
+import { snapWhatsAppChannelUrl } from '../../config/snap';
+import '../../styles/snap-v2.css';
+---
+
+<BaseLayout
+  title="Figurinhas oficiais | FGF Snap"
+  description="Conheça as figurinhas oficiais do Family Game Festival 2026."
+  manifest="/snap/manifest.webmanifest"
+>
+  <main class="snap-v2-shell">
+    <SnapHeader back />
+    <div class="snap-v2-page">
+      <section class="snap-v2-page-heading" aria-labelledby="snap-stickers-title">
+        <p class="snap-v2-eyebrow">GALERIA OFICIAL · FGF 2026</p>
+        <h1 id="snap-stickers-title">Figurinhas <em>Oficiais</em></h1>
+        <p>Adicione o pacote oficial de figurinhas do Family Game Festival 2026 pelo nosso canal no WhatsApp.</p>
+        <p>Abra o canal oficial, toque no pacote de figurinhas e adicione ao seu WhatsApp.</p>
+      </section>
+
+      <section class="snap-v2-gallery-cta" aria-labelledby="snap-channel-title">
+        <div><p class="snap-v2-eyebrow">PACOTE OFICIAL · WHATSAPP</p><strong id="snap-channel-title">Figurinhas do FGF.</strong><p>Ao tocar no botão, você será direcionado ao canal oficial do Family Game Festival 2026. Lá estará disponível o pacote para baixar e adicionar ao seu WhatsApp.</p></div>
+        <a class="snap-v2-button snap-v2-button-primary" href={snapWhatsAppChannelUrl} target="_blank" rel="noreferrer">ADICIONAR FIGURINHAS NO WHATSAPP <span aria-hidden="true">↗</span></a>
+      </section>
+
+      <section class="snap-v2-gallery-grid" aria-label="Galeria de figurinhas">
+        {snapConfig.stickers.map((sticker) => (
+          <figure class="snap-v2-gallery-card">
+            <img src={sticker.asset} alt={sticker.label} loading="lazy" />
+            <figcaption>{sticker.label}</figcaption>
+          </figure>
+        ))}
+      </section>
+    </div>
+  </main>
+
+  <script is:inline>
+    document.body.classList.add('snap-page');
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('/snap/sw.js', { scope: '/snap/' }).catch(() => {}));
+    }
+  </script>
+</BaseLayout>
