@@ -41,7 +41,10 @@ const activePath = Astro.url.pathname;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#07111e" />
     <meta name="robots" content="noindex, nofollow, noarchive" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+    <link rel="manifest" href="/admin/manifest.webmanifest" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/admin/icons/icon-192.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <title>{title}</title>
   </head>
   <body class:list={['admin-body', { 'admin-auth-body': !showNavigation }]}> 
@@ -171,6 +174,14 @@ const activePath = Astro.url.pathname;
       });
       window.addEventListener('pageshow', hideNavigationProgress);
       window.setTimeout(hideNavigationProgress, 12_000);
+
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/admin/sw.js', { scope: '/admin/' }).catch(() => {
+            // The admin remains fully network-driven if service worker registration is unavailable.
+          });
+        }, { once: true });
+      }
     </script>
   </body>
 </html>

@@ -1,5 +1,6 @@
 ---
 import AdminIcon from '../../components/admin/AdminIcon.astro';
+import AdminPwaInstall from '../../components/admin/AdminPwaInstall.astro';
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { getAdminEventSettings, getAdminServiceStatus } from '../../lib/server/admin/data';
 
@@ -42,5 +43,7 @@ const saved = Astro.url.searchParams.get('saved');
       <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Infraestrutura</p><h2 id="config-health-title">Disponibilidade do ambiente</h2></div></div>
       <div class="admin-v2-service-grid"><div><span><AdminIcon name="grid" /></span><strong>Turso</strong><small>{services.turso ? 'Configuração presente' : 'Configuração ausente'}</small><b class:list={{ 'is-ok': services.turso }}>{services.turso ? 'OK' : 'Verificar'}</b></div><div><span><AdminIcon name="folder" /></span><strong>Google Drive</strong><small>{services.drive ? 'Credenciais configuradas' : 'Credenciais ausentes'}</small><b class:list={{ 'is-ok': services.drive }}>{services.drive ? 'OK' : 'Verificar'}</b></div><div><span><AdminIcon name="lock" /></span><strong>Autenticação</strong><small>Sessão atual validada</small><b class="is-ok">OK</b></div></div>
     </section>
+
+    <AdminPwaInstall />
   </div>
 </AdminLayout>

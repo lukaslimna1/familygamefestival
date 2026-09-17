@@ -565,6 +565,14 @@
 .admin-v2-security-note small { color: var(--admin-muted); font-size: .68rem; line-height: 1.4; }
 .admin-v2-readonly-note { margin: 1rem 0 0; padding-top: .9rem; border-top: 1px solid var(--admin-line); color: var(--admin-muted); font-size: .7rem; line-height: 1.45; }
 .admin-v2-config-status { margin-top: 0; }
+.admin-pwa-card { border-top: 2px solid var(--admin-yellow); }
+.admin-pwa-card .admin-v2-card-heading { margin-bottom: .8rem; }
+.admin-pwa-card .admin-v2-card-heading > div > p:last-child { max-width: 44rem; }
+.admin-pwa-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .8rem; padding-top: .85rem; border-top: 1px solid var(--admin-line); }
+.admin-pwa-status { margin: 0; color: var(--admin-muted); font-size: .7rem; line-height: 1.45; }
+.admin-pwa-status[hidden] { display: none; }
+.admin-pwa-actions .admin-button svg { width: .9rem; height: .9rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+
 .admin-v2-service-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .65rem; }
 .admin-v2-service-grid > div { display: grid; grid-template-columns: 2rem minmax(0, 1fr) auto; align-items: center; gap: .55rem; padding: .7rem; border: 1px solid var(--admin-line); }
 .admin-v2-service-grid > div > span { display: grid; width: 2rem; height: 2rem; padding: .5rem; color: var(--admin-cyan); background: rgba(25, 198, 242, .08); place-items: center; }

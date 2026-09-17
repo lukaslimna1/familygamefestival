@@ -1,0 +1,76 @@
+---
+import AdminIcon from './AdminIcon.astro';
+---
+
+<section class="admin-v2-card admin-pwa-card" aria-labelledby="admin-pwa-title" data-admin-pwa-install>
+  <div class="admin-v2-card-heading">
+    <div>
+      <p class="admin-section-kicker">Aplicativo</p>
+      <h2 id="admin-pwa-title">Instale o ADM</h2>
+      <p>Instale o Painel Administrativo neste dispositivo para acesso rápido durante o evento.</p>
+    </div>
+    <span class="admin-v2-card-mark"><AdminIcon name="download" /></span>
+  </div>
+  <div class="admin-pwa-actions">
+    <button class="admin-button admin-button-primary" type="button" data-admin-pwa-install-button hidden>
+      Instalar ADM <AdminIcon name="arrow" />
+    </button>
+    <p class="admin-pwa-status" data-admin-pwa-status role="status" aria-live="polite">
+      Use o menu do navegador para adicionar o ADM à tela inicial quando o botão de instalação não estiver disponível.
+    </p>
+  </div>
+</section>
+
+<script is:inline>
+  (() => {
+    const card = document.querySelector('[data-admin-pwa-install]');
+    if (!card) return;
+
+    const button = card.querySelector('[data-admin-pwa-install-button]');
+    const status = card.querySelector('[data-admin-pwa-status]');
+    if (!(button instanceof HTMLButtonElement) || !(status instanceof HTMLElement)) return;
+
+    let deferredPrompt = null;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+
+    const showStatus = (message) => {
+      status.textContent = message;
+      status.hidden = false;
+    };
+
+    if (isStandalone) {
+      showStatus('Aplicativo instalado neste dispositivo.');
+      return;
+    }
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault();
+      deferredPrompt = event;
+      button.hidden = false;
+      status.hidden = true;
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      button.hidden = true;
+      showStatus('Aplicativo instalado neste dispositivo.');
+    });
+
+    button.addEventListener('click', async () => {
+      if (!deferredPrompt) {
+        showStatus('Abra o menu do navegador e escolha “Adicionar à tela inicial”.');
+        return;
+      }
+
+      const installPrompt = deferredPrompt;
+      deferredPrompt = null;
+      button.hidden = true;
+      await installPrompt.prompt();
+      const choice = await installPrompt.userChoice;
+      if (choice.outcome !== 'accepted') {
+        showStatus('A instalação foi cancelada. Você ainda pode instalar pelo menu do navegador.');
+      }
+    });
+  })();
+</script>

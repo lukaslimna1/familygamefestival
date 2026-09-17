@@ -103,6 +103,15 @@ body.admin-menu-open { overflow: hidden; }
   letter-spacing: -.03em;
 }
 
+.admin-brand-mark img,
+.admin-auth-brand-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: .12rem;
+  object-fit: contain;
+}
+
 .admin-brand-copy,
 .admin-user-copy,
 .admin-topbar-user-copy,

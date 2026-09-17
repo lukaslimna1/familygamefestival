@@ -61,6 +61,11 @@ const { name } = Astro.props;
     <path d="M5 12h13M13 6l6 6-6 6" />
   </svg>
 )}
+{name === 'download' && (
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M12 3v11M7.5 10.5 12 15l4.5-4.5M5 20h14" />
+  </svg>
+)}
 {name === 'external' && (
   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     <path d="M14 5h5v5M19 5l-8 8" />
