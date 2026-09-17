@@ -1,7 +1,7 @@
 {
   "name": "FGF Snap — Family Game Festival 2026",
   "short_name": "FGF Snap",
-  "description": "Crie e compartilhe sua foto no Family Game Festival 2026.",
+  "description": "Crie seu Snap, encontre o mascote em AR e pegue as figurinhas oficiais do Family Game Festival 2026.",
   "start_url": "/snap",
   "scope": "/snap/",
   "display": "standalone",

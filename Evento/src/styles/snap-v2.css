@@ -53,11 +53,21 @@
 .snap-v2-hero-art strong { position: absolute; right: 21px; bottom: 22px; color: rgba(255,255,255,.8); font-family: var(--display); font-size: 19px; line-height: .88; text-align: right; }
 .snap-v2-hero-art b { color: var(--yellow); }
 
-.snap-v2-feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: min(1180px, 100%); margin: 0 auto; }
+.snap-v2-feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; width: min(1180px, 100%); margin: 0 auto; }
 .snap-v2-feature-card { position: relative; display: grid; grid-template-columns: auto 1fr auto; gap: 18px; min-height: 170px; padding: 23px; color: #fff; border: 1px solid rgba(255,255,255,.18); background: #0d1b2e; transition: transform .2s ease, border-color .2s ease; }
 .snap-v2-feature-card-yellow { border-top: 3px solid var(--yellow); }
 .snap-v2-feature-card-cyan { border-top: 3px solid var(--cyan); }
 .snap-v2-feature-card-pink { border-top: 3px solid var(--pink); }
+.snap-v2-feature-card-install {
+  border-top: 3px solid #8b5cf6;
+  background: linear-gradient(135deg, #0d1b2e 0%, #171638 100%);
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+.snap-v2-feature-card-install:hover {
+  border-color: rgba(139, 92, 246, 0.6);
+}
 .snap-v2-feature-card .snap-v2-eyebrow { color: #aab7c8; font-size: 9px; }
 .snap-v2-feature-number { color: var(--yellow); font-family: var(--display); font-size: 33px; line-height: .8; }
 .snap-v2-feature-card h2 { margin-bottom: 9px; color: #fff; font-family: var(--display); font-size: 31px; line-height: .9; text-transform: uppercase; }
@@ -688,7 +698,7 @@ body.snap-editor-active { overflow: hidden; }
 }
 .snap-v2-result-image-wrap img {
   max-width: 100%;
-  max-height: calc(100dvh - 150px);
+  max-height: calc(100dvh - 210px);
   width: auto;
   height: auto;
   object-fit: contain;
@@ -712,6 +722,180 @@ body.snap-editor-active { overflow: hidden; }
   border-radius: 8px;
   text-align: center;
   white-space: nowrap;
+}
+
+/* Marcações Sugeridas */
+.snap-v2-tags-card {
+  flex: 0 0 auto;
+  width: min(100%, 420px);
+  background: rgba(13, 27, 46, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.snap-v2-tags-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.snap-v2-tags-prompt {
+  margin: 0 0 3px 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+.snap-v2-tags-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.snap-v2-tag-badge {
+  font-size: 11px;
+  color: var(--yellow, #ffd200);
+  background: rgba(255, 210, 0, 0.12);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: 600;
+  word-break: break-all;
+}
+.snap-v2-tags-alterstate {
+  margin: 5px 0 0 0;
+  font-size: 10px;
+  line-height: 1.3;
+  color: #38bdf8;
+}
+.snap-v2-tags-alterstate strong {
+  color: #fff;
+}
+.snap-v2-tags-alterstate[hidden] {
+  display: none !important;
+}
+.snap-v2-tags-copy-btn {
+  flex: 0 0 auto;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.snap-v2-tags-copy-btn:hover,
+.snap-v2-tags-copy-btn:active {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #fff;
+}
+
+/* Modal de Instalação iOS */
+.snap-v2-install-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.snap-v2-install-modal-backdrop[hidden] {
+  display: none !important;
+}
+.snap-v2-install-modal {
+  background: #0d1b2e;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 3px solid #8b5cf6;
+  border-radius: 16px;
+  width: min(100%, 380px);
+  padding: 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+  color: #fff;
+}
+.snap-v2-install-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.snap-v2-install-modal-header h2 {
+  font-family: var(--display);
+  font-size: 22px;
+  line-height: 1;
+  color: #fff;
+  margin: 0;
+}
+.snap-v2-install-modal-close {
+  background: transparent;
+  border: none;
+  color: #aab7c8;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.snap-v2-install-modal-desc {
+  color: #aab7c8;
+  font-size: 13px;
+  line-height: 1.4;
+  margin-bottom: 20px;
+}
+.snap-v2-install-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.snap-v2-install-steps li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.35;
+  color: #e2e8f0;
+}
+.snap-v2-step-num {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.3);
+  border: 1px solid #8b5cf6;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+.snap-v2-step-icon {
+  display: inline-block;
+  font-size: 16px;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+.snap-v2-install-modal-ok {
+  width: 100%;
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 @media (min-width: 701px) {

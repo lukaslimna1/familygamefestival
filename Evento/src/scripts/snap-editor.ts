@@ -1,9 +1,16 @@
 import Konva from 'konva';
 
 type SnapAsset = { id: string; label: string; asset: string };
-type SnapFrame = SnapAsset & { frame: string };
+type SnapFrame = SnapAsset & { frame: string; format?: 'story' | 'post'; pairKey?: string };
 type SnapFormat = { id: string; label: string; ratio: string; width: number; height: number };
-type SnapConfig = { modes: SnapFrame[]; stickers: SnapAsset[]; poses: SnapAsset[]; formats: SnapFormat[] };
+type SnapConfig = {
+  modes: SnapFrame[];
+  storyFrames?: SnapFrame[];
+  postFrames?: SnapFrame[];
+  stickers: SnapAsset[];
+  poses: SnapAsset[];
+  formats: SnapFormat[];
+};
 type SheetState = 'closed' | 'half' | 'expanded';
 type TouchGesture = {
   node: any;
@@ -18,6 +25,10 @@ type TouchGesture = {
 
 const configElement = document.querySelector('#snap-config');
 const config = JSON.parse(configElement?.textContent ?? '{}') as SnapConfig;
+const allFrames: SnapFrame[] = [
+  ...(config.storyFrames ?? config.modes ?? []),
+  ...(config.postFrames ?? []),
+];
 const captureScreen = document.querySelector<HTMLElement>('[data-snap-capture-screen]');
 const editorScreen = document.querySelector<HTMLElement>('[data-snap-editor-screen]');
 const resultScreen = document.querySelector<HTMLElement>('[data-snap-result-screen]');
@@ -53,7 +64,7 @@ let frameNode: any = null;
 let frameImage: HTMLImageElement | null = null;
 let transformer: any = null;
 let selectedNode: any = null;
-let activeFrame = config.modes[0]?.id ?? 'none';
+let activeFrame = config.storyFrames?.[0]?.id ?? config.modes[0]?.id ?? 'none';
 let activeFormat = 'story';
 let virtualWidth = config.formats.find((format) => format.id === activeFormat)?.width ?? 1080;
 let virtualHeight = config.formats.find((format) => format.id === activeFormat)?.height ?? 1920;
@@ -371,7 +382,7 @@ const setFrame = async (frameId: string) => {
     return;
   }
 
-  const frame = config.modes.find((item) => item.id === frameId);
+  const frame = allFrames.find((item) => item.id === frameId);
   if (frame) {
     frameImage = await loadImage(frame.frame);
     if (!frameNode) {
@@ -439,18 +450,46 @@ const updateFormat = (formatId: string) => {
   virtualHeight = format.height;
   updateFormatLabel(format);
 
-  const isPost = formatId === 'post';
-  if (frameNotice) frameNotice.hidden = !isPost;
+  const targetFormat = formatId === 'post' ? 'post' : 'story';
+  const availableFramesForFormat = allFrames.filter((f) => f.format === targetFormat);
+  const hasFrames = availableFramesForFormat.length > 0;
+
+  if (frameNotice) {
+    frameNotice.hidden = hasFrames;
+    if (!hasFrames) {
+      frameNotice.textContent = 'Molduras disponíveis no formato Story 9:16.';
+    }
+  }
+
   document.querySelectorAll<HTMLButtonElement>('[data-snap-frame-id]').forEach((btn) => {
-    if (btn.dataset.snapFrameId !== 'none') {
-      btn.disabled = isPost;
-      btn.style.opacity = isPost ? '0.35' : '1';
-      btn.style.pointerEvents = isPost ? 'none' : 'auto';
+    const frameFormat = btn.dataset.snapFrameFormat;
+    if (frameFormat === 'all') {
+      btn.hidden = false;
+      btn.disabled = false;
+    } else {
+      const matches = frameFormat === targetFormat;
+      btn.hidden = !matches;
+      btn.disabled = !hasFrames;
+      btn.style.opacity = hasFrames ? '1' : '0.35';
+      btn.style.pointerEvents = hasFrames ? 'auto' : 'none';
     }
   });
 
-  if (isPost && activeFrame !== 'none') {
-    void setFrame('none');
+  // Pareamento Story <-> Post
+  if (activeFrame !== 'none') {
+    const currentFrameObj = allFrames.find((f) => f.id === activeFrame);
+    if (currentFrameObj && currentFrameObj.pairKey) {
+      const equivalentFrame = allFrames.find(
+        (f) => f.format === targetFormat && f.pairKey === currentFrameObj.pairKey,
+      );
+      if (equivalentFrame) {
+        void setFrame(equivalentFrame.id);
+      } else {
+        void setFrame('none');
+      }
+    } else {
+      void setFrame('none');
+    }
   }
 
   if (stage) {
@@ -650,6 +689,29 @@ const duplicateSelected = () => {
   document.querySelector('[data-snap-more]')?.setAttribute('aria-expanded', 'false');
 };
 
+const hasAlterstate = () => {
+  if (activeFrame !== 'none') {
+    const frameObj = allFrames.find((f) => f.id === activeFrame);
+    if (frameObj?.id.toLowerCase().includes('alterstate') || frameObj?.label.toLowerCase().includes('alterstate')) {
+      return true;
+    }
+  }
+  const overlays = overlayLayer?.find('.snap-mascot, .snap-sticker') ?? [];
+  for (const node of overlays) {
+    const source = (node.getAttr('snapSource') || '').toLowerCase();
+    const id = (node.getAttr('id') || '').toLowerCase();
+    const name = (node.name() || '').toLowerCase();
+    if (source.includes('alterstate') || id.includes('alterstate') || name.includes('alterstate')) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const isIOSDevice = () =>
+  /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+  (navigator.maxTouchPoints > 1 && /Macintosh/i.test(navigator.userAgent));
+
 const dataUrlToBlob = async (dataUrl: string) => (await fetch(dataUrl)).blob();
 
 const exportSnap = async () => {
@@ -665,6 +727,11 @@ const exportSnap = async () => {
   transformer?.visible(true);
   uiLayer?.batchDraw();
   resultImage?.setAttribute('src', dataUrl);
+
+  const alterstateActive = hasAlterstate();
+  const alterstateNotice = document.querySelector<HTMLElement>('[data-snap-alterstate-notice]');
+  if (alterstateNotice) alterstateNotice.hidden = !alterstateActive;
+
   showScreen('result');
   setStatus('Seu Snap está pronto!', 'success');
 };
@@ -672,11 +739,46 @@ const exportSnap = async () => {
 const downloadSnap = async () => {
   const src = resultImage?.src;
   if (!src) return;
-  const link = document.createElement('a');
-  link.href = src;
-  link.download = `fgf-snap-${activeFormat}-2026.png`;
-  link.click();
-  setStatus('Salvo no seu dispositivo.', 'success');
+  const blob = await dataUrlToBlob(src);
+  const fileName = `fgf-snap-${activeFormat}-2026.png`;
+
+  if (isIOSDevice()) {
+    const file = new File([blob], fileName, { type: 'image/png' });
+    try {
+      if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+        setStatus("Escolha 'Salvar Imagem'.", 'success');
+        await navigator.share({ files: [file] });
+        return;
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+    }
+    const newTab = window.open(src, '_blank');
+    if (!newTab) {
+      window.location.href = src;
+    }
+    setStatus('Toque e segure na imagem para salvar nas Fotos.', 'success');
+    return;
+  }
+
+  try {
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = fileName;
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+    setStatus('Salvo no seu dispositivo.', 'success');
+  } catch {
+    const link = document.createElement('a');
+    link.href = src;
+    link.download = fileName;
+    link.click();
+    setStatus('Salvo no seu dispositivo.', 'success');
+  }
 };
 
 const shareSnap = async () => {
@@ -687,8 +789,6 @@ const shareSnap = async () => {
   try {
     if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
       await navigator.share({
-        title: 'Family Game Festival 2026',
-        text: 'Meu Snap no Family Game Festival 2026! 🎮✨',
         files: [file],
       });
       setStatus('Compartilhado!', 'success');
@@ -867,6 +967,43 @@ if (window.visualViewport) {
 }
 window.addEventListener('resize', handleViewportResize);
 window.addEventListener('orientationchange', handleViewportResize);
+
+const copyTagsBtn = document.querySelector<HTMLButtonElement>('[data-snap-copy-tags]');
+const copyLabel = document.querySelector<HTMLElement>('[data-snap-copy-label]');
+copyTagsBtn?.addEventListener('click', async () => {
+  const textToCopy = hasAlterstate()
+    ? '@familygamex @usealterstate #FamilyGameFestival2026'
+    : '@familygamex #FamilyGameFestival2026';
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(textToCopy);
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = textToCopy;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+    if (copyLabel) copyLabel.textContent = 'MARCAÇÕES COPIADAS!';
+    setStatus('Marcações copiadas!', 'success');
+    window.setTimeout(() => {
+      if (copyLabel) copyLabel.textContent = 'COPIAR MARCAÇÕES';
+    }, 2500);
+  } catch {
+    setStatus('Não foi possível copiar automaticamente.', 'error');
+  }
+});
+
+document.querySelectorAll<HTMLButtonElement>('[data-snap-frame-id]').forEach((btn) => {
+  const frameFormat = btn.dataset.snapFrameFormat;
+  if (frameFormat && frameFormat !== 'all') {
+    btn.hidden = frameFormat !== activeFormat;
+  }
+});
 
 setSheetCategory(activeCategory);
 setSheetState('closed');

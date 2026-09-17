@@ -1,4 +1,4 @@
-const SNAP_CACHE = 'fgf-snap-v1';
+const SNAP_CACHE = 'fgf-snap-v2';
 const SNAP_ROUTES = ['/snap', '/snap/foto', '/snap/ar', '/snap/figurinhas'];
 
 self.addEventListener('install', (event) => {

@@ -9,19 +9,66 @@ import poseKpop from '../assets/snap/poses/Mascote - K-Pop.png';
 import poseFight from '../assets/snap/poses/Mascote - Luta.png';
 import posePresenter from '../assets/snap/poses/Mascote - Apresentador.png';
 import poseRetro from '../assets/snap/poses/Mascote - Retro Games.png';
-import frameAlterstate from '../assets/snap/frames/Moldura - ALTERSTATE.png';
-import framePresenter from '../assets/snap/frames/Moldura - Apresentador.png';
-import frameCosplay from '../assets/snap/frames/Moldura - Cosplay.png';
-import frameFootball from '../assets/snap/frames/Moldura - Futebol.png';
-import frameGamer from '../assets/snap/frames/Moldura - Gamer Moderno.png';
-import frameGroupWelcome from '../assets/snap/frames/Moldura - Grupo Boas-Vindas.png';
-import frameGroupInvite from '../assets/snap/frames/Moldura - Grupo Convite.png';
-import frameFight from '../assets/snap/frames/Moldura - Jogos de Luta.png';
-import frameJustDance from '../assets/snap/frames/Moldura - Just Dance.png';
-import frameKpop from '../assets/snap/frames/Moldura - K-Pop.png';
-import frameRetro from '../assets/snap/frames/Moldura - Retro Games.png';
-
 const assetUrl = (asset: { src: string }) => asset.src;
+
+const storyFrameModules = import.meta.glob('../assets/snap/frames/*.png', {
+  eager: true,
+  import: 'default',
+  query: '?url',
+}) as Record<string, string>;
+
+const postFrameModules = import.meta.glob('../assets/snap/fremes post/*.png', {
+  eager: true,
+  import: 'default',
+  query: '?url',
+}) as Record<string, string>;
+
+const frameSuffix = (path: string, prefixRegex: RegExp) =>
+  path.split(/[\\/]/).pop()?.replace(/\.[^.]+$/, '').replace(prefixRegex, '').trim() ?? '';
+
+const framePairKey = (suffix: string) =>
+  suffix
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .replace(/s$/, '');
+
+const frameId = (format: 'story' | 'post', suffix: string) => {
+  const slug = suffix
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  return format === 'post' ? `post-${slug}` : slug;
+};
+
+const storyFrames = Object.entries(storyFrameModules)
+  .sort(([left], [right]) => left.localeCompare(right, 'pt-BR'))
+  .map(([path, asset]) => {
+    const label = frameSuffix(path, /^Moldura\s*-\s*/i);
+    return {
+      id: frameId('story', label),
+      label,
+      frame: asset,
+      format: 'story' as const,
+      pairKey: framePairKey(label),
+    };
+  });
+
+const postFrames = Object.entries(postFrameModules)
+  .sort(([left], [right]) => left.localeCompare(right, 'pt-BR'))
+  .map(([path, asset]) => {
+    const label = frameSuffix(path, /^Post\s*-\s*/i);
+    return {
+      id: frameId('post', label),
+      label,
+      frame: asset,
+      format: 'post' as const,
+      pairKey: framePairKey(label),
+    };
+  });
 
 const stickerModules = import.meta.glob('../assets/snap/stikers/*.png', {
   eager: true,
@@ -39,19 +86,9 @@ const stickers = Object.entries(stickerModules)
   });
 
 export const snapConfig = {
-  modes: [
-    { id: 'alterstate', label: 'Alterstate', frame: assetUrl(frameAlterstate) },
-    { id: 'presenter', label: 'Apresentador', frame: assetUrl(framePresenter) },
-    { id: 'cosplay', label: 'Cosplay', frame: assetUrl(frameCosplay) },
-    { id: 'football', label: 'Futebol', frame: assetUrl(frameFootball) },
-    { id: 'gamer', label: 'Gamer Moderno', frame: assetUrl(frameGamer) },
-    { id: 'group-welcome', label: 'Grupo Boas-vindas', frame: assetUrl(frameGroupWelcome) },
-    { id: 'group-invite', label: 'Grupo Convite', frame: assetUrl(frameGroupInvite) },
-    { id: 'fight', label: 'Jogos de Luta', frame: assetUrl(frameFight) },
-    { id: 'just-dance', label: 'Just Dance', frame: assetUrl(frameJustDance) },
-    { id: 'kpop', label: 'K-pop', frame: assetUrl(frameKpop) },
-    { id: 'retro', label: 'Retro Games', frame: assetUrl(frameRetro) },
-  ],
+  modes: storyFrames,
+  storyFrames,
+  postFrames,
   stickers,
   poses: [
     { id: 'left', label: 'Apresentador', asset: assetUrl(posePresenter), position: 'left', layout: 'vertical' },

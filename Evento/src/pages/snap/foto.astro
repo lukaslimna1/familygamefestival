@@ -98,12 +98,17 @@ const snapConfigJson = JSON.stringify(snapConfig);
               </div>
 
               <div class="snap-editor-category-panel" data-snap-category-panel="frame" hidden>
-                <p class="snap-editor-frame-notice" data-snap-frame-notice hidden>Molduras disponíveis no formato Story 9:16.</p>
+                <p class="snap-editor-frame-notice" data-snap-frame-notice hidden></p>
                 <div class="snap-editor-asset-row">
-                  <button class="snap-v2-frame-chip" type="button" data-snap-frame-id="none" aria-pressed="false"><span>Sem moldura</span></button>
-                  {snapConfig.modes.map((mode) => (
-                    <button class="snap-v2-frame-chip" type="button" data-snap-frame-id={mode.id} aria-pressed={mode.id === snapConfig.modes[0].id}>
-                      <img src={mode.frame} alt="" loading="lazy" /><span>{mode.label}</span>
+                  <button class="snap-v2-frame-chip" type="button" data-snap-frame-id="none" data-snap-frame-format="all" aria-pressed="false"><span>Sem moldura</span></button>
+                  {snapConfig.storyFrames.map((frame, index) => (
+                    <button class="snap-v2-frame-chip" type="button" data-snap-frame-id={frame.id} data-snap-frame-format="story" data-snap-frame-pair={frame.pairKey} aria-pressed={index === 0}>
+                      <img src={frame.frame} alt="" loading="lazy" /><span>{frame.label}</span>
+                    </button>
+                  ))}
+                  {snapConfig.postFrames.map((frame) => (
+                    <button class="snap-v2-frame-chip" type="button" data-snap-frame-id={frame.id} data-snap-frame-format="post" data-snap-frame-pair={frame.pairKey} aria-pressed="false" hidden>
+                      <img src={frame.frame} alt="" loading="lazy" /><span>{frame.label}</span>
                     </button>
                   ))}
                 </div>
@@ -140,6 +145,23 @@ const snapConfigJson = JSON.stringify(snapConfig);
         <div class="snap-v2-result-image-wrap">
           <img data-snap-result alt="Foto composta com elementos do FGF Snap" />
         </div>
+
+        <div class="snap-v2-tags-card" data-snap-tags-card>
+          <div class="snap-v2-tags-content">
+            <p class="snap-v2-tags-prompt">Vai postar? Marque o evento.</p>
+            <div class="snap-v2-tags-badges">
+              <span class="snap-v2-tag-badge">@familygamex</span>
+              <span class="snap-v2-tag-badge">#FamilyGameFestival2026</span>
+            </div>
+            <p class="snap-v2-tags-alterstate" data-snap-alterstate-notice hidden>
+              Você usou um elemento Alterstate. Marque também <strong>@usealterstate</strong>.
+            </p>
+          </div>
+          <button class="snap-v2-tags-copy-btn" type="button" data-snap-copy-tags aria-label="Copiar marcações para a área de transferência">
+            <span data-snap-copy-label>COPIAR MARCAÇÕES</span>
+          </button>
+        </div>
+
         <div class="snap-v2-result-actions">
           <button class="snap-v2-button snap-v2-button-primary" type="button" data-snap-share>COMPARTILHAR <span aria-hidden="true">↗</span></button>
           <button class="snap-v2-button snap-v2-button-outline" type="button" data-snap-download>SALVAR</button>
