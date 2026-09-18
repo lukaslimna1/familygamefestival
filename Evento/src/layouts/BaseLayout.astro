@@ -7,21 +7,26 @@ interface Props {
   title?: string;
   description?: string;
   canonical?: string;
+  structuredData?: Record<string, unknown> | Record<string, unknown>[];
   manifest?: string;
   bodyClass?: string;
 }
 
+const siteUrl = 'https://familygamefestival.vercel.app';
+const eventImageUrl = `${siteUrl}/assets/flyers/festival-logo.jpg`;
+
 const {
-  title = event.name,
-  description = 'Games, cultura geek, campeonatos e experiências para toda a família em Bauru.',
-  canonical = 'https://familygamefestival.vercel.app/',
+  title = 'Family Game Festival 2026 | Evento Geek em Bauru/SP',
+  description = 'Family Game Festival 2026 em Bauru/SP: games, campeonatos, cosplay, K-Pop, Just Dance e cultura geek nos dias 19 e 20 de setembro.',
+  canonical = `${siteUrl}/`,
+  structuredData,
   manifest,
   bodyClass,
 } = Astro.props;
 
-const jsonLd = {
+const mainEventSchema = {
   '@context': 'https://schema.org',
-  '@type': 'Festival',
+  '@type': 'Event',
   name: event.name,
   description,
   startDate: '2026-09-19T11:00:00-03:00',
@@ -33,15 +38,37 @@ const jsonLd = {
     name: event.venue,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Av. Nações Unidas, 53-40',
+      streetAddress: event.address.split(' · ')[0],
       addressLocality: 'Bauru',
       addressRegion: 'SP',
       addressCountry: 'BR'
     }
   },
-  organizer: { '@type': 'Organization', name: 'Family Game Festival' },
-  offers: { '@type': 'Offer', url: event.ticketUrl, price: '30', priceCurrency: 'BRL', availability: 'https://schema.org/InStock' }
+  image: eventImageUrl,
+  organizer: { '@type': 'Organization', name: 'Family Game Festival', url: siteUrl },
+  url: `${siteUrl}/`
 };
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Family Game Festival',
+  url: `${siteUrl}/`
+};
+
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Family Game Festival',
+  url: `${siteUrl}/`,
+  logo: `${siteUrl}/assets/logo.png`,
+  sameAs: [event.instagramUrl]
+};
+
+const pageSchemas = structuredData ? (Array.isArray(structuredData) ? structuredData : [structuredData]) : [];
+const jsonLd = canonical === `${siteUrl}/`
+  ? [mainEventSchema, websiteSchema, organizationSchema, ...pageSchemas]
+  : pageSchemas;
 ---
 <!doctype html>
 <html lang="pt-BR" class={bodyClass ? bodyClass : undefined}>
@@ -53,15 +80,21 @@ const jsonLd = {
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
     {manifest && <link rel="manifest" href={manifest} />}
+    <meta property="og:site_name" content="Family Game Festival" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={eventImageUrl} />
+    <meta property="og:image:alt" content="Logo do Family Game Festival 2026" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={eventImageUrl} />
+    <meta name="twitter:image:alt" content="Logo do Family Game Festival 2026" />
     <title>{title}</title>
-    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    {jsonLd.map((schema) => <script type="application/ld+json" set:html={JSON.stringify(schema)} />)}
     <Analytics />
   </head>
   <body class={bodyClass}>

@@ -53,14 +53,41 @@ const participationCopy = isPublicOnly
     ? `Compre o ingresso competidor ou o ingresso comum do evento. ${onlineRegistrationCopy} O ingresso competidor já inclui a entrada no evento no dia da competição.`
     : 'As informações de compra e inscrição serão publicadas assim que a organização confirmar a abertura.';
 const seoDescription = isPublicOnly || isKpop
-  ? 'K-Pop Individual no Family Game Festival 2026, sábado, 19 de setembro, às 13h, em Bauru/SP.'
+  ? 'Concurso K-Pop Individual no Family Game Festival 2026 em Bauru/SP. Sábado, 19 de setembro, às 13h, com apresentações solo de dança K-Pop.'
   : `${tournament.title}: data, horário, premiação, regulamento e inscrição no Family Game Festival 2026.`;
+const seoTitle = isKpop
+  ? 'K-Pop Individual em Bauru | Family Game Festival 2026'
+  : `${tournament.title} | Campeonatos | ${event.name}`;
+const kpopEventSchema = isKpop ? {
+  '@context': 'https://schema.org',
+  '@type': 'Event',
+  name: 'K-Pop Individual — Family Game Festival 2026',
+  description: seoDescription,
+  startDate: '2026-09-19T13:00:00-03:00',
+  eventStatus: 'https://schema.org/EventScheduled',
+  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+  location: {
+    '@type': 'Place',
+    name: event.venue,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: event.address.split(' · ')[0],
+      addressLocality: 'Bauru',
+      addressRegion: 'SP',
+      addressCountry: 'BR'
+    }
+  },
+  image: 'https://familygamefestival.vercel.app/assets/flyers/K-Pop.png',
+  organizer: { '@type': 'Organization', name: 'Family Game Festival', url: 'https://familygamefestival.vercel.app/' },
+  url: `https://familygamefestival.vercel.app${pageUrl}`
+} : undefined;
 ---
 
 <BaseLayout
-  title={`${tournament.title} | Campeonatos | ${event.name}`}
+  title={seoTitle}
   description={seoDescription}
   canonical={`https://familygamefestival.vercel.app${pageUrl}`}
+  structuredData={kpopEventSchema}
 >
   <SiteHeader current="Campeonatos" />
 

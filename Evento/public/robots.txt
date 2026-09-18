@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /admin
+Disallow: /api/
+Disallow: /inscricao/acessar
+Disallow: /inscricao/minha
+Disallow: /inscricao/sucesso
+Allow: /
+
+Sitemap: https://familygamefestival.vercel.app/sitemap.xml
