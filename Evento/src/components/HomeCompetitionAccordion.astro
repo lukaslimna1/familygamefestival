@@ -43,11 +43,12 @@ const imageClass = `competition-art-fit-${entry.art.fit || 'cover'}`;
         <div><dt>DATA</dt><dd>{entry.schedule.date}</dd></div>
         <div><dt>HORÁRIO</dt><dd>{entry.schedule.time}</dd></div>
         <div><dt>PREMIAÇÃO</dt><dd>{entry.tournament.prize || 'A definir'}</dd></div>
+        {entry.tournament.capacityLabel && <div><dt>CAPACIDADE</dt><dd>{entry.tournament.capacityLabel}</dd></div>}
       </dl>
 
       <div class="home-competition-details-actions">
         <a class="home-competition-page-link" href={entry.pageUrl}>Página do campeonato <span aria-hidden="true">↗</span></a>
-        <RegistrationChoiceDialog entry={entry} compact label="Inscreva-se" />
+        {!('publicOnly' in entry.tournament && entry.tournament.publicOnly) && <RegistrationChoiceDialog entry={entry} compact label="Inscreva-se" />}
       </div>
     </div>
   </div>

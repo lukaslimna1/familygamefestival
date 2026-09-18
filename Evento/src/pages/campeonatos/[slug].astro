@@ -18,15 +18,22 @@ export function getStaticPaths() {
 const { entry } = Astro.props;
 const { tournament, art, schedule, regulation, generalRegulation, registrationUrl, registrationPrice, registrationNote, registrationFree, format, participants, prizeNote, pageUrl } = entry;
 const detail = tournament.detail || 'Informações e formato da disputa serão divulgados pela organização.';
+const isPublicOnly = 'publicOnly' in tournament && tournament.publicOnly;
+const capacityLabel = 'capacityLabel' in tournament ? tournament.capacityLabel : undefined;
+const categoryLabel = tournament.category === 'Dance Game' ? 'Competição de Dança' : tournament.category;
 const isCosplay = tournament.id === 'cosplay';
 const regulationPageUrl = regulation && 'pageUrl' in regulation ? regulation.pageUrl : undefined;
 const cosplayPdfUrl = regulation ? `/assets/regulamentos/${encodeURIComponent(regulation.pdfFile)}` : undefined;
-const detailPageIntro = isCosplay
+const detailPageIntro = isPublicOnly
+  ? 'O K-Pop Individual chega ao Family Game Festival 2026 para colocar performances solo no centro do palco. Escolha sua música, prepare sua coreografia e mostre sua presença, técnica e energia diante do público.'
+  : isCosplay
   ? 'Consulte abaixo o regulamento oficial completo do Concurso Cosplay e veja exemplos de guias de imagens para enviar antes de realizar sua inscrição.'
   : generalRegulation
     ? `Esta é a página oficial de ${tournament.title} no Family Game Festival 2026. Aqui ficarão reunidos os detalhes da inscrição, as orientações da organização e as regras gerais aplicáveis aos campeonatos de games.`
     : `Esta é a página oficial de ${tournament.title} no Family Game Festival 2026. Aqui ficarão reunidos o regulamento, os detalhes da inscrição e as orientações da organização.`;
-const participationTitle = registrationFree
+const participationTitle = isPublicOnly
+  ? 'Inscrição online em breve'
+  : registrationFree
   ? 'Inscrição gratuita'
   : isCosplay
     ? 'Compre o ingresso e faça sua inscrição'
@@ -34,18 +41,23 @@ const participationTitle = registrationFree
     ? 'Compre seu ingresso competidor'
     : 'Ingresso competidor em breve';
 const onlineRegistrationCopy = `Inscrições online até ${ONLINE_REGISTRATION_DEADLINE_LABEL}. ${ONLINE_REGISTRATION_ONSITE_NOTICE}`;
-const participationCopy = registrationFree
+const participationCopy = isPublicOnly
+  ? `A inscrição online será disponibilizada em breve. ${ONLINE_REGISTRATION_DEADLINE_LABEL}; a inscrição presencial poderá ocorrer até 12h, mediante disponibilidade de vagas.`
+  : registrationFree
   ? `Compre o ingresso do evento. A inscrição na seletiva é gratuita. ${onlineRegistrationCopy}`
   : isCosplay
     ? `Compre o ingresso competidor ou o ingresso comum do evento. ${onlineRegistrationCopy} O ingresso competidor já inclui a entrada no evento no dia do concurso.`
-  : registrationUrl
+    : registrationUrl
     ? `Compre o ingresso competidor ou o ingresso comum do evento. ${onlineRegistrationCopy} O ingresso competidor já inclui a entrada no evento no dia da competição.`
     : 'As informações de compra e inscrição serão publicadas assim que a organização confirmar a abertura.';
+const seoDescription = isPublicOnly
+  ? 'K-Pop Individual no Family Game Festival 2026, sábado, 19 de setembro, às 13h, em Bauru/SP.'
+  : `${tournament.title}: data, horário, premiação, regulamento e inscrição no Family Game Festival 2026.`;
 ---
 
 <BaseLayout
   title={`${tournament.title} | Campeonatos | ${event.name}`}
-  description={`${tournament.title}: data, horário, premiação, regulamento e inscrição no Family Game Festival 2026.`}
+  description={seoDescription}
   canonical={`https://familygamefestival.vercel.app${pageUrl}`}
 >
   <SiteHeader current="Campeonatos" />
@@ -61,7 +73,7 @@ const participationCopy = registrationFree
           )}
         </div>
         <div class="championship-detail-intro">
-          <p class="eyebrow eyebrow-yellow">{tournament.category} · Family Game Festival 2026</p>
+          <p class="eyebrow eyebrow-yellow">{categoryLabel} · Family Game Festival 2026</p>
           <h1>{tournament.title}</h1>
           <p>{detail}</p>
           <div class="championship-detail-actions">
@@ -70,7 +82,9 @@ const participationCopy = registrationFree
             ) : !isCosplay ? (
               <span class="button button-detail-disabled">Regulamento específico em breve</span>
             ) : null}
-            {registrationFree ? (
+            {isPublicOnly ? (
+              <span class="button button-detail-disabled" role="status">Inscrição online em breve</span>
+            ) : registrationFree ? (
               <div class="championship-registration-free" role="status">
                 <strong>Inscrição gratuita</strong>
                 <span>{registrationNote}</span>
@@ -80,7 +94,7 @@ const participationCopy = registrationFree
             ) : (
               <span class="button button-detail-disabled">Ingresso competidor em breve</span>
             )}
-            <RegistrationChoiceDialog entry={entry} label="FAZER INSCRIÇÃO ONLINE" />
+            {!isPublicOnly && <RegistrationChoiceDialog entry={entry} label="FAZER INSCRIÇÃO ONLINE" />}
           </div>
         </div>
       </div>
@@ -88,11 +102,23 @@ const participationCopy = registrationFree
 
     <section class="championship-detail-facts-section">
       <div class="container championship-detail-facts">
-        <div><span>DIA</span><strong>{schedule.day}</strong><small>{schedule.date}/2026</small></div>
-        <div><span>HORÁRIO</span><strong>{schedule.time}</strong><small>Programação oficial</small></div>
-        <div><span>PREMIAÇÃO</span><strong>{tournament.prize || 'A definir'}</strong><small>Premiação da disputa</small></div>
-        <div><span>FORMATO</span><strong>{format || 'A confirmar'}</strong><small>{participants || 'Vagas e participantes a confirmar'}</small></div>
-          <div><span>INGRESSO COMPETIDOR</span><strong>{registrationPrice}</strong><small>{registrationNote}</small></div>
+        {isPublicOnly ? (
+          <>
+            <div><span>DIA</span><strong>{schedule.day}</strong><small>{schedule.date}/2026</small></div>
+            <div><span>HORÁRIO</span><strong>{schedule.time}</strong><small>Programação oficial</small></div>
+            <div><span>CAPACIDADE</span><strong>{capacityLabel}</strong><small>Limite máximo da modalidade</small></div>
+            <div><span>INSCRIÇÃO ONLINE</span><strong>EM BREVE</strong><small>Até {ONLINE_REGISTRATION_DEADLINE_LABEL.replace(' (horário de Brasília)', '')}.</small></div>
+            <div><span>INSCRIÇÃO PRESENCIAL</span><strong>ATÉ 12H</strong><small>Até 1 hora antes do início, mediante disponibilidade de vagas.</small></div>
+          </>
+        ) : (
+          <>
+            <div><span>DIA</span><strong>{schedule.day}</strong><small>{schedule.date}/2026</small></div>
+            <div><span>HORÁRIO</span><strong>{schedule.time}</strong><small>Programação oficial</small></div>
+            <div><span>PREMIAÇÃO</span><strong>{tournament.prize || 'A definir'}</strong><small>Premiação da disputa</small></div>
+            <div><span>FORMATO</span><strong>{format || 'A confirmar'}</strong><small>{participants || 'Vagas e participantes a confirmar'}</small></div>
+            <div><span>INGRESSO COMPETIDOR</span><strong>{registrationPrice}</strong><small>{registrationNote}</small></div>
+          </>
+        )}
       </div>
       {prizeNote && (
         <div class="container championship-detail-prize-note">
@@ -111,8 +137,19 @@ const participationCopy = registrationFree
         </div>
         <div class="championship-detail-info-board">
           <div><span>DATA E LOCAL</span><strong>{schedule.date}/2026 · Arena Tauste</strong><small>SORRI Bauru · Av. Nações Unidas, 5340</small></div>
-          <div><span>COMO PARTICIPAR</span><strong>{participationTitle}</strong><small>{participationCopy}</small></div>
-          {!isCosplay && <div><span>REGULAMENTO ESPECÍFICO</span><strong>{regulation ? 'Regulamento publicado' : 'Regulamento em breve'}</strong><small>{regulation ? 'Leia a versão completa antes de realizar sua inscrição.' : 'O documento próprio desta modalidade será publicado assim que for disponibilizado.'}</small></div>}
+          {isPublicOnly ? (
+            <>
+              <div><span>INSCRIÇÃO ONLINE</span><strong>Em breve</strong><small>Até {ONLINE_REGISTRATION_DEADLINE_LABEL}. O formulário específico ainda está em preparação.</small></div>
+              <div><span>INSCRIÇÃO PRESENCIAL</span><strong>Até 12h</strong><small>No dia do evento, até 1 hora antes do início da modalidade, mediante disponibilidade de vagas.</small></div>
+              <div><span>MÚSICA DA APRESENTAÇÃO</span><strong>YouTube ou MP3</strong><small>A música poderá ser enviada por link do YouTube ou arquivo MP3 durante a inscrição online.</small><small>Mesmo realizando o envio online, o participante deverá levar a música em um pen drive no dia do evento.</small></div>
+              <div><span>REGRAS DO K-POP INDIVIDUAL</span><strong>Regulamento em atualização.</strong><small>Regulamento completo em atualização.</small></div>
+            </>
+          ) : (
+            <>
+              <div><span>COMO PARTICIPAR</span><strong>{participationTitle}</strong><small>{participationCopy}</small></div>
+              {!isCosplay && <div><span>REGULAMENTO ESPECÍFICO</span><strong>{regulation ? 'Regulamento publicado' : 'Regulamento em breve'}</strong><small>{regulation ? 'Leia a versão completa antes de realizar sua inscrição.' : 'O documento próprio desta modalidade será publicado assim que for disponibilizado.'}</small></div>}
+            </>
+          )}
         </div>
       </div>
     </section>

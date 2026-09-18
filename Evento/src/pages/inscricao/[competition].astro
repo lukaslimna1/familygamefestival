@@ -8,7 +8,7 @@ import { championshipEntries, getChampionshipEntry } from '../../data/championsh
 export const prerender = true;
 
 export function getStaticPaths() {
-  return championshipEntries.map((entry) => ({
+  return championshipEntries.filter((entry) => !('publicOnly' in entry.tournament && entry.tournament.publicOnly)).map((entry) => ({
     params: { competition: entry.tournament.id },
     props: { entry }
   }));

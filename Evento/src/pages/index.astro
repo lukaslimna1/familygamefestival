@@ -300,11 +300,11 @@ const guestVideos = existsSync(guestVideoDirectory)
               {panel.featuredEntries.length > 0 && (
                 <div class={`competition-group competition-special-group ${panel.featuredEntries.length === 1 ? 'competition-special-group-single' : ''}`}>
                   <div class="competition-group-heading">
-                    <div><p class="card-eyebrow">Destaque do palco</p><h3>{panel.featuredEntries[0].tournament.category === 'Dance Game' ? 'Dança' : 'Cosplay'}</h3></div>
+                    <div><p class="card-eyebrow">Destaque do palco</p><h3>{panel.featuredEntries[0].tournament.category === 'Dance Game' ? 'Competição de Dança' : 'Cosplay'}</h3></div>
                     <span>{panel.featuredEntries.length} {panel.featuredEntries.length === 1 ? 'atração' : 'atrações'}</span>
                   </div>
                   <div class="home-competition-accordion-list">
-                    {panel.featuredEntries.map((entry) => <HomeCompetitionAccordion entry={entry} categoryLabel={entry.tournament.category === 'Dance Game' ? 'Dança' : 'Cosplay'} featured />)}
+                    {panel.featuredEntries.map((entry) => <HomeCompetitionAccordion entry={entry} categoryLabel={entry.tournament.category === 'Dance Game' ? 'Competição de Dança' : 'Cosplay'} featured />)}
                   </div>
                 </div>
               )}

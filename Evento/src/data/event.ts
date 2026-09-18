@@ -164,7 +164,24 @@ function formatCurrency(cents: number) {
   return `R$ ${(cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-export const tournaments = competitionDefinitions.map((competition) => ({
+const publicOnlyTournaments = [
+  {
+    id: 'k-pop-individual',
+    category: 'Dance Game',
+    title: 'K-Pop Individual',
+    accent: 'pink',
+    prize: '',
+    detail: 'Suba ao palco e mostre sua performance.',
+    registrationPrice: '',
+    registrationUrl: '',
+    capacityLabel: '32 vagas',
+    participants: '32 vagas',
+    publicOnly: true
+  }
+] as const;
+
+export const tournaments = [
+  ...competitionDefinitions.map((competition) => ({
   id: competition.id,
   category: competition.category,
   title: competition.name,
@@ -182,11 +199,13 @@ export const tournaments = competitionDefinitions.map((competition) => ({
   ...(competition.registrationFree ? { registrationFree: true } : {}),
   ...(competition.regulationId ? { regulationId: competition.regulationId } : {}),
   ...(competition.featured ? { featured: true } : {})
-}));
+  })),
+  ...publicOnlyTournaments
+];
 
 export const tournamentCategories = [
   { title: 'Cosplay', kicker: 'COSPLAY', accent: 'pink', category: 'Cosplay' },
-  { title: 'Dança', kicker: 'DANCE GAME', accent: 'yellow', category: 'Dance Game' },
+  { title: 'Competição de Dança', kicker: 'COMPETIÇÃO DE DANÇA', accent: 'yellow', category: 'Dance Game' },
   { title: 'Fight Games', kicker: 'FIGHT GAMES', accent: 'red', category: 'Fight Games' },
   { title: 'eSports Games', kicker: 'ESPORTS GAMES', accent: 'cyan', category: 'Esport Games' },
   { title: 'Retrô Games', kicker: 'RETRÔ GAMES', accent: 'yellow', category: 'Retrô Games' }
@@ -209,7 +228,13 @@ export const tournamentSchedule = competitionDefinitions.map((competition) => ({
   date: competition.displayDate,
   time: competition.startTime,
   note: competition.detail ?? ''
-}));
+})).concat({
+  tournamentId: 'k-pop-individual',
+  day: 'SÁBADO',
+  date: '19/09',
+  time: '13h',
+  note: '32 vagas'
+});
 
 export const eventScheduleExtras = [
   { day: 'SÁBADO', date: '19/09', time: '15h00', title: 'Painel Dublador', detail: 'Raul Schlosser', category: 'Atração', note: 'Painel, fotos e autógrafos', href: '#presencas-confirmadas', linkLabel: 'Ver convidado', accent: 'pink' },
@@ -224,6 +249,13 @@ export const eventScheduleExtras = [
 export const schedulePanels: readonly { day: string }[] = [];
 
 export const gameArt = [
+  {
+    title: 'K-Pop Individual',
+    image: '/assets/flyers/K-Pop.png',
+    alt: 'Arte oficial do K-Pop Individual',
+    accent: 'pink',
+    fit: 'contain'
+  },
   {
     title: 'Mortal Kombat 1',
     image: '/assets/flyers/mortal-kombat-1-cover.png',

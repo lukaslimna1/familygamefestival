@@ -1,5 +1,5 @@
 ---
-import { event, eventScheduleExtras, tournamentSchedule, tournaments } from '../data/event';
+import { event, eventScheduleExtras, tournamentCategories, tournamentSchedule, tournaments } from '../data/event';
 
 const dayPanels = [
   { label: 'SÁBADO', date: '19/09', slug: 'sabado', accent: 'cyan' },
@@ -7,6 +7,7 @@ const dayPanels = [
 ] as const;
 
 const tournamentById = new Map(tournaments.map((tournament) => [tournament.id, tournament]));
+const categoryLabelByTechnicalName = new Map<string, string>(tournamentCategories.map((category) => [category.category, category.kicker]));
 
 type ScheduleEntry = {
   day: string;
@@ -36,7 +37,7 @@ const getDayEntries = (day: (typeof dayPanels)[number]['label']): ScheduleEntry[
         day: slot.day,
         time: slot.time,
         title: tournament.title,
-        detail: tournament.category,
+        detail: categoryLabelByTechnicalName.get(tournament.category) ?? tournament.category,
         category: 'Campeonato',
         note: slot.note,
         href: `/campeonatos/${tournament.id}`,
