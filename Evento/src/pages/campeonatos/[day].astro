@@ -13,11 +13,12 @@ export function getStaticPaths() {
 
 const { day } = Astro.props;
 const pageTitle = `Campeonatos de ${day.day.toLowerCase()} | ${event.name}`;
+const dayCompetitionNames = day.groups.flatMap((group) => group.entries).map((entry) => entry.tournament.title).join(', ');
 ---
 
 <BaseLayout
   title={pageTitle}
-  description={`Veja os campeonatos de ${day.day.toLowerCase()} do Family Game Festival 2026, com horários, premiações, regulamentos e inscrições.`}
+  description={`Veja ${dayCompetitionNames} no ${day.day.toLowerCase()} do Family Game Festival 2026, em Bauru/SP, com horários, premiações, regulamentos e inscrições.`}
   canonical={`https://familygamefestival.vercel.app/campeonatos/${day.slug}`}
 >
   <SiteHeader current="Campeonatos" />

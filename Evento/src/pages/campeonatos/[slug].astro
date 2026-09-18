@@ -52,18 +52,23 @@ const participationCopy = isPublicOnly
     : registrationUrl
     ? `Compre o ingresso competidor ou o ingresso comum do evento. ${onlineRegistrationCopy} O ingresso competidor já inclui a entrada no evento no dia da competição.`
     : 'As informações de compra e inscrição serão publicadas assim que a organização confirmar a abertura.';
+const siteUrl = 'https://familygamefestival.vercel.app';
+const scheduleDateParts = schedule.date.split('/');
+const eventDate = `2026-${scheduleDateParts[1]}-${scheduleDateParts[0]}`;
+const eventTime = schedule.time.replace('h', ':');
 const seoDescription = isPublicOnly || isKpop
   ? 'Concurso K-Pop Individual no Family Game Festival 2026 em Bauru/SP. Sábado, 19 de setembro, às 13h, com apresentações solo de dança K-Pop.'
-  : `${tournament.title}: data, horário, premiação, regulamento e inscrição no Family Game Festival 2026.`;
+  : `${tournament.title} no Family Game Festival 2026, em Bauru/SP. ${schedule.day.toLowerCase()}, ${schedule.date}, às ${schedule.time}: ${categoryLabel.toLowerCase()}, regulamento, inscrição e premiação.`;
 const seoTitle = isKpop
   ? 'K-Pop Individual em Bauru | Family Game Festival 2026'
-  : `${tournament.title} | Campeonatos | ${event.name}`;
-const kpopEventSchema = isKpop ? {
+  : `${tournament.title} em Bauru | Family Game Festival 2026`;
+const championshipImageUrl = new URL(art.image || '/assets/flyers/festival-logo.jpg', siteUrl).toString();
+const championshipEventSchema = {
   '@context': 'https://schema.org',
   '@type': 'Event',
-  name: 'K-Pop Individual — Family Game Festival 2026',
+  name: `${tournament.title} — ${event.name}`,
   description: seoDescription,
-  startDate: '2026-09-19T13:00:00-03:00',
+  startDate: `${eventDate}T${eventTime}:00-03:00`,
   eventStatus: 'https://schema.org/EventScheduled',
   eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
   location: {
@@ -77,17 +82,19 @@ const kpopEventSchema = isKpop ? {
       addressCountry: 'BR'
     }
   },
-  image: 'https://familygamefestival.vercel.app/assets/flyers/K-Pop.png',
-  organizer: { '@type': 'Organization', name: 'Family Game Festival', url: 'https://familygamefestival.vercel.app/' },
-  url: `https://familygamefestival.vercel.app${pageUrl}`
-} : undefined;
+  image: championshipImageUrl,
+  organizer: { '@type': 'Organization', name: 'Family Game Festival', url: `${siteUrl}/` },
+  url: `${siteUrl}${pageUrl}`
+};
 ---
 
 <BaseLayout
   title={seoTitle}
   description={seoDescription}
-  canonical={`https://familygamefestival.vercel.app${pageUrl}`}
-  structuredData={kpopEventSchema}
+  canonical={`${siteUrl}${pageUrl}`}
+  image={art.image || undefined}
+  imageAlt={art.alt || `Arte de ${tournament.title}`}
+  structuredData={championshipEventSchema}
 >
   <SiteHeader current="Campeonatos" />
 

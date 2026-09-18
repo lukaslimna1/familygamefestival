@@ -57,9 +57,48 @@ const guestVideos = existsSync(guestVideoDirectory)
         return { filename: entry.name, title: guestVideoTitles[entry.name] ?? guest?.name ?? filenameTitle, sourceType: extension === '.webm' ? 'video/webm' : extension === '.mov' ? 'video/quicktime' : 'video/mp4' };
       })
   : [];
+
+const siteUrl = 'https://familygamefestival.vercel.app';
+const absoluteAssetUrl = (path: string) => new URL(path, siteUrl).toString();
+const guestSchemas = guests.map((guest) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  '@id': `${siteUrl}/#guest-${guest.slug}`,
+  name: guest.name,
+  jobTitle: guest.role,
+  description: guest.description,
+  url: `${siteUrl}/#presencas-confirmadas`,
+  sameAs: [guest.instagramUrl],
+  image: absoluteAssetUrl(guest.image)
+}));
+const artistAlleySchemas = artistAlleyArtists.map((artist) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  '@id': `${siteUrl}/#artist-${artist.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+  name: artist.name,
+  jobTitle: artist.role,
+  description: artist.description,
+  url: `${siteUrl}/#artist-alley`,
+  sameAs: [artist.instagramUrl],
+  image: absoluteAssetUrl(artist.image)
+}));
+const attractionsSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Atrações do Family Game Festival 2026',
+  url: `${siteUrl}/#atracoes`,
+  itemListElement: attractions.map((attraction, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: attraction.title,
+    description: attraction.text,
+    url: `${siteUrl}/#atracoes`
+  }))
+};
+const homeStructuredData = [...guestSchemas, ...artistAlleySchemas, attractionsSchema];
 ---
 
-<BaseLayout>
+<BaseLayout structuredData={homeStructuredData}>
   <SiteHeader />
 
   <section class="event-spotlight" aria-labelledby="event-spotlight-title">

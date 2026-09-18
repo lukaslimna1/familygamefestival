@@ -7,6 +7,8 @@ interface Props {
   title?: string;
   description?: string;
   canonical?: string;
+  image?: string;
+  imageAlt?: string;
   structuredData?: Record<string, unknown> | Record<string, unknown>[];
   manifest?: string;
   bodyClass?: string;
@@ -19,10 +21,14 @@ const {
   title = 'Family Game Festival 2026 | Evento Geek em Bauru/SP',
   description = 'Family Game Festival 2026 em Bauru/SP: games, campeonatos, cosplay, K-Pop, Just Dance e cultura geek nos dias 19 e 20 de setembro.',
   canonical = `${siteUrl}/`,
+  image,
+  imageAlt = 'Logo do Family Game Festival 2026',
   structuredData,
   manifest,
   bodyClass,
 } = Astro.props;
+
+const socialImageUrl = new URL(image || '/assets/flyers/festival-logo.jpg', siteUrl).toString();
 
 const mainEventSchema = {
   '@context': 'https://schema.org',
@@ -85,14 +91,14 @@ const jsonLd = canonical === `${siteUrl}/`
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={eventImageUrl} />
-    <meta property="og:image:alt" content="Logo do Family Game Festival 2026" />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta property="og:image:alt" content={imageAlt} />
     <meta property="og:locale" content="pt_BR" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={eventImageUrl} />
-    <meta name="twitter:image:alt" content="Logo do Family Game Festival 2026" />
+    <meta name="twitter:image" content={socialImageUrl} />
+    <meta name="twitter:image:alt" content={imageAlt} />
     <title>{title}</title>
     {jsonLd.map((schema) => <script type="application/ld+json" set:html={JSON.stringify(schema)} />)}
     <Analytics />
