@@ -7,6 +7,14 @@ export const regulations = {
     pageUrl: '/campeonatos/cosplay',
     pdfFile: 'Regulamento Oficial — Concurso Cosplay _ Family Game Festival 2026.pdf'
   },
+  kpop: {
+    id: 'kpop',
+    title: 'Regulamento Oficial — Concurso K-Pop Individual',
+    subtitle: 'Family Game Festival 2026 • Apresentação individual de dança K-Pop',
+    version: 'kpop-2026-v1',
+    pageUrl: '/campeonatos/k-pop-individual',
+    pdfFile: 'Regulamento Oficial - Concurso K-Pop Individual _ Family Game Festival 2026.pdf'
+  },
   gamesGeneral: {
     id: 'games-general',
     title: 'Regulamento Geral — Campeonatos de Games',

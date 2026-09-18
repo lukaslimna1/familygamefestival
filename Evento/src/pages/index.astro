@@ -484,9 +484,12 @@ const guestVideos = existsSync(guestVideoDirectory)
             <div class="sponsor-carousel-track">
               {[...mediaPartners, ...mediaPartners].map((media, index) => {
                 const duplicate = index >= mediaPartners.length;
+                const logoClass = 'lightLogo' in media && media.lightLogo
+                  ? 'sponsor-carousel-logo sponsor-carousel-logo-light'
+                  : 'sponsor-carousel-logo';
                 return (
                   <a class={`sponsor-carousel-item sponsor-carousel-${media.accent}`} href={media.href} target="_blank" rel="noreferrer" aria-label={`${media.name} · parceiro de divulgação`} title={`${media.name} · parceiro de divulgação`} aria-hidden={duplicate ? 'true' : undefined} tabindex={duplicate ? -1 : undefined}>
-                    <span class="sponsor-carousel-logo"><img src={media.image} alt={`Logo ${media.name}`} loading="lazy" /></span>
+                    <span class={logoClass}><img src={media.image} alt={`Logo ${media.name}`} loading="lazy" /></span>
                     <span class="sponsor-carousel-pill">Parceiro de divulgação</span>
                   </a>
                 );

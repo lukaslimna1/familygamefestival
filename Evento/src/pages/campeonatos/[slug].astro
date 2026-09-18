@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import CosplayRegulationDocument from '../../components/CosplayRegulationDocument.astro';
+import KpopRegulationDocument from '../../components/KpopRegulationDocument.astro';
 import GamesGeneralRegulationDocument from '../../components/GamesGeneralRegulationDocument.astro';
 import CosplayReferenceGuides from '../../components/CosplayReferenceGuides.astro';
 import RegistrationChoiceDialog from '../../components/RegistrationChoiceDialog.astro';
@@ -24,7 +25,7 @@ const categoryLabel = tournament.category === 'Dance Game' ? 'Competição de Da
 const isCosplay = tournament.id === 'cosplay';
 const isKpop = tournament.id === 'k-pop-individual';
 const regulationPageUrl = regulation && 'pageUrl' in regulation ? regulation.pageUrl : undefined;
-const cosplayPdfUrl = regulation ? `/assets/regulamentos/${encodeURIComponent(regulation.pdfFile)}` : undefined;
+const regulationPdfUrl = regulation ? `/assets/regulamentos/${encodeURIComponent(regulation.pdfFile)}` : undefined;
 const detailPageIntro = isPublicOnly || isKpop
   ? 'O K-Pop Individual chega ao Family Game Festival 2026 para colocar performances solo no centro do palco. Escolha sua música, prepare sua coreografia e mostre sua presença, técnica e energia diante do público.'
   : isCosplay
@@ -32,7 +33,7 @@ const detailPageIntro = isPublicOnly || isKpop
   : generalRegulation
     ? `Esta é a página oficial de ${tournament.title} no Family Game Festival 2026. Aqui ficarão reunidos os detalhes da inscrição, as orientações da organização e as regras gerais aplicáveis aos campeonatos de games.`
     : `Esta é a página oficial de ${tournament.title} no Family Game Festival 2026. Aqui ficarão reunidos o regulamento, os detalhes da inscrição e as orientações da organização.`;
-const participationTitle = isPublicOnly || isKpop
+const participationTitle = isPublicOnly
   ? 'Inscrições online abertas'
   : registrationFree
   ? 'Inscrição gratuita'
@@ -42,7 +43,7 @@ const participationTitle = isPublicOnly || isKpop
     ? 'Compre seu ingresso competidor'
     : 'Ingresso competidor em breve';
 const onlineRegistrationCopy = `Inscrições online até ${ONLINE_REGISTRATION_DEADLINE_LABEL}. ${ONLINE_REGISTRATION_ONSITE_NOTICE}`;
-const participationCopy = isPublicOnly || isKpop
+const participationCopy = isPublicOnly
   ? 'Inscrições online abertas para o K-Pop Individual.'
   : registrationFree
   ? `Compre o ingresso do evento. A inscrição na seletiva é gratuita. ${onlineRegistrationCopy}`
@@ -83,7 +84,7 @@ const seoDescription = isPublicOnly || isKpop
             ) : !isCosplay ? (
               <span class="button button-detail-disabled">Regulamento específico em breve</span>
             ) : null}
-            {isPublicOnly || isKpop ? (
+            {isPublicOnly ? (
               <a class="button button-yellow" href={`/inscricao/${tournament.id}`}>Inscrições online abertas <span aria-hidden="true">↗</span></a>
             ) : registrationFree ? (
               <div class="championship-registration-free" role="status">
@@ -95,7 +96,7 @@ const seoDescription = isPublicOnly || isKpop
             ) : (
               <span class="button button-detail-disabled">Ingresso competidor em breve</span>
             )}
-            {!isPublicOnly && !isKpop && <RegistrationChoiceDialog entry={entry} label="FAZER INSCRIÇÃO ONLINE" />}
+            {!isPublicOnly && <RegistrationChoiceDialog entry={entry} label="FAZER INSCRIÇÃO ONLINE" />}
           </div>
         </div>
       </div>
@@ -103,7 +104,7 @@ const seoDescription = isPublicOnly || isKpop
 
     <section class="championship-detail-facts-section">
       <div class="container championship-detail-facts">
-        {isPublicOnly || isKpop ? (
+        {isPublicOnly ? (
           <>
             <div><span>DIA</span><strong>{schedule.day}</strong><small>{schedule.date}/2026</small></div>
             <div><span>HORÁRIO</span><strong>{schedule.time}</strong><small>Programação oficial</small></div>
@@ -136,16 +137,16 @@ const seoDescription = isPublicOnly || isKpop
           <p>{detailPageIntro}</p>
         </div>
         <div class="championship-detail-info-board">
-          <div><span>DATA E LOCAL</span><strong>{schedule.date}/2026 · Arena Tauste</strong><small>SORRI Bauru · Av. Nações Unidas, 5340</small></div>
-          {isPublicOnly || isKpop ? (
-            <>
-              <div><span>INSCRIÇÕES ONLINE</span><strong>Abertas</strong><small>Inscrições online abertas.</small></div>
-              <div><span>REGRAS DO K-POP INDIVIDUAL</span><strong>Regulamento em atualização.</strong><small>Regulamento completo em atualização.</small></div>
-            </>
-          ) : (
+              <div><span>DATA E LOCAL</span><strong>{schedule.date}/2026 · Arena Tauste</strong><small>SORRI Bauru · Av. Nações Unidas, 5340</small></div>
+              {isPublicOnly ? (
+                <>
+                  <div><span>INSCRIÇÕES ONLINE</span><strong>Abertas</strong><small>Inscrições online abertas.</small></div>
+                  <div><span>REGRAS DO K-POP INDIVIDUAL</span><strong>Regulamento em atualização.</strong><small>Regulamento completo em atualização.</small></div>
+                </>
+              ) : (
             <>
               <div><span>COMO PARTICIPAR</span><strong>{participationTitle}</strong><small>{participationCopy}</small></div>
-              {!isCosplay && <div><span>REGULAMENTO ESPECÍFICO</span><strong>{regulation ? 'Regulamento publicado' : 'Regulamento em breve'}</strong><small>{regulation ? 'Leia a versão completa antes de realizar sua inscrição.' : 'O documento próprio desta modalidade será publicado assim que for disponibilizado.'}</small></div>}
+              {!isCosplay && !isKpop && <div><span>REGULAMENTO ESPECÍFICO</span><strong>{regulation ? 'Regulamento publicado' : 'Regulamento em breve'}</strong><small>{regulation ? 'Leia a versão completa antes de realizar sua inscrição.' : 'O documento próprio desta modalidade será publicado assim que for disponibilizado.'}</small></div>}
             </>
           )}
         </div>
@@ -174,7 +175,7 @@ const seoDescription = isPublicOnly || isKpop
             <h2>Regulamento do Concurso Cosplay.</h2>
             <p>Leia todas as regras, critérios, prazos e condições do concurso nesta mesma página.</p>
             <div class="championship-regulation-actions">
-              {cosplayPdfUrl && <a class="button button-yellow" href={cosplayPdfUrl} download>Baixar PDF oficial <span aria-hidden="true">↓</span></a>}
+              {regulationPdfUrl && <a class="button button-yellow" href={regulationPdfUrl} download>Baixar PDF oficial <span aria-hidden="true">↓</span></a>}
             </div>
           </div>
           <CosplayRegulationDocument />
@@ -183,6 +184,22 @@ const seoDescription = isPublicOnly || isKpop
         <div id="cosplay-guides-panel" role="tabpanel" aria-labelledby="cosplay-guides-tab" data-cosplay-panel hidden>
           <CosplayReferenceGuides />
         </div>
+      </div>
+    )}
+
+    {isKpop && (
+      <div class="championship-cosplay-resources championship-kpop-resources">
+        <section id="kpop-regulation-panel" class="section championship-regulation-section championship-cosplay-regulation-panel">
+          <div class="container championship-regulation-heading">
+            <p class="eyebrow eyebrow-cyan">Documento oficial</p>
+            <h2>Regulamento do Concurso K-Pop Individual.</h2>
+            <p>O documento foi adaptado para consulta no site, mantendo o conteúdo do regulamento oficial.</p>
+            <div class="championship-regulation-actions">
+              {regulationPdfUrl && <a class="button button-yellow" href={regulationPdfUrl} download>Baixar PDF oficial <span aria-hidden="true">↓</span></a>}
+            </div>
+          </div>
+          <KpopRegulationDocument />
+        </section>
       </div>
     )}
   </main>

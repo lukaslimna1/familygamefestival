@@ -125,6 +125,42 @@ export const guests = [
     image: '/assets/atraction/Jeni.cosplay.png',
     description: 'Jurada convidada para avaliar o Concurso Cosplay do Family Game Festival.',
     highlight: 'Concurso Cosplay · 20/09'
+  },
+  {
+    name: 'Bunny',
+    slug: 'bunny',
+    handle: '@bunny.b00h',
+    instagramUrl: 'https://www.instagram.com/bunny.b00h/',
+    badge: 'JURADA CONFIRMADA',
+    role: 'Jurada do Concurso K-Pop',
+    accent: 'cyan',
+    image: '/assets/atraction/bunny.b00h.png',
+    description: 'Professora do Studio 4 Dança e dançarina do Studio 4 Dança, Dea Bauru e Medusa 4 DG.',
+    highlight: 'Concurso K-Pop Individual · 20/09'
+  },
+  {
+    name: '_mooniexbae',
+    slug: 'mooniexbae',
+    handle: '@_mooniexbae',
+    instagramUrl: 'https://www.instagram.com/_mooniexbae',
+    badge: 'JURADA CONFIRMADA',
+    role: 'Jurada do Concurso K-Pop',
+    accent: 'pink',
+    image: '/assets/atraction/_mooniexbae.png',
+    description: 'Maria Eduarda, professora de K-Pop no Studio 4 Dança.',
+    highlight: 'Concurso K-Pop Individual · 20/09'
+  },
+  {
+    name: 'marinex_7',
+    slug: 'marinex-7',
+    handle: '@marinex_7',
+    instagramUrl: 'https://www.instagram.com/marinex_7',
+    badge: 'JURADA CONFIRMADA',
+    role: 'Jurada do Concurso K-Pop',
+    accent: 'yellow',
+    image: '/assets/atraction/marinex_7.png',
+    description: 'Estudante de Educação Física na UNESP.',
+    highlight: 'Concurso K-Pop Individual · 20/09'
   }
 ] as const;
 
@@ -487,14 +523,16 @@ export const mediaPartners = [
     handle: 'jwave.com.br',
     image: '/assets/logos/midias/JWave-Logo-.png',
     href: 'https://www.jwave.com.br/',
-    accent: 'pink'
+    accent: 'pink',
+    lightLogo: true
   },
   {
     name: 'Calendário Nerd',
     handle: 'calendarionerd.com.br',
     image: '/assets/logos/midias/Calendario%20Nerd.webp',
     href: 'https://calendarionerd.com.br/',
-    accent: 'cyan'
+    accent: 'cyan',
+    lightLogo: true
   },
   {
     name: 'Vaga Nerd',
@@ -502,6 +540,14 @@ export const mediaPartners = [
     image: '/assets/logos/midias/Vaga%20Nerd%20Portal.webp',
     href: 'https://www.instagram.com/vaganerd/',
     accent: 'red'
+  },
+  {
+    name: 'Geek Connection',
+    handle: '@geek_connection',
+    image: '/assets/logos/midias/Geek%20Connection.png',
+    href: 'https://www.geekconnection.net/',
+    accent: 'yellow',
+    lightLogo: true
   }
 ] as const;
 

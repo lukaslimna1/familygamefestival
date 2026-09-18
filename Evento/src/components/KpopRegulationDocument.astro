@@ -1,0 +1,279 @@
+---
+import { regulations } from '../data/regulations';
+
+interface Props {
+  pdfUrl?: string;
+}
+
+const { pdfUrl = `/assets/regulamentos/${encodeURIComponent(regulations.kpop.pdfFile)}` } = Astro.props;
+---
+
+<div class="container regulation-layout">
+  <aside class="regulation-toc" aria-label="Índice do regulamento">
+    <p class="eyebrow eyebrow-cyan">Neste documento</p>
+    <h2>Índice</h2>
+    <nav>
+      <a href="#concurso">01 · Do concurso</a>
+      <a href="#inscricoes">02 · Das inscrições</a>
+      <a href="#dados-apresentacao">03 · Dados da apresentação</a>
+      <a href="#apresentacao">04 · Da apresentação</a>
+      <a href="#ordem">05 · Da ordem e da chamada</a>
+      <a href="#audios">06 · Dos áudios</a>
+      <a href="#avaliacao">07 · Da avaliação</a>
+      <a href="#desempate">08 · Do desempate</a>
+      <a href="#seguranca">09 · Da segurança</a>
+      <a href="#conduta">10 · Da conduta</a>
+      <a href="#penalidades">11 · Das penalidades</a>
+      <a href="#banca">12 · Da banca julgadora</a>
+      <a href="#resultado">13 · Do resultado</a>
+      <a href="#imagem">14 · Do uso de imagem</a>
+      <a href="#menores">15 · Dos menores de idade</a>
+      <a href="#aceite">16 · Do aceite eletrônico</a>
+      <a href="#disposicoes">17 · Disposições finais</a>
+    </nav>
+  </aside>
+
+  <article class="regulation-document">
+    <header class="regulation-document-header">
+      <p class="eyebrow eyebrow-cyan">Family Game Festival 2026</p>
+      <h2>Regulamento Oficial — Concurso K-Pop Individual</h2>
+      <p>Apresentação individual de dança K-Pop</p>
+    </header>
+
+    <section id="concurso" class="regulation-section">
+      <h3><span>01</span> Do concurso</h3>
+      <ol class="regulation-items">
+        <li><span>1.1.</span><p>O Concurso K-Pop Individual do Family Game Festival 2026 será realizado exclusivamente no formato de apresentação individual de dança baseada no gênero musical K-Pop.</p></li>
+        <li><span>1.2.</span><p>O concurso será realizado no dia <strong>19 de setembro de 2026, às 13h00</strong>, no Family Game Festival, na Arena Tauste — SORRI Bauru.</p></li>
+        <li><span>1.3.</span><p>O concurso terá o limite máximo de <strong>25 participantes</strong>.</p></li>
+        <li><span>1.4.</span><p>A idade mínima para participação será de <strong>13 anos completos</strong> na data do evento.</p></li>
+        <li><span>1.5.</span><p>Participantes menores de 18 anos deverão possuir autorização de seu responsável legal e permanecer acompanhados por responsável durante o evento.</p></li>
+        <li><span>1.6.</span><p>A participação implica leitura, compreensão e concordância com este regulamento e com os aceites eletrônicos exigidos na inscrição.</p></li>
+      </ol>
+    </section>
+
+    <section id="inscricoes" class="regulation-section">
+      <h3><span>02</span> Das inscrições</h3>
+      <ol class="regulation-items">
+        <li><span>2.1.</span><p>A inscrição no Concurso K-Pop Individual será gratuita.</p></li>
+        <li><span>2.2.</span><p>A inscrição no concurso não inclui o ingresso de entrada. O participante deverá possuir ingresso válido para acesso ao Family Game Festival no dia da competição.</p></li>
+        <li><span>2.3.</span><p>As inscrições online ficarão disponíveis pelo site oficial até <strong>18 de setembro de 2026, às 23h59</strong>, observado o limite de vagas.</p></li>
+        <li><span>2.4.</span><p>Poderá haver inscrição presencial no dia do evento até 12h00, uma hora antes do início do concurso, exclusivamente se ainda existirem vagas.</p></li>
+        <li><span>2.5.</span><p>As 25 vagas poderão ser preenchidas integralmente pelas inscrições online. Caso todas sejam preenchidas antecipadamente, não serão abertas novas inscrições presenciais.</p></li>
+      </ol>
+      <div class="regulation-callout"><strong>Limite de vagas:</strong> o preenchimento das 25 vagas encerra as inscrições, ainda que isso ocorra antes do prazo final.</div>
+      <h4>Das inscrições — continuação</h4>
+      <ol class="regulation-items" start="6">
+        <li><span>2.6.</span><p>O participante previamente inscrito deverá realizar credenciamento conforme orientação da organização antes do início do concurso.</p></li>
+        <li><span>2.7.</span><p>A inscrição deverá conter os dados pessoais exigidos pelo sistema e os dados específicos da apresentação.</p></li>
+        <li><span>2.8.</span><p>Informações falsas, incompatíveis com a apresentação ou documentos inválidos poderão resultar em impedimento da participação ou desclassificação, conforme a gravidade.</p></li>
+      </ol>
+    </section>
+
+    <section id="dados-apresentacao" class="regulation-section">
+      <h3><span>03</span> Dos dados da apresentação e das referências</h3>
+      <ol class="regulation-items">
+        <li><span>3.1.</span><p>O participante deverá informar o artista ou grupo original e o nome da música que serão utilizados na apresentação.</p></li>
+        <li><span>3.2.</span><p>Quando aplicável, poderá informar a versão, remix, dance break ou edição específica utilizada.</p></li>
+        <li><span>3.3.</span><p>O participante deverá informar se a música foi editada ou cortada.</p></li>
+        <li><span>3.4.</span><p>O envio do arquivo MP3 da apresentação é obrigatório durante a inscrição online.</p></li>
+        <li><span>3.5.</span><p>O participante poderá informar, de forma opcional e recomendada, link de coreografia, MV, dance practice, performance ou outro vídeo utilizado como referência.</p></li>
+        <li><span>3.6.</span><p>O material de referência poderá ser disponibilizado à banca julgadora para auxiliar na avaliação de Fidelidade / Originalidade.</p></li>
+        <li><span>3.7.</span><p>A ausência de link de referência não impede a inscrição nem gera penalidade automática.</p></li>
+        <li><span>3.8.</span><p>Observações sobre o áudio e observações destinadas aos jurados poderão ser informadas nos campos próprios do formulário.</p></li>
+      </ol>
+      <p class="regulation-note"><strong>Referência para a banca:</strong> quando enviado, o link deverá corresponder à proposta apresentada e poderá ser consultado pelos jurados.</p>
+    </section>
+
+    <section id="apresentacao" class="regulation-section">
+      <h3><span>04</span> Da apresentação</h3>
+      <ol class="regulation-items">
+        <li><span>4.1.</span><p>A apresentação será exclusivamente individual.</p></li>
+        <li><span>4.2.</span><p>O tempo oficial deverá ter mínimo de <strong>1 minuto e 30 segundos</strong> e máximo de <strong>4 minutos</strong>.</p></li>
+        <li><span>4.3.</span><p>Apresentações com duração inferior a 1 minuto e 30 segundos não receberão desconto automático, porém a insuficiência de conteúdo poderá impactar a avaliação dos critérios pela banca.</p></li>
+        <li><span>4.4.</span><p>Será considerado como início da apresentação o momento em que o áudio começar ou, quando aplicável, o sinal previamente combinado entre participante e organização.</p></li>
+        <li><span>4.5.</span><p>Apresentações que ultrapassarem 4 minutos e terminarem em até 5 minutos receberão penalidade única de 5 pontos em cada critério, totalizando 20 pontos de desconto na pontuação final.</p></li>
+        <li><span>4.6.</span><p>A penalidade de 20 pontos será aplicada uma única vez sobre o resultado final e não será multiplicada pelo número de jurados.</p></li>
+        <li><span>4.7.</span><p>Apresentações que ultrapassarem 5 minutos resultarão em desclassificação.</p></li>
+        <li><span>4.8.</span><p>A cronometragem oficial será realizada pela organização.</p></li>
+      </ol>
+      <table class="regulation-table"><thead><tr><th>Faixa de tempo</th><th>Aplicação</th></tr></thead><tbody><tr><td>Abaixo de 1m30</td><td>Sem desconto automático; poderá impactar a avaliação.</td></tr><tr><td>1m30 a 4m00</td><td>Tempo oficial.</td></tr><tr><td>4m01 a 5m00</td><td>Penalidade única de 20 pontos na pontuação final.</td></tr><tr><td>Acima de 5m00</td><td>Desclassificação.</td></tr></tbody></table>
+    </section>
+
+    <section id="ordem" class="regulation-section">
+      <h3><span>05</span> Da ordem e da chamada</h3>
+      <ol class="regulation-items">
+        <li><span>5.1.</span><p>A ordem das apresentações será definida pela organização de forma aleatória após o credenciamento.</p></li>
+        <li><span>5.2.</span><p>O participante que não estiver presente quando chamado poderá ser deslocado para o final da ordem, a critério da organização.</p></li>
+        <li><span>5.3.</span><p>Caso permaneça ausente quando chamado novamente, poderá ser desclassificado.</p></li>
+      </ol>
+    </section>
+
+    <section id="audios" class="regulation-section">
+      <h3><span>06</span> Dos áudios</h3>
+      <ol class="regulation-items">
+        <li><span>6.1.</span><p>O formato oficial de áudio será MP3.</p></li>
+        <li><span>6.2.</span><p>O arquivo deverá ser enviado antecipadamente pelo sistema de inscrição online.</p></li>
+        <li><span>6.3.</span><p>Independentemente do envio antecipado, será obrigatório levar uma cópia do arquivo da apresentação no dia do concurso, preferencialmente em pen drive.</p></li>
+        <li><span>6.4.</span><p>Recomenda-se que o pen drive esteja identificado com nome e telefone do participante, por etiqueta física ou identificação clara dentro do dispositivo.</p></li>
+        <li><span>6.5.</span><p>A organização não se responsabilizará pela leitura de cartões de memória, celulares, armazenamento em nuvem ou outros dispositivos diferentes de pen drive.</p></li>
+        <li><span>6.6.</span><p>A organização não realizará exibição de vídeo como parte da execução do áudio.</p></li>
+        <li><span>6.7.</span><p>É permitido o uso de remix composto por músicas de K-Pop, desde que respeitados os limites de tempo previstos neste regulamento, podendo as faixas ser ou não cantadas em coreano.</p></li>
+      </ol>
+    </section>
+
+    <section id="avaliacao" class="regulation-section">
+      <h3><span>07</span> Da avaliação</h3>
+      <ol class="regulation-items">
+        <li><span>7.1.</span><p>A banca julgadora será composta por <strong>3 jurados</strong> convidados pela organização do Family Game Festival.</p></li>
+        <li><span>7.2.</span><p>Cada jurado atribuirá notas de 0 a 10 pontos para cada um dos quatro critérios estabelecidos abaixo.</p></li>
+        <li><span>7.3.</span><p>As notas poderão utilizar valores decimais e os quatro critérios possuirão o mesmo peso na pontuação geral.</p></li>
+        <li><span>7.4.</span><p>A pontuação final será obtida pela soma de todas as notas atribuídas pelos três jurados, com máximo de <strong>120 pontos</strong> antes de eventuais penalidades.</p></li>
+      </ol>
+      <div class="criteria-grid">
+        <article><h4>Execução e técnica</h4><p>Precisão dos movimentos, ritmo, sincronia com a música e postura.</p></article>
+        <article><h4>Expressão e presença</h4><p>Carisma, atuação, interpretação da música e contato com o público.</p></article>
+        <article><h4>Fidelidade / originalidade</h4><p>Semelhança com a coreografia original ou criatividade no remix, adaptação e construção da apresentação.</p></article>
+        <article><h4>Figurino e visagismo</h4><p>Adequação do vestuário, maquiagem, cabelo e composição visual ao conceito apresentado.</p></article>
+      </div>
+      <div class="regulation-callout"><strong>4 critérios:</strong> até 40 pontos por jurado e máximo geral de 120 pontos.</div>
+    </section>
+
+    <section id="desempate" class="regulation-section">
+      <h3><span>08</span> Do desempate</h3>
+      <ol class="regulation-items">
+        <li><span>8.1.</span><p>Em caso de empate na pontuação total, será considerada a soma das notas obtidas em <strong>Execução e Técnica</strong>.</p></li>
+        <li><span>8.2.</span><p>Permanecendo o empate, será considerada a soma das notas obtidas em <strong>Fidelidade / Originalidade</strong>.</p></li>
+        <li><span>8.3.</span><p>Persistindo o empate, será considerada a soma das notas obtidas em <strong>Expressão e Presença</strong>.</p></li>
+        <li><span>8.4.</span><p>Permanecendo o empate, será considerada a soma das notas obtidas em <strong>Figurino e Visagismo</strong>.</p></li>
+        <li><span>8.5.</span><p>Caso ainda exista empate, a classificação será definida por deliberação conjunta da banca julgadora.</p></li>
+      </ol>
+    </section>
+
+    <section id="seguranca" class="regulation-section">
+      <h3><span>09</span> Da segurança e dos elementos de apresentação</h3>
+      <ol class="regulation-items">
+        <li><span>9.1.</span><p>Nenhuma apresentação poderá colocar em risco o participante, público, jurados, equipe ou demais pessoas presentes.</p></li>
+        <li><span>9.2.</span><p>Não será permitido o uso de fogo, explosivos, armas reais, substâncias inflamáveis, produtos químicos perigosos, água, líquidos escorregadios ou materiais capazes de provocar acidentes.</p></li>
+        <li><span>9.3.</span><p>Não será permitido o uso de purpurina, glitter, papel picado ou outros materiais que produzam resíduos de difícil ou demorada remoção.</p></li>
+        <li><span>9.4.</span><p>Não será permitido arremessar objetos perigosos para fora da área de apresentação.</p></li>
+        <li><span>9.5.</span><p>Cenários, objetos ou acessórios não poderão ser pregados, colados, presos ou fixados à estrutura do palco sem autorização expressa da organização.</p></li>
+        <li><span>9.6.</span><p>Todo material utilizado deverá ser retirado imediatamente após a apresentação.</p></li>
+        <li><span>9.7.</span><p>A organização poderá interromper imediatamente qualquer apresentação que represente risco à segurança ou às instalações.</p></li>
+      </ol>
+    </section>
+
+    <section id="conduta" class="regulation-section">
+      <h3><span>10</span> Da conduta</h3>
+      <ol class="regulation-items">
+        <li><span>10.1.</span><p>O Concurso K-Pop Individual integra um evento destinado a públicos de diferentes idades.</p></li>
+        <li><span>10.2.</span><p>Não serão permitidas apresentações contendo violência real, nudez, conteúdo sexual explícito, discriminação, incitação ao ódio ou condutas capazes de colocar terceiros em risco.</p></li>
+        <li><span>10.3.</span><p>Todos os participantes deverão respeitar os demais competidores, jurados, organização, equipe técnica, público e as instalações da SORRI Bauru.</p></li>
+        <li><span>10.4.</span><p>Comportamentos agressivos, ameaças, ofensas graves, fraudes ou tentativas de interferência indevida no julgamento poderão resultar em desclassificação.</p></li>
+      </ol>
+    </section>
+
+    <section id="penalidades" class="regulation-section">
+      <h3><span>11</span> Das penalidades</h3>
+      <ol class="regulation-items">
+        <li><span>11.1.</span><p>O descumprimento deste regulamento poderá resultar, conforme a gravidade, em advertência, desconto de pontos, proibição de utilização de determinado recurso, interrupção da apresentação ou desclassificação.</p></li>
+        <li><span>11.2.</span><p>Situações que representem risco imediato à segurança poderão resultar em interrupção ou desclassificação sem necessidade de advertência anterior.</p></li>
+        <li><span>11.3.</span><p>A penalidade específica relacionada ao tempo de apresentação seguirá as regras previstas no item 4.</p></li>
+      </ol>
+    </section>
+
+    <section id="banca" class="regulation-section">
+      <h3><span>12</span> Da banca julgadora</h3>
+      <ol class="regulation-items">
+        <li><span>12.1.</span><p>A banca julgadora será formada por 3 jurados convidados e selecionados pela organização do Family Game Festival.</p></li>
+        <li><span>12.2.</span><p>Os jurados utilizarão exclusivamente os critérios estabelecidos neste regulamento.</p></li>
+        <li><span>12.3.</span><p>As avaliações possuem caráter técnico e também envolvem julgamento subjetivo dentro dos critérios previstos.</p></li>
+        <li><span>12.4.</span><p>Discordâncias individuais em relação às notas não resultarão automaticamente em nova avaliação.</p></li>
+        <li><span>12.5.</span><p>Eventuais erros materiais, como soma incorreta, registro de nota ou identificação equivocada de participante, poderão ser apresentados à organização para conferência.</p></li>
+        <li><span>12.6.</span><p>Após a verificação e eventual correção de erro material, a decisão da banca julgadora será considerada final.</p></li>
+      </ol>
+    </section>
+
+    <section id="resultado" class="regulation-section">
+      <h3><span>13</span> Do resultado</h3>
+      <ol class="regulation-items">
+        <li><span>13.1.</span><p>O resultado será anunciado ao final do Concurso K-Pop Individual ou em momento definido pela organização durante a programação oficial.</p></li>
+        <li><span>13.2.</span><p>A classificação será determinada pela pontuação final após a soma das notas dos três jurados e aplicação de eventuais penalidades previstas neste regulamento.</p></li>
+      </ol>
+    </section>
+
+    <section id="imagem" class="regulation-section">
+      <h3><span>14</span> Do uso de imagem</h3>
+      <ol class="regulation-items">
+        <li><span>14.1.</span><p>Fotografias, vídeos, transmissões e outros registros audiovisuais poderão ser realizados durante o Concurso K-Pop Individual e durante o Family Game Festival.</p></li>
+        <li><span>14.2.</span><p>A participação no concurso estará condicionada à autorização de uso de imagem.</p></li>
+        <li><span>14.3.</span><p>Ao autorizar o uso de imagem, o participante permitirá que o Family Game Festival e seus parceiros utilizem fotografias, vídeos, áudio e demais registros relacionados à sua participação.</p></li>
+        <li><span>14.4.</span><p>A autorização compreenderá utilização em site, redes sociais, transmissões, vídeos, fotografias, imprensa, materiais gráficos, materiais promocionais, divulgação de futuras edições, arquivo histórico e outros materiais relacionados ao Family Game Festival e seus parceiros.</p></li>
+        <li><span>14.5.</span><p>A autorização será válida por prazo indeterminado.</p></li>
+        <li><span>14.6.</span><p>Não haverá pagamento adicional pela utilização institucional ou promocional desses registros.</p></li>
+        <li><span>14.7.</span><p>Para participantes menores de 18 anos, a autorização deverá ser concedida pelo responsável legal.</p></li>
+        <li><span>14.8.</span><p>O participante que não conceder a autorização obrigatória de uso de imagem não poderá participar do concurso.</p></li>
+      </ol>
+    </section>
+
+    <section id="menores" class="regulation-section">
+      <h3><span>15</span> Dos menores de idade</h3>
+      <ol class="regulation-items">
+        <li><span>15.1.</span><p>A idade mínima para participação será de 13 anos completos na data do evento.</p></li>
+        <li><span>15.2.</span><p>Participantes menores de 18 anos deverão apresentar autorização de seu responsável legal.</p></li>
+        <li><span>15.3.</span><p>O responsável legal deverá autorizar separadamente a participação, o aceite deste regulamento e o uso de imagem do menor.</p></li>
+        <li><span>15.4.</span><p>O menor deverá permanecer acompanhado por responsável durante o evento.</p></li>
+      </ol>
+    </section>
+
+    <section id="aceite" class="regulation-section">
+      <h3><span>16</span> Do aceite eletrônico</h3>
+      <ol class="regulation-items">
+        <li><span>16.1.</span><p>Durante a inscrição, o participante deverá realizar aceite eletrônico deste regulamento.</p></li>
+        <li><span>16.2.</span><p>A autorização para uso de imagem será apresentada de forma separada do aceite do regulamento.</p></li>
+        <li><span>16.3.</span><p>Ambos os aceites serão obrigatórios para conclusão da inscrição.</p></li>
+        <li><span>16.4.</span><p>Para participantes menores de idade, os aceites deverão ser realizados pelo responsável legal.</p></li>
+        <li><span>16.5.</span><p>A organização poderá manter registro eletrônico da inscrição e dos aceites realizados, incluindo identificação do participante, data e horário.</p></li>
+      </ol>
+    </section>
+
+    <section id="disposicoes" class="regulation-section regulation-section-final">
+      <h3><span>17</span> Das disposições finais</h3>
+      <ol class="regulation-items">
+        <li><span>17.1.</span><p>Ao concluir sua inscrição, o participante declara ter lido, compreendido e aceitado integralmente este regulamento.</p></li>
+        <li><span>17.2.</span><p>O participante é responsável pela veracidade das informações fornecidas.</p></li>
+        <li><span>17.3.</span><p>Situações excepcionais não previstas neste regulamento serão analisadas pela organização do Family Game Festival 2026.</p></li>
+        <li><span>17.4.</span><p>As decisões da organização deverão considerar a segurança, a igualdade de tratamento entre os competidores, o bom andamento do concurso e os critérios estabelecidos neste regulamento.</p></li>
+        <li><span>17.5.</span><p>A organização poderá realizar ajustes operacionais necessários ao funcionamento do concurso, desde que não alterem injustificadamente as condições fundamentais de participação e julgamento após o início da competição.</p></li>
+        <li><span>17.6.</span><p>A participação no Concurso K-Pop Individual do Family Game Festival 2026 implica concordância com todas as condições estabelecidas neste regulamento.</p></li>
+      </ol>
+    </section>
+
+    <footer class="regulation-document-footer">
+      <strong>Family Game Festival 2026</strong>
+      <span>19 de setembro · 13h00</span>
+      <span>Arena Tauste — SORRI Bauru · Av. Nações Unidas, 5340 · Bauru/SP</span>
+      <div class="regulation-document-footer-actions">
+        <a href={pdfUrl} download>Baixar o PDF oficial <span aria-hidden="true">↓</span></a>
+        <a href="#topo-da-pagina">Voltar ao topo da página <span aria-hidden="true">↑</span></a>
+      </div>
+    </footer>
+  </article>
+  <a class="regulation-floating-top" href="#topo-da-pagina" data-regulation-back-to-top aria-label="Voltar ao topo da página">
+    <span aria-hidden="true">↑</span>
+    <span>Topo</span>
+  </a>
+</div>
+
+<script>
+  const backToTopControl = document.querySelector('[data-regulation-back-to-top]');
+
+  if (backToTopControl) {
+    const syncBackToTopControl = () => {
+      backToTopControl.classList.toggle('is-visible', window.scrollY > 700);
+    };
+
+    syncBackToTopControl();
+    window.addEventListener('scroll', syncBackToTopControl, { passive: true });
+  }
+</script>

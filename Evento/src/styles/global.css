@@ -734,6 +734,8 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .sponsor-carousel-pill { display: inline-flex; align-items: center; justify-content: center; min-height: 18px; height: 18px; padding: 3px 8px; border: 1px solid rgba(8,20,37,.12); border-radius: 999px; color: var(--navy); background: var(--carousel-accent); box-shadow: 0 4px 11px rgba(8,20,37,.18); font-size: 8px; font-weight: 800; letter-spacing: .1em; line-height: 1; text-transform: uppercase; white-space: nowrap; animation: sponsor-pill-heartbeat 3.2s ease-in-out infinite; }
 .sponsor-carousel-logo { display: grid; width: 100%; min-height: 0; place-items: center; align-self: center; overflow: visible; }
 .sponsor-carousel-logo img { display: block; width: auto; height: auto; max-width: 90%; max-height: 96px; padding: 0; object-fit: contain; }
+.sponsor-carousel-logo-light { width: min(195px, 90%); min-height: 68px; padding: 10px 14px; background: #fff; }
+.sponsor-carousel-logo-light img { max-width: 100%; max-height: 64px; }
 .sponsor-carousel-edge .sponsor-carousel-logo img { max-width: 88%; max-height: 86px; }
 .sponsor-carousel-item:focus-visible { outline: 3px solid var(--cyan); outline-offset: 5px; }
 @keyframes sponsor-marquee { from { transform: translateX(0); } to { transform: translateX(calc(-50% - (var(--carousel-gap) / 2))); } }
