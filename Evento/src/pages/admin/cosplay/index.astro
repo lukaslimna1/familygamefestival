@@ -39,7 +39,7 @@ const statusOptions = [
   { value: '', label: 'Todos os status' },
   { value: 'needs_attention', label: 'Atenção necessária' },
   { value: 'without_audio', label: 'Sem áudio' },
-  { value: 'without_reference', label: 'Sem referência' },
+  { value: 'without_reference', label: 'Sem imagens' },
   { value: 'pending', label: 'Pendente' },
   { value: 'synced', label: 'Sincronizada' },
   { value: 'failed', label: 'Falha' }
@@ -64,11 +64,11 @@ const statusOptions = [
       <article class="admin-v2-kpi kpi-cyan"><span class="admin-v2-kpi-icon"><AdminIcon name="grid" /></span><strong class="admin-v2-kpi-value">{summary.adults}</strong><span class="admin-v2-kpi-label">Maiores de idade</span><small>Participantes adultos</small></article>
       <article class="admin-v2-kpi kpi-purple"><span class="admin-v2-kpi-icon"><AdminIcon name="shield" /></span><strong class="admin-v2-kpi-value">{summary.minors}</strong><span class="admin-v2-kpi-label">Menores</span><small>Com fluxo de responsável</small></article>
       <article class="admin-v2-kpi kpi-yellow"><span class="admin-v2-kpi-icon"><AdminIcon name="music" /></span><strong class="admin-v2-kpi-value">{summary.audio}</strong><span class="admin-v2-kpi-label">Áudios recebidos</span><small>Arquivos ligados à ficha</small></article>
-      <article class="admin-v2-kpi kpi-green"><span class="admin-v2-kpi-icon"><AdminIcon name="external" /></span><strong class="admin-v2-kpi-value">{summary.references}</strong><span class="admin-v2-kpi-label">Referências recebidas</span><small>Links para a curadoria</small></article>
+      <article class="admin-v2-kpi kpi-green"><span class="admin-v2-kpi-icon"><AdminIcon name="folder" /></span><strong class="admin-v2-kpi-value">{summary.references}</strong><span class="admin-v2-kpi-label">Imagens enviadas</span><small>Arquivos visuais para a curadoria</small></article>
     </section>
 
     <section class="admin-v2-cosplay-toolbar">
-      <div class="admin-v2-segmented"><a class:list={{ 'is-active': !requestedStatus }} href="/admin/cosplay">Todos</a><a class:list={{ 'is-active': requestedStatus === 'needs_attention' }} href="/admin/cosplay?status=needs_attention">Atenção</a><a class:list={{ 'is-active': requestedStatus === 'without_audio' }} href="/admin/cosplay?status=without_audio">Sem áudio</a><a class:list={{ 'is-active': requestedStatus === 'without_reference' }} href="/admin/cosplay?status=without_reference">Sem referência</a><a class:list={{ 'is-active': requestedStatus === 'failed' }} href="/admin/cosplay?status=failed">Com falha</a></div>
+      <div class="admin-v2-segmented"><a class:list={{ 'is-active': !requestedStatus }} href="/admin/cosplay">Todos</a><a class:list={{ 'is-active': requestedStatus === 'needs_attention' }} href="/admin/cosplay?status=needs_attention">Atenção</a><a class:list={{ 'is-active': requestedStatus === 'without_audio' }} href="/admin/cosplay?status=without_audio">Sem áudio</a><a class:list={{ 'is-active': requestedStatus === 'without_reference' }} href="/admin/cosplay?status=without_reference">Sem imagens</a><a class:list={{ 'is-active': requestedStatus === 'failed' }} href="/admin/cosplay?status=failed">Com falha</a></div>
       <span class="admin-v2-toolbar-count">{rows.length} inscriç{rows.length === 1 ? 'ão' : 'ões'}</span>
     </section>
 
@@ -88,13 +88,13 @@ const statusOptions = [
       {rows.length ? (
         <div class="admin-v2-table-wrap">
           <table class="admin-v2-table admin-v2-cosplay-table">
-            <thead><tr><th>Código</th><th>Cosplayer</th><th>Personagem / obra</th><th>Apresentação</th><th>Arquivos</th><th>Perfil</th><th>Status</th></tr></thead>
+            <thead><tr><th>Código</th><th>Cosplayer</th><th>Personagem / obra</th><th>Apresentação</th><th>Imagens</th><th>Perfil</th><th>Status</th></tr></thead>
             <tbody>{rows.map((row) => <tr>
               <td><a class="admin-v2-code" href={'/admin/cosplay/' + row.registrationId}>{row.publicCode ?? '—'}</a></td>
               <td><a href={'/admin/cosplay/' + row.registrationId}><strong>{row.fullName}</strong><small>{row.instagram ?? 'Instagram não informado'}</small></a></td>
               <td><strong>{row.characterName || 'Não informado'}</strong><small>{row.sourceWork || 'Obra não informada'}{row.stageName ? ' · ' + row.stageName : ''}</small></td>
               <td><span class="admin-v2-compact-label">{row.hasAudio ? 'Áudio enviado' : 'Sem áudio'}</span><small>{row.isMinor ? 'Menor de idade' : 'Maior de idade'}</small></td>
-              <td><span class="admin-v2-file-count">{row.referenceCount} ref.</span><small>{row.hasAudio ? '1 áudio' : 'Nenhum áudio'}</small></td>
+              <td><span class="admin-v2-file-count">{row.referenceCount} {row.referenceCount === 1 ? 'imagem' : 'imagens'}</span><small>{row.hasAudio ? '1 áudio' : 'Nenhum áudio'}</small></td>
               <td><span class:list={['admin-v2-age-badge', row.isMinor ? 'is-minor' : 'is-adult']}>{row.isMinor ? 'Menor' : 'Maior'}</span></td>
               <td><span class:list={['admin-v2-status', 'status-' + row.status]}>{statusLabel(row.status)}</span>{row.needsAttention && <small class="admin-v2-alert-text">Conferir ficha</small>}</td>
             </tr>)}</tbody>

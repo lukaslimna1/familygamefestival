@@ -17,7 +17,7 @@ export const GET: APIRoute = async ({ params, locals, request }) => {
     .where(eq(registrationFiles.id, params.id))
     .limit(1);
 
-  if (!file || !['cosplay_audio', 'kpop_audio'].includes(file.fileType) || !file.driveFileId) return new Response('Arquivo não encontrado.', { status: 404 });
+  if (!file || !['cosplay_reference', 'cosplay_audio', 'kpop_audio'].includes(file.fileType) || !file.driveFileId) return new Response('Arquivo não encontrado.', { status: 404 });
 
   try {
     const driveResponse = await getDriveClient().files.get({ fileId: file.driveFileId, alt: 'media' }, { responseType: 'stream' });
@@ -31,6 +31,6 @@ export const GET: APIRoute = async ({ params, locals, request }) => {
     if (file.sizeBytes > 0) headers.set('Content-Length', String(file.sizeBytes));
     return new Response(body, { headers });
   } catch {
-    return new Response('Não foi possível carregar o áudio.', { status: 502, headers: { 'Cache-Control': 'no-store' } });
+    return new Response('Não foi possível carregar o arquivo.', { status: 502, headers: { 'Cache-Control': 'no-store' } });
   }
 };
