@@ -1,0 +1,104 @@
+---
+import AdminIcon from '../../../components/admin/AdminIcon.astro';
+import AdminSelect from '../../../components/admin/AdminSelect.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { listAdminRegistrations } from '../../../lib/server/admin/data';
+
+const admin = Astro.locals.admin;
+if (!admin) return Astro.redirect('/admin/login');
+if (admin.mustChangePassword) return Astro.redirect('/admin/account/password');
+
+const query = Astro.url.searchParams;
+const search = query.get('q') ?? '';
+const age = query.get('age') === 'minor' || query.get('age') === 'adult' ? query.get('age') as 'minor' | 'adult' : '';
+const requestedStatus = query.get('status') ?? '';
+const dbStatus = ['pending', 'synced', 'failed'].includes(requestedStatus) ? requestedStatus : undefined;
+const [rowsFromQuery, summaryRows] = await Promise.all([
+  listAdminRegistrations({ competitionId: 'k-pop-individual', search, status: dbStatus, age: age || undefined, limit: 1000 }),
+  listAdminRegistrations({ competitionId: 'k-pop-individual', limit: 1000 })
+]);
+
+let rows = rowsFromQuery;
+if (requestedStatus === 'without_audio') rows = rows.filter((row) => !row.hasAudio);
+if (requestedStatus === 'without_reference') rows = rows.filter((row) => !row.hasReference);
+if (requestedStatus === 'needs_attention') rows = rows.filter((row) => row.needsAttention);
+
+const summary = {
+  total: summaryRows.length,
+  adults: summaryRows.filter((row) => !row.isMinor).length,
+  minors: summaryRows.filter((row) => row.isMinor).length,
+  audio: summaryRows.filter((row) => row.hasAudio).length,
+  references: summaryRows.filter((row) => row.hasReference).length
+};
+const statusLabel = (status: string) => ({ pending: 'Pendente', synced: 'Sincronizada', failed: 'Falha' }[status] ?? status);
+const fieldValue = (value: string) => value || '';
+const ageOptions = [{ value: '', label: 'Maior ou menor' }, { value: 'adult', label: 'Maior de idade' }, { value: 'minor', label: 'Menor de idade' }];
+const statusOptions = [
+  { value: '', label: 'Todos os status' },
+  { value: 'needs_attention', label: 'Atenção necessária' },
+  { value: 'without_audio', label: 'Sem MP3' },
+  { value: 'without_reference', label: 'Sem referência' },
+  { value: 'pending', label: 'Pendente' },
+  { value: 'synced', label: 'Sincronizada' },
+  { value: 'failed', label: 'Falha' }
+];
+---
+
+<AdminLayout
+  title="K-Pop Individual | Family Game Festival"
+  subtitle="Módulo especializado da competição e seus arquivos."
+  admin={admin}
+  search={{ action: '/admin/kpop', value: search, placeholder: 'Buscar nome, artista, música ou código' }}
+  notificationCount={summaryRows.filter((row) => row.needsAttention).length}
+>
+  <div class="admin-v2-page admin-v2-cosplay-page">
+    <section class="admin-v2-page-intro admin-v2-cosplay-intro">
+      <div><p class="admin-eyebrow">Módulo especializado · competição</p><h2>K-Pop Individual</h2><p>Participantes, músicas, MP3, referências e observações para a operação e os jurados.</p></div>
+      <div class="admin-v2-intro-meta"><strong>32</strong><span>vagas oficiais</span></div>
+    </section>
+
+    <section class="admin-v2-kpi-grid" aria-label="Resumo administrativo do K-Pop Individual">
+      <article class="admin-v2-kpi kpi-magenta"><span class="admin-v2-kpi-icon"><AdminIcon name="clipboard" /></span><strong class="admin-v2-kpi-value">{summary.total}</strong><span class="admin-v2-kpi-label">Inscrições registradas</span><small>Registros ativos no sistema</small></article>
+      <article class="admin-v2-kpi kpi-cyan"><span class="admin-v2-kpi-icon"><AdminIcon name="grid" /></span><strong class="admin-v2-kpi-value">{summary.adults}</strong><span class="admin-v2-kpi-label">Maiores de idade</span><small>Participantes adultos</small></article>
+      <article class="admin-v2-kpi kpi-purple"><span class="admin-v2-kpi-icon"><AdminIcon name="shield" /></span><strong class="admin-v2-kpi-value">{summary.minors}</strong><span class="admin-v2-kpi-label">Menores</span><small>Com fluxo de responsável</small></article>
+      <article class="admin-v2-kpi kpi-yellow"><span class="admin-v2-kpi-icon"><AdminIcon name="music" /></span><strong class="admin-v2-kpi-value">{summary.audio}</strong><span class="admin-v2-kpi-label">MP3 recebidos</span><small>Arquivos ligados à ficha</small></article>
+      <article class="admin-v2-kpi kpi-green"><span class="admin-v2-kpi-icon"><AdminIcon name="external" /></span><strong class="admin-v2-kpi-value">{summary.references}</strong><span class="admin-v2-kpi-label">Referências recebidas</span><small>Links para a curadoria</small></article>
+    </section>
+
+    <section class="admin-v2-cosplay-toolbar">
+      <div class="admin-v2-segmented"><a class:list={{ 'is-active': !requestedStatus }} href="/admin/kpop">Todos</a><a class:list={{ 'is-active': requestedStatus === 'needs_attention' }} href="/admin/kpop?status=needs_attention">Atenção</a><a class:list={{ 'is-active': requestedStatus === 'without_audio' }} href="/admin/kpop?status=without_audio">Sem MP3</a><a class:list={{ 'is-active': requestedStatus === 'without_reference' }} href="/admin/kpop?status=without_reference">Sem referência</a><a class:list={{ 'is-active': requestedStatus === 'failed' }} href="/admin/kpop?status=failed">Com falha</a></div>
+      <span class="admin-v2-toolbar-count">{rows.length} inscriç{rows.length === 1 ? 'ão' : 'ões'}</span>
+    </section>
+
+    <section class="admin-v2-card admin-v2-filter-card" aria-label="Filtros de K-Pop Individual">
+      <form class="admin-v2-filter-form" method="get">
+        <label class="admin-v2-filter-wide">Busca<input name="q" value={fieldValue(search)} placeholder="Nome, nome artístico, música, artista ou código" /></label>
+        <AdminSelect name="age" label="Perfil" options={ageOptions} value={age} />
+        <AdminSelect name="status" label="Status" options={statusOptions} value={requestedStatus} />
+        <button class="admin-button admin-button-primary" type="submit">Aplicar filtros</button>
+        <a class="admin-button admin-button-secondary" href="/admin/kpop">Limpar</a>
+      </form>
+      <p class="admin-v2-filter-note"><AdminIcon name="music" /> Esta é uma visão administrativa especializada; os registros continuam únicos na base geral.</p>
+    </section>
+
+    <section class="admin-v2-card" aria-labelledby="kpop-list-title">
+      <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Curadoria e operação</p><h2 id="kpop-list-title">Participantes do K-Pop</h2><p>Abra uma ficha para conferir a apresentação, o MP3, a referência e a documentação.</p></div></div>
+      {rows.length ? (
+        <div class="admin-v2-table-wrap">
+          <table class="admin-v2-table admin-v2-cosplay-table">
+            <thead><tr><th>Código</th><th>Participante</th><th>Apresentação</th><th>MP3</th><th>Referência</th><th>Perfil</th><th>Status</th></tr></thead>
+            <tbody>{rows.map((row) => <tr>
+              <td><a class="admin-v2-code" href={'/admin/kpop/' + row.registrationId}>{row.publicCode ?? '—'}</a></td>
+              <td><a href={'/admin/kpop/' + row.registrationId}><strong>{row.fullName}</strong><small>{row.stageName || 'Nome artístico não informado'}</small></a></td>
+              <td><strong>{row.songTitle || 'Música não informada'}</strong><small>{row.originalArtist || 'Artista/grupo não informado'}</small></td>
+              <td><span class="admin-v2-compact-label">{row.hasAudio ? 'MP3 enviado' : 'Sem MP3'}</span><small>{row.hasAudio ? 'Arquivo disponível' : 'Ação necessária'}</small></td>
+              <td><span class="admin-v2-compact-label">{row.hasReference ? 'Enviada' : 'Ausente'}</span><small>{row.hasReference ? 'Link disponível' : 'Ação necessária'}</small></td>
+              <td><span class:list={['admin-v2-age-badge', row.isMinor ? 'is-minor' : 'is-adult']}>{row.isMinor ? 'Menor' : 'Maior'}</span></td>
+              <td><span class:list={['admin-v2-status', 'status-' + row.status]}>{statusLabel(row.status)}</span>{row.needsAttention && <small class="admin-v2-alert-text">Conferir ficha</small>}</td>
+            </tr>)}</tbody>
+          </table>
+        </div>
+      ) : <div class="admin-v2-empty"><span class="admin-v2-empty-icon"><AdminIcon name="music" /></span><strong>Nenhuma inscrição de K-Pop encontrada.</strong><p>A lista usa os registros reais do banco e respeita os filtros selecionados.</p><a href="/admin/kpop">Limpar filtros <AdminIcon name="arrow" /></a></div>}
+    </section>
+  </div>
+</AdminLayout>

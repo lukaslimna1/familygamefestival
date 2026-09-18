@@ -1,0 +1,74 @@
+---
+import AdminIcon from '../../../components/admin/AdminIcon.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { driveFileUrl, formatAdminDate, getAdminRegistrationDetails } from '../../../lib/server/admin/data';
+
+const admin = Astro.locals.admin;
+if (!admin) return Astro.redirect('/admin/login');
+if (admin.mustChangePassword) return Astro.redirect('/admin/account/password');
+
+const registration = Astro.params.id ? await getAdminRegistrationDetails(Astro.params.id) : null;
+if (!registration) return new Response('Inscrição de K-Pop Individual não encontrada.', { status: 404 });
+if (!registration.kpop) return Astro.redirect('/admin/inscricoes/' + registration.registrationId);
+
+const kpop = registration.kpop;
+const fileLabel = (type: string) => ({ registration_sheet: 'Ficha de inscrição', guardian_authorization: 'Autorização do menor', guardian_authorization_signed: 'Autorização assinada', kpop_audio: 'MP3 da apresentação' }[type] ?? type);
+const audio = registration.files.find((file) => file.fileType === 'kpop_audio');
+const documentFiles = registration.files.filter((file) => file.fileType !== 'kpop_audio');
+const needsAttention = registration.driveSyncStatus === 'failed'
+  || registration.files.some((file) => file.syncStatus === 'failed')
+  || (registration.isMinor && (!registration.minorAuthorization || !['uploaded', 'received'].includes(registration.minorAuthorization.status)))
+  || !audio
+  || !kpop.referenceUrl;
+const authorizationLinks = registration.minorAuthorization
+  ? [
+      registration.minorAuthorization.driveFileId ? { label: 'Abrir autorização no Drive', id: registration.minorAuthorization.driveFileId } : null,
+      registration.minorAuthorization.signedDriveFileId ? { label: 'Abrir autorização assinada', id: registration.minorAuthorization.signedDriveFileId } : null
+    ].filter(Boolean) as { label: string; id: string }[]
+  : [];
+---
+
+<AdminLayout
+  title="Ficha de K-Pop Individual | Family Game Festival"
+  subtitle={registration.publicCode ?? registration.fullName}
+  admin={admin}
+  action={{ label: 'Voltar para K-Pop', href: '/admin/kpop' }}
+  notificationCount={needsAttention ? 1 : 0}
+>
+  <div class="admin-v2-page admin-v2-cosplay-detail">
+    <div class="admin-v2-breadcrumb"><a href="/admin">Dashboard</a><span>/</span><a href="/admin/kpop">K-Pop Individual</a><span>/</span><strong>{registration.publicCode ?? 'Ficha'}</strong></div>
+
+    <section class="admin-v2-detail-hero cosplay-hero">
+      <div><p class="admin-eyebrow">Ficha de curadoria · {registration.publicCode ?? 'sem código'}</p><h2>{kpop.stageName || registration.fullName}</h2><p class="admin-v2-detail-code">{kpop.originalArtist} · {kpop.songTitle} · enviada em {formatAdminDate(registration.submittedAt ?? registration.registrationCreatedAt)}</p></div>
+      <div class="admin-v2-detail-hero-tags"><span class="admin-v2-cosplay-chip">K-Pop Individual</span><span class:list={['admin-v2-age-badge', registration.isMinor ? 'is-minor' : 'is-adult']}>{registration.isMinor ? 'Menor de idade' : 'Maior de idade'}</span><a class="admin-button admin-button-secondary" href={'/admin/inscricoes/' + registration.registrationId}>Editar cadastro</a></div>
+    </section>
+
+    <nav class="admin-v2-detail-tabs" aria-label="Seções da ficha de K-Pop Individual"><a class="is-active" href="#participante">Participante</a><a href="#apresentacao">Apresentação</a><a href="#audio">Áudio</a><a href="#referencia">Referência</a><a href="#responsavel">Responsável</a><a href="#documentacao">Documentação</a></nav>
+
+    <div class="admin-v2-detail-grid admin-v2-cosplay-content">
+      <section id="participante" class="admin-v2-card admin-v2-cosplay-overview">
+        <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Dados do participante</p><h2>Visão geral</h2></div></div>
+        <div class="admin-v2-highlight-grid"><div><small>Nome civil</small><strong>{registration.fullName}</strong></div><div><small>Nome artístico</small><strong>{kpop.stageName || 'Não informado'}</strong></div><div><small>Data de nascimento</small><strong>{registration.dateOfBirth} · {registration.age} anos</strong></div><div><small>Contato</small><strong>{registration.phone || 'Não informado'}</strong></div><div><small>E-mail</small><strong>{registration.email || 'Não informado'}</strong></div><div><small>Status</small><strong>{registration.status}</strong></div></div>
+      </section>
+
+      <aside class="admin-v2-detail-side">
+        <section class="admin-v2-card"><div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Contato</p><h2>Redes</h2></div></div><div class="admin-v2-social-list">{registration.instagram && <a href={registration.instagram.startsWith('http') ? registration.instagram : 'https://instagram.com/' + registration.instagram.replace('@', '')} target="_blank" rel="noreferrer"><span>Instagram</span><strong>{registration.instagram}</strong><AdminIcon name="external" /></a>}{registration.tiktok && <a href={registration.tiktok.startsWith('http') ? registration.tiktok : 'https://tiktok.com/@' + registration.tiktok.replace('@', '')} target="_blank" rel="noreferrer"><span>TikTok</span><strong>{registration.tiktok}</strong><AdminIcon name="external" /></a>}{!registration.instagram && !registration.tiktok && <div class="admin-v2-inline-empty">Nenhuma rede informada.</div>}</div></section>
+        <section id="responsavel" class="admin-v2-card"><div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Menor de idade</p><h2>Responsável</h2></div></div>{registration.guardian ? <><dl class="admin-v2-definition-list"><div><dt>Nome</dt><dd>{registration.guardian.fullName}</dd></div><div><dt>Parentesco</dt><dd>{registration.guardian.relationship}</dd></div><div><dt>Telefone</dt><dd>{registration.guardian.phone}</dd></div><div><dt>E-mail</dt><dd>{registration.guardian.email}</dd></div><div><dt>Autorização</dt><dd><span class:list={['admin-v2-status', 'status-' + (registration.minorAuthorization?.status ?? 'pending')]}>{registration.minorAuthorization?.status ?? 'Pendente'}</span></dd></div></dl>{authorizationLinks.length > 0 && <div class="admin-v2-links-block"><strong>Documentos vinculados</strong>{authorizationLinks.map((link) => <a href={driveFileUrl(link.id) ?? '#'} target="_blank" rel="noreferrer">{link.label}<AdminIcon name="external" /></a>)}</div>}</> : <div class="admin-v2-inline-empty">Participante maior de idade. Não há responsável vinculado.</div>}</section>
+      </aside>
+    </div>
+
+    <section id="apresentacao" class="admin-v2-card"><div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Dados da apresentação</p><h2>Apresentação</h2><p>Informações específicas encaminhadas pelo participante.</p></div></div><div class="admin-v2-highlight-grid"><div><small>Artista / grupo original</small><strong>{kpop.originalArtist}</strong></div><div><small>Nome da música</small><strong>{kpop.songTitle}</strong></div><div><small>Versão</small><strong>{kpop.songVersion || 'Não informada'}</strong></div><div><small>Música editada ou cortada?</small><strong>{kpop.editedCut === 'yes' ? 'Sim' : 'Não'}</strong></div><div><small>Ciência do pendrive</small><strong>{kpop.pendriveAcknowledged ? 'Confirmada' : 'Não confirmada'}</strong></div><div><small>Atualização</small><strong>{formatAdminDate(kpop.updatedAt)}</strong></div></div></section>
+
+    <div class="admin-v2-copy-grid">
+      <section id="observacoes-audio" class="admin-v2-card"><div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Equipe técnica</p><h2>Observações sobre o áudio</h2></div></div><div class="admin-v2-long-field"><p>{kpop.audioNotes || 'Nenhuma observação sobre o áudio.'}</p></div></section>
+      <section id="observacoes-jurados" class="admin-v2-card"><div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Curadoria</p><h2>Observações para os jurados</h2></div></div><div class="admin-v2-long-field"><p>{kpop.judgeNotes || 'Nenhuma observação para os jurados.'}</p></div></section>
+    </div>
+
+    <div class="admin-v2-detail-grid admin-v2-detail-grid-lower">
+      <section id="audio" class="admin-v2-card"><div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Arquivo principal</p><h2>Áudio da apresentação</h2></div></div>{audio ? <div class="admin-v2-audio-card"><span class="admin-v2-audio-icon"><AdminIcon name="music" /></span><div><strong>{audio.originalName}</strong><small>{audio.mimeType} · {(audio.sizeBytes / 1024 / 1024).toFixed(2)} MB · {audio.syncStatus}</small><small>{audio.driveFileId ? 'Vinculado ao Drive' : 'Sem vínculo com o Drive'}</small></div><div class="admin-v2-audio-actions"><a class="admin-button admin-button-secondary" href={'/api/admin/files/' + audio.id} target="_blank" rel="noreferrer">Ouvir</a><a class="admin-button admin-button-secondary" href={'/api/admin/files/' + audio.id + '?download=1'} download>Baixar <AdminIcon name="download" /></a>{driveFileUrl(audio.driveFileId) && <a class="admin-button admin-button-secondary" href={driveFileUrl(audio.driveFileId)!} target="_blank" rel="noreferrer">Abrir no Drive <AdminIcon name="external" /></a>}</div><audio class="admin-v2-audio-player" controls preload="metadata" src={'/api/admin/files/' + audio.id}>Seu navegador não suporta o player de áudio.</audio></div> : <div class="admin-v2-empty admin-v2-empty-compact"><strong>Nenhum MP3 enviado.</strong><p>Esta pendência também aparece nos filtros da área K-Pop.</p></div>}</section>
+      <section id="referencia" class="admin-v2-card"><div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Para os jurados</p><h2>Referência da coreografia</h2></div></div>{kpop.referenceUrl ? <div class="admin-v2-reference-detail"><p>{kpop.referenceUrl}</p><a class="admin-button admin-button-secondary" href={kpop.referenceUrl} target="_blank" rel="noreferrer">Abrir referência <AdminIcon name="external" /></a></div> : <div class="admin-v2-empty admin-v2-empty-compact"><strong>Nenhuma referência enviada.</strong><p>O participante ainda não informou um link de coreografia, MV ou vídeo.</p></div>}</section>
+    </div>
+
+    <section id="documentacao" class="admin-v2-card"><div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Conferência</p><h2>Documentação e versões</h2><p>Arquivos de inscrição, autorização e ficha gerada pelo sistema.</p></div></div>{documentFiles.length ? <div class="admin-v2-file-list">{documentFiles.map((file) => <div class="admin-v2-file-row"><span class="admin-v2-file-icon"><AdminIcon name="folder" /></span><span><strong>{fileLabel(file.fileType)}</strong><small>{file.originalName} · {file.syncStatus} · atualizado em {formatAdminDate(file.updatedAt)}</small></span>{driveFileUrl(file.driveFileId) && <a href={driveFileUrl(file.driveFileId)!} target="_blank" rel="noreferrer" class="admin-v2-icon-link"><AdminIcon name="external" /></a>}</div>)}</div> : <div class="admin-v2-inline-empty">Nenhum documento adicional registrado.</div>}</section>
+  </div>
+</AdminLayout>

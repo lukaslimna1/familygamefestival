@@ -7,7 +7,7 @@ import { getDriveClient } from '../../../../lib/server/drive/client';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ params, locals }) => {
+export const GET: APIRoute = async ({ params, locals, request }) => {
   if (!locals.admin) return new Response('Não autenticado.', { status: 401 });
   if (!params.id) return new Response('Arquivo não encontrado.', { status: 404 });
 
@@ -22,9 +22,10 @@ export const GET: APIRoute = async ({ params, locals }) => {
   try {
     const driveResponse = await getDriveClient().files.get({ fileId: file.driveFileId, alt: 'media' }, { responseType: 'stream' });
     const body = Readable.toWeb(driveResponse.data as Readable) as ReadableStream;
+    const download = new URL(request.url).searchParams.get('download') === '1';
     const headers = new Headers({
       'Cache-Control': 'private, no-store',
-      'Content-Disposition': `inline; filename*=UTF-8''${encodeURIComponent(file.originalName)}`,
+      'Content-Disposition': `${download ? 'attachment' : 'inline'}; filename*=UTF-8''${encodeURIComponent(file.originalName)}`,
       'Content-Type': file.mimeType || 'application/octet-stream'
     });
     if (file.sizeBytes > 0) headers.set('Content-Length', String(file.sizeBytes));

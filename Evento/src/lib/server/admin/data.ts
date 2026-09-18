@@ -64,10 +64,12 @@ export type AdminRegistrationRow = {
   sourceWork: string | null;
   originalArtist: string | null;
   songTitle: string | null;
+  referenceUrl: string | null;
   age: number;
   isMinor: boolean;
   authorization: AdminAuthorizationSummary | null;
   referenceCount: number;
+  hasReference: boolean;
   hasAudio: boolean;
   fileCount: number;
   hasDriveIssue: boolean;
@@ -128,8 +130,10 @@ const baseSelection = {
   cosplayStageName: cosplayEntries.stageName,
   cosplayCharacterName: cosplayEntries.characterName,
   cosplaySourceWork: cosplayEntries.sourceWork,
+  kpopStageName: kpopEntries.stageName,
   kpopOriginalArtist: kpopEntries.originalArtist,
-  kpopSongTitle: kpopEntries.songTitle
+  kpopSongTitle: kpopEntries.songTitle,
+  kpopReferenceUrl: kpopEntries.referenceUrl
 };
 
 function isSignedAuthorization(status: string) {
@@ -201,6 +205,7 @@ export async function listAdminRegistrations(filters: AdminListFilters = {}) {
       like(cosplayEntries.stageName, `%${search}%`),
       like(cosplayEntries.characterName, `%${search}%`),
       like(cosplayEntries.sourceWork, `%${search}%`),
+      like(kpopEntries.stageName, `%${search}%`),
       like(kpopEntries.originalArtist, `%${search}%`),
       like(kpopEntries.songTitle, `%${search}%`),
       ...(cpfSearch ? [like(participants.cpf, `%${cpfSearch}%`)] : [])
@@ -229,19 +234,27 @@ export async function listAdminRegistrations(filters: AdminListFilters = {}) {
     const isMinor = Number.isInteger(age) && age < 18;
     const hasDriveIssue = row.driveSyncStatus === 'failed' || files.some((file) => file.syncStatus === 'failed');
     const hasAudio = files.some((file) => file.fileType === 'cosplay_audio' || file.fileType === 'kpop_audio');
-    const needsAttention = hasDriveIssue || (isMinor && (!authorization || !isSignedAuthorization(authorization.status))) || ((row.competitionId === 'cosplay' || row.competitionId === 'k-pop-individual') && !hasAudio);
+    const hasReference = row.competitionId === 'k-pop-individual'
+      ? Boolean(row.kpopReferenceUrl)
+      : files.some((file) => file.fileType === 'cosplay_reference');
+    const needsAttention = hasDriveIssue
+      || (isMinor && (!authorization || !isSignedAuthorization(authorization.status)))
+      || ((row.competitionId === 'cosplay' || row.competitionId === 'k-pop-individual') && !hasAudio)
+      || (row.competitionId === 'k-pop-individual' && !hasReference);
 
     return {
       ...row,
-      stageName: row.cosplayStageName,
+      stageName: row.competitionId === 'k-pop-individual' ? row.kpopStageName : row.cosplayStageName,
       characterName: row.cosplayCharacterName,
       sourceWork: row.cosplaySourceWork,
       originalArtist: row.kpopOriginalArtist,
       songTitle: row.kpopSongTitle,
+      referenceUrl: row.kpopReferenceUrl,
       age,
       isMinor,
       authorization,
       referenceCount: files.filter((file) => file.fileType === 'cosplay_reference').length,
+      hasReference,
       hasAudio,
       fileCount: files.length,
       hasDriveIssue,

@@ -21,7 +21,7 @@ const forbiddenPublicFields = [
   'participantCount'
 ];
 const checkedCompetitions: Array<Record<string, unknown>> = [];
-for (const competitionSlug of ['tekken-8', 'cosplay']) {
+for (const competitionSlug of ['tekken-8', 'cosplay', 'k-pop-individual']) {
   const response = await createCompetitionStatusResponse(competitionSlug);
   assertCondition(response.status === 200, `API: status HTTP inesperado para ${competitionSlug}: ${response.status}.`);
 
