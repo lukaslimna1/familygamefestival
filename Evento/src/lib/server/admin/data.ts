@@ -18,6 +18,7 @@ import { getDatabase } from '../db/client';
 import {
   competitions,
   cosplayEntries,
+  kpopEntries,
   minorAuthorizations,
   participants,
   registrationFiles,
@@ -61,6 +62,8 @@ export type AdminRegistrationRow = {
   stageName: string | null;
   characterName: string | null;
   sourceWork: string | null;
+  originalArtist: string | null;
+  songTitle: string | null;
   age: number;
   isMinor: boolean;
   authorization: AdminAuthorizationSummary | null;
@@ -124,7 +127,9 @@ const baseSelection = {
   competitionMaxParticipants: competitions.maxParticipants,
   cosplayStageName: cosplayEntries.stageName,
   cosplayCharacterName: cosplayEntries.characterName,
-  cosplaySourceWork: cosplayEntries.sourceWork
+  cosplaySourceWork: cosplayEntries.sourceWork,
+  kpopOriginalArtist: kpopEntries.originalArtist,
+  kpopSongTitle: kpopEntries.songTitle
 };
 
 function isSignedAuthorization(status: string) {
@@ -196,6 +201,8 @@ export async function listAdminRegistrations(filters: AdminListFilters = {}) {
       like(cosplayEntries.stageName, `%${search}%`),
       like(cosplayEntries.characterName, `%${search}%`),
       like(cosplayEntries.sourceWork, `%${search}%`),
+      like(kpopEntries.originalArtist, `%${search}%`),
+      like(kpopEntries.songTitle, `%${search}%`),
       ...(cpfSearch ? [like(participants.cpf, `%${cpfSearch}%`)] : [])
     )!);
   }
@@ -206,6 +213,7 @@ export async function listAdminRegistrations(filters: AdminListFilters = {}) {
     .innerJoin(participants, eq(registrations.participantId, participants.id))
     .innerJoin(competitions, eq(registrations.competitionId, competitions.id))
     .leftJoin(cosplayEntries, eq(registrations.id, cosplayEntries.registrationId))
+    .leftJoin(kpopEntries, eq(registrations.id, kpopEntries.registrationId))
     .where(and(...predicates))
     .orderBy(desc(registrations.updatedAt), desc(registrations.createdAt))
     .limit(Math.min(Math.max(filters.limit ?? 500, 1), 1000));
@@ -220,14 +228,16 @@ export async function listAdminRegistrations(filters: AdminListFilters = {}) {
     const authorization = authorizationByParticipant.get(row.participantId) ?? null;
     const isMinor = Number.isInteger(age) && age < 18;
     const hasDriveIssue = row.driveSyncStatus === 'failed' || files.some((file) => file.syncStatus === 'failed');
-    const hasAudio = files.some((file) => file.fileType === 'cosplay_audio');
-    const needsAttention = hasDriveIssue || (isMinor && (!authorization || !isSignedAuthorization(authorization.status))) || (row.competitionId === 'cosplay' && !hasAudio);
+    const hasAudio = files.some((file) => file.fileType === 'cosplay_audio' || file.fileType === 'kpop_audio');
+    const needsAttention = hasDriveIssue || (isMinor && (!authorization || !isSignedAuthorization(authorization.status))) || ((row.competitionId === 'cosplay' || row.competitionId === 'k-pop-individual') && !hasAudio);
 
     return {
       ...row,
       stageName: row.cosplayStageName,
       characterName: row.cosplayCharacterName,
       sourceWork: row.cosplaySourceWork,
+      originalArtist: row.kpopOriginalArtist,
+      songTitle: row.kpopSongTitle,
       age,
       isMinor,
       authorization,
@@ -300,7 +310,8 @@ export async function getAdminDashboardData() {
       authorizations: pendingAuthorizations.size,
       physical: new Set(registrationsList.filter((row) => row.authorization?.status === 'physical_pending').map((row) => row.participantId)).size,
       driveErrors: registrationsList.filter((row) => row.hasDriveIssue).length,
-      cosplayWithoutAudio: registrationsList.filter((row) => row.competitionId === 'cosplay' && !row.hasAudio).length
+      cosplayWithoutAudio: registrationsList.filter((row) => row.competitionId === 'cosplay' && !row.hasAudio).length,
+      kpopWithoutAudio: registrationsList.filter((row) => row.competitionId === 'k-pop-individual' && !row.hasAudio).length
     },
     latestSyncAt
   };

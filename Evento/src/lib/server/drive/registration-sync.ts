@@ -12,7 +12,8 @@ import {
 } from '../pdf/registration-sheet';
 import {
   ensureCompetitionRegistrationFolder,
-  getRegistrationFolderName
+  getRegistrationFolderName,
+  sanitizeDriveName
 } from './folders';
 import { getDriveClient } from './client';
 
@@ -75,6 +76,8 @@ function getUploadFileName({
   publicCode,
   participantName,
   characterName,
+  originalArtist,
+  songTitle,
   files,
   fileId
 }: {
@@ -83,12 +86,20 @@ function getUploadFileName({
   publicCode: string;
   participantName: string;
   characterName?: string | null;
+  originalArtist?: string | null;
+  songTitle?: string | null;
   files: RegistrationFileForNaming[];
   fileId: string;
 }) {
   const participantNamePart = getParticipantDriveName(publicCode, participantName);
   if (fileType === guardianSignedFileType) {
     return `Autorizacao-Menor-Assinada - ${participantNamePart}.${getFileExtension(originalName, 'pdf')}`;
+  }
+
+  if (fileType === 'kpop_audio') {
+    const artist = sanitizeDriveName(originalArtist || 'Artista não informado');
+    const song = sanitizeDriveName(songTitle || 'Música não informada');
+    return `Audio - ${participantNamePart} - ${artist} - ${song}.${getFileExtension(originalName, 'mp3')}`;
   }
 
   const registrationName = getRegistrationDriveName(publicCode, participantName, characterName, true);
@@ -101,7 +112,7 @@ function getUploadFileName({
 }
 
 function isUploadedFileType(value: string): value is RegistrationUploadFileType {
-  return value === 'cosplay_reference' || value === 'cosplay_audio' || value === guardianSignedFileType;
+  return value === 'cosplay_reference' || value === 'cosplay_audio' || value === 'kpop_audio' || value === guardianSignedFileType;
 }
 
 async function normalizeUploadedDriveFiles({
@@ -126,6 +137,8 @@ async function normalizeUploadedDriveFiles({
       publicCode: record.publicCode,
       participantName: record.fullName,
       characterName: record.cosplay?.characterName,
+      originalArtist: record.kpop?.originalArtist,
+      songTitle: record.kpop?.songTitle,
       files: record.files,
       fileId: file.id
     });
@@ -380,6 +393,7 @@ export async function syncRegistrationToDrive(
     },
     guardian: record.guardian,
     cosplay: record.cosplay,
+    kpop: record.kpop,
     links: record.links,
     files: record.files.filter((file) => file.fileType !== registrationSheetFileType).map((file) => ({
       fileType: file.fileType,
@@ -538,7 +552,7 @@ export async function syncRegistrationToDrive(
   }
 }
 
-export type RegistrationUploadFileType = 'cosplay_reference' | 'cosplay_audio' | typeof guardianSignedFileType;
+export type RegistrationUploadFileType = 'cosplay_reference' | 'cosplay_audio' | 'kpop_audio' | typeof guardianSignedFileType;
 
 export async function uploadRegistrationFile({
   registrationId,
@@ -560,7 +574,10 @@ export async function uploadRegistrationFile({
   if (!record || !record.publicCode || !record.competitionFolderId) {
     throw new Error('Inscrição não encontrada para envio de arquivo.');
   }
-  if (fileType !== guardianSignedFileType && record.competitionId !== 'cosplay') {
+  if (fileType === 'kpop_audio' && record.competitionId !== 'k-pop-individual') {
+    throw new Error('O MP3 do K-Pop Individual não pertence a esta competição.');
+  }
+  if ((fileType === 'cosplay_reference' || fileType === 'cosplay_audio') && record.competitionId !== 'cosplay') {
     throw new Error('Arquivos específicos de Cosplay não pertencem a esta competição.');
   }
   if (fileType === guardianSignedFileType && !record.minorAuthorization) {
@@ -613,6 +630,8 @@ export async function uploadRegistrationFile({
       publicCode: latest.publicCode,
       participantName: latest.fullName,
       characterName: latest.cosplay?.characterName,
+      originalArtist: latest.kpop?.originalArtist,
+      songTitle: latest.kpop?.songTitle,
       files: latest.files,
       fileId
     });

@@ -22,17 +22,18 @@ const isPublicOnly = 'publicOnly' in tournament && tournament.publicOnly;
 const capacityLabel = 'capacityLabel' in tournament ? tournament.capacityLabel : undefined;
 const categoryLabel = tournament.category === 'Dance Game' ? 'Competição de Dança' : tournament.category;
 const isCosplay = tournament.id === 'cosplay';
+const isKpop = tournament.id === 'k-pop-individual';
 const regulationPageUrl = regulation && 'pageUrl' in regulation ? regulation.pageUrl : undefined;
 const cosplayPdfUrl = regulation ? `/assets/regulamentos/${encodeURIComponent(regulation.pdfFile)}` : undefined;
-const detailPageIntro = isPublicOnly
+const detailPageIntro = isPublicOnly || isKpop
   ? 'O K-Pop Individual chega ao Family Game Festival 2026 para colocar performances solo no centro do palco. Escolha sua música, prepare sua coreografia e mostre sua presença, técnica e energia diante do público.'
   : isCosplay
   ? 'Consulte abaixo o regulamento oficial completo do Concurso Cosplay e veja exemplos de guias de imagens para enviar antes de realizar sua inscrição.'
   : generalRegulation
     ? `Esta é a página oficial de ${tournament.title} no Family Game Festival 2026. Aqui ficarão reunidos os detalhes da inscrição, as orientações da organização e as regras gerais aplicáveis aos campeonatos de games.`
     : `Esta é a página oficial de ${tournament.title} no Family Game Festival 2026. Aqui ficarão reunidos o regulamento, os detalhes da inscrição e as orientações da organização.`;
-const participationTitle = isPublicOnly
-  ? 'Inscrição online em breve'
+const participationTitle = isPublicOnly || isKpop
+  ? 'Inscrições online abertas'
   : registrationFree
   ? 'Inscrição gratuita'
   : isCosplay
@@ -41,8 +42,8 @@ const participationTitle = isPublicOnly
     ? 'Compre seu ingresso competidor'
     : 'Ingresso competidor em breve';
 const onlineRegistrationCopy = `Inscrições online até ${ONLINE_REGISTRATION_DEADLINE_LABEL}. ${ONLINE_REGISTRATION_ONSITE_NOTICE}`;
-const participationCopy = isPublicOnly
-  ? `A inscrição online será disponibilizada em breve. ${ONLINE_REGISTRATION_DEADLINE_LABEL}; a inscrição presencial poderá ocorrer até 12h, mediante disponibilidade de vagas.`
+const participationCopy = isPublicOnly || isKpop
+  ? 'Inscrições online abertas para o K-Pop Individual.'
   : registrationFree
   ? `Compre o ingresso do evento. A inscrição na seletiva é gratuita. ${onlineRegistrationCopy}`
   : isCosplay
@@ -50,7 +51,7 @@ const participationCopy = isPublicOnly
     : registrationUrl
     ? `Compre o ingresso competidor ou o ingresso comum do evento. ${onlineRegistrationCopy} O ingresso competidor já inclui a entrada no evento no dia da competição.`
     : 'As informações de compra e inscrição serão publicadas assim que a organização confirmar a abertura.';
-const seoDescription = isPublicOnly
+const seoDescription = isPublicOnly || isKpop
   ? 'K-Pop Individual no Family Game Festival 2026, sábado, 19 de setembro, às 13h, em Bauru/SP.'
   : `${tournament.title}: data, horário, premiação, regulamento e inscrição no Family Game Festival 2026.`;
 ---
@@ -82,8 +83,8 @@ const seoDescription = isPublicOnly
             ) : !isCosplay ? (
               <span class="button button-detail-disabled">Regulamento específico em breve</span>
             ) : null}
-            {isPublicOnly ? (
-              <span class="button button-detail-disabled" role="status">Inscrição online em breve</span>
+            {isPublicOnly || isKpop ? (
+              <a class="button button-yellow" href={`/inscricao/${tournament.id}`}>Inscrições online abertas <span aria-hidden="true">↗</span></a>
             ) : registrationFree ? (
               <div class="championship-registration-free" role="status">
                 <strong>Inscrição gratuita</strong>
@@ -94,7 +95,7 @@ const seoDescription = isPublicOnly
             ) : (
               <span class="button button-detail-disabled">Ingresso competidor em breve</span>
             )}
-            {!isPublicOnly && <RegistrationChoiceDialog entry={entry} label="FAZER INSCRIÇÃO ONLINE" />}
+            {!isPublicOnly && !isKpop && <RegistrationChoiceDialog entry={entry} label="FAZER INSCRIÇÃO ONLINE" />}
           </div>
         </div>
       </div>
@@ -102,13 +103,12 @@ const seoDescription = isPublicOnly
 
     <section class="championship-detail-facts-section">
       <div class="container championship-detail-facts">
-        {isPublicOnly ? (
+        {isPublicOnly || isKpop ? (
           <>
             <div><span>DIA</span><strong>{schedule.day}</strong><small>{schedule.date}/2026</small></div>
             <div><span>HORÁRIO</span><strong>{schedule.time}</strong><small>Programação oficial</small></div>
-            <div><span>CAPACIDADE</span><strong>{capacityLabel}</strong><small>Limite máximo da modalidade</small></div>
-            <div><span>INSCRIÇÃO ONLINE</span><strong>EM BREVE</strong><small>Até {ONLINE_REGISTRATION_DEADLINE_LABEL.replace(' (horário de Brasília)', '')}.</small></div>
-            <div><span>INSCRIÇÃO PRESENCIAL</span><strong>ATÉ 12H</strong><small>Até 1 hora antes do início, mediante disponibilidade de vagas.</small></div>
+            <div><span>CAPACIDADE</span><strong>{capacityLabel || participants}</strong><small>Limite máximo da modalidade</small></div>
+            <div><span>INSCRIÇÕES ONLINE</span><strong>ABERTAS</strong><small>Inscrições online abertas.</small></div>
           </>
         ) : (
           <>
@@ -137,11 +137,9 @@ const seoDescription = isPublicOnly
         </div>
         <div class="championship-detail-info-board">
           <div><span>DATA E LOCAL</span><strong>{schedule.date}/2026 · Arena Tauste</strong><small>SORRI Bauru · Av. Nações Unidas, 5340</small></div>
-          {isPublicOnly ? (
+          {isPublicOnly || isKpop ? (
             <>
-              <div><span>INSCRIÇÃO ONLINE</span><strong>Em breve</strong><small>Até {ONLINE_REGISTRATION_DEADLINE_LABEL}. O formulário específico ainda está em preparação.</small></div>
-              <div><span>INSCRIÇÃO PRESENCIAL</span><strong>Até 12h</strong><small>No dia do evento, até 1 hora antes do início da modalidade, mediante disponibilidade de vagas.</small></div>
-              <div><span>MÚSICA DA APRESENTAÇÃO</span><strong>YouTube ou MP3</strong><small>A música poderá ser enviada por link do YouTube ou arquivo MP3 durante a inscrição online.</small><small>Mesmo realizando o envio online, o participante deverá levar a música em um pen drive no dia do evento.</small></div>
+              <div><span>INSCRIÇÕES ONLINE</span><strong>Abertas</strong><small>Inscrições online abertas.</small></div>
               <div><span>REGRAS DO K-POP INDIVIDUAL</span><strong>Regulamento em atualização.</strong><small>Regulamento completo em atualização.</small></div>
             </>
           ) : (

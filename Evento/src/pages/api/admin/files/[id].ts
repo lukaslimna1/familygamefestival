@@ -17,7 +17,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     .where(eq(registrationFiles.id, params.id))
     .limit(1);
 
-  if (!file || file.fileType !== 'cosplay_audio' || !file.driveFileId) return new Response('Arquivo não encontrado.', { status: 404 });
+  if (!file || !['cosplay_audio', 'kpop_audio'].includes(file.fileType) || !file.driveFileId) return new Response('Arquivo não encontrado.', { status: 404 });
 
   try {
     const driveResponse = await getDriveClient().files.get({ fileId: file.driveFileId, alt: 'media' }, { responseType: 'stream' });

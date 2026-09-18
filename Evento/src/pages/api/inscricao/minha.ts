@@ -63,6 +63,7 @@ export const GET: APIRoute = async ({ cookies }) => {
     } : null,
     minorAuthorizationHistory: registration.minorAuthorizationHistory,
     cosplay: registration.cosplay,
+    kpop: registration.kpop,
     links: registration.links,
     consents: registration.consents,
     files: registration.files.map(({ id, fileType, originalName, mimeType, sizeBytes, authorizationVersion, syncStatus, createdAt, updatedAt }) => ({ id, fileType, originalName, mimeType, sizeBytes, authorizationVersion, syncStatus, createdAt, updatedAt }))
@@ -125,6 +126,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         technicalNotes: text(form, 'technicalNotes'),
         judgeNotes: text(form, 'judgeNotes'),
         musicTitle: text(form, 'musicTitle')
+      });
+    } else if (current.kpop) {
+      Object.assign(update, {
+        stageName: text(form, 'stageName'),
+        originalArtist: text(form, 'originalArtist'),
+        songTitle: text(form, 'songTitle'),
+        songVersion: text(form, 'songVersion'),
+        editedCut: text(form, 'editedCut'),
+        referenceUrl: text(form, 'referenceUrl'),
+        audioNotes: text(form, 'audioNotes'),
+        judgeNotes: text(form, 'judgeNotes')
       });
     }
     const updated = await updatePublicRegistration(access.registrationId, update);

@@ -101,7 +101,9 @@ export function isMinorDate(value: string | undefined) {
 }
 
 function valueOf(form: HTMLFormElement, name: string) {
-  const field = form.elements.namedItem(name);
+  const fields = [...form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(`[name="${name}"]`)]
+    .filter((candidate) => !candidate.closest('[hidden]'));
+  const field = fields[0] || form.elements.namedItem(name);
   return field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement
     ? field.value.trim()
     : '';
@@ -146,7 +148,7 @@ function referenceLinks(source: HTMLFormElement) {
 }
 
 /** Maps the approved public UI field names to the backend contract in one place. */
-export function buildRegistrationPayload(source: HTMLFormElement, competitionId: string, isCosplay: boolean) {
+export function buildRegistrationPayload(source: HTMLFormElement, competitionId: string, isCosplay: boolean, isKpop = competitionId === 'k-pop-individual') {
   const payload = new FormData();
   appendValue(payload, 'fullName', valueOf(source, 'fullName'));
   appendValue(payload, 'dateOfBirth', valueOf(source, 'birthDate'));
@@ -207,6 +209,34 @@ export function buildRegistrationPayload(source: HTMLFormElement, competitionId:
     }
   }
 
+  if (isKpop) {
+    const kpopMap: Record<string, string> = {
+      stageName: 'stageName',
+      originalArtist: 'originalArtist',
+      songTitle: 'songTitle',
+      songVersion: 'songVersion',
+      editedCut: 'editedCut',
+      referenceUrl: 'referenceUrl',
+      audioNotes: 'audioNotes',
+      judgeNotes: 'judgeNotes'
+    };
+    for (const [uiName, apiName] of Object.entries(kpopMap)) {
+      const field = source.querySelector<HTMLInputElement>(`[data-registration-select-trigger][name="${uiName}"]`);
+      appendValue(payload, apiName, field?.dataset.selectedValue || valueOf(source, uiName));
+    }
+    if (checked(source, 'audioBackupAcknowledgement')) payload.append('consentPendrive', 'yes');
+    const audio = source.querySelector<HTMLInputElement>('[name="audioFile"]')?.files?.[0];
+    if (audio) payload.append('audioFile', audio, audio.name);
+
+    if (isMinorDate(valueOf(source, 'birthDate'))) {
+      const authorizationIds = [...source.querySelectorAll<HTMLInputElement>('input[name="authorizationCompetitionId"]:checked')]
+        .map((input) => input.value.trim())
+        .filter(Boolean);
+      if (!authorizationIds.includes(competitionId)) authorizationIds.push(competitionId);
+      for (const id of authorizationIds) payload.append('authorizationCompetitionId', id);
+    }
+  }
+
   return payload;
 }
 
@@ -214,7 +244,7 @@ export function buildManagementPayload(source: HTMLFormElement) {
   const payload = new FormData();
   payload.append('phone', valueOf(source, 'phone'));
   payload.append('email', valueOf(source, 'email'));
-  for (const name of ['instagram', 'tiktok', 'facebook', 'otherSocials', 'stageName', 'stageCallName', 'characterName', 'sourceWork', 'cosplayDescription', 'presentationDescription', 'presentationNotes', 'technicalNotes', 'judgeNotes', 'musicTitle']) {
+  for (const name of ['instagram', 'tiktok', 'facebook', 'otherSocials', 'stageName', 'stageCallName', 'characterName', 'sourceWork', 'cosplayDescription', 'presentationDescription', 'presentationNotes', 'technicalNotes', 'judgeNotes', 'musicTitle', 'originalArtist', 'songTitle', 'songVersion', 'editedCut', 'referenceUrl', 'audioNotes']) {
     appendValue(payload, name, valueOf(source, name));
   }
   const socialRows = [...source.querySelectorAll<HTMLElement>('[data-management-social-row]')].map((row) => ({

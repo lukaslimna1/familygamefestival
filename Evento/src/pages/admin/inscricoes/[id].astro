@@ -15,11 +15,12 @@ const registration = Astro.params.id ? await getAdminRegistrationDetails(Astro.p
 if (!registration) return new Response('Inscrição não encontrada.', { status: 404 });
 
 const statusLabel = (status: string) => ({ pending: 'Pendente', synced: 'Sincronizada', failed: 'Falha', cancelled: 'Cancelada', uploaded: 'Enviada', received: 'Recebida', physical_pending: 'Entrega física pendente', rejected: 'Rejeitada' }[status] ?? status);
-const fileLabel = (type: string) => ({ registration_sheet: 'Ficha de inscrição', guardian_authorization: 'Autorização do menor', guardian_authorization_signed: 'Autorização assinada', cosplay_reference: 'Referência', cosplay_audio: 'Áudio' }[type] ?? type);
+const fileLabel = (type: string) => ({ registration_sheet: 'Ficha de inscrição', guardian_authorization: 'Autorização do menor', guardian_authorization_signed: 'Autorização assinada', cosplay_reference: 'Referência', cosplay_audio: 'Áudio', kpop_audio: 'MP3 da apresentação' }[type] ?? type);
 const saveState = Astro.url.searchParams.get('saved');
 const needsAttention = registration.driveSyncStatus === 'failed'
   || registration.files.some((file) => file.syncStatus === 'failed')
-  || (registration.isMinor && (!registration.minorAuthorization || !['uploaded', 'received'].includes(registration.minorAuthorization.status)));
+  || (registration.isMinor && (!registration.minorAuthorization || !['uploaded', 'received'].includes(registration.minorAuthorization.status)))
+  || (registration.competitionId === 'k-pop-individual' && !registration.files.some((file) => file.fileType === 'kpop_audio'));
 ---
 
 <AdminLayout
@@ -96,9 +97,25 @@ const needsAttention = registration.driveSyncStatus === 'failed'
     </div>
 
     <div class="admin-v2-detail-grid admin-v2-detail-grid-lower">
+      {registration.kpop && (
+        <section class="admin-v2-card" aria-labelledby="kpop-title">
+          <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Dados da apresentação</p><h2 id="kpop-title">K-Pop Individual</h2><p>Informações específicas enviadas pelo participante.</p></div></div>
+          <dl class="admin-v2-definition-list">
+            <div><dt>Nome artístico</dt><dd>{registration.kpop.stageName || '—'}</dd></div>
+            <div><dt>Artista / grupo original</dt><dd>{registration.kpop.originalArtist}</dd></div>
+            <div><dt>Nome da música</dt><dd>{registration.kpop.songTitle}</dd></div>
+            <div><dt>Versão</dt><dd>{registration.kpop.songVersion || '—'}</dd></div>
+            <div><dt>Música editada ou cortada?</dt><dd>{registration.kpop.editedCut === 'yes' ? 'Sim' : 'Não'}</dd></div>
+            <div><dt>Cópia em pendrive</dt><dd>{registration.kpop.pendriveAcknowledged ? 'Ciente' : 'Não confirmado'}</dd></div>
+            <div><dt>Referência</dt><dd><a href={registration.kpop.referenceUrl} target="_blank" rel="noreferrer">Abrir coreografia / MV / vídeo <AdminIcon name="external" /></a></dd></div>
+          </dl>
+          {registration.kpop.audioNotes && <p class="admin-v2-error-note"><strong>Observações sobre o áudio:</strong> {registration.kpop.audioNotes}</p>}
+          {registration.kpop.judgeNotes && <p class="admin-v2-error-note"><strong>Observações para os jurados:</strong> {registration.kpop.judgeNotes}</p>}
+        </section>
+      )}
       <section class="admin-v2-card" aria-labelledby="documents-title">
         <div class="admin-v2-card-heading"><div><p class="admin-section-kicker">Arquivos</p><h2 id="documents-title">Documentação e Drive</h2><p>O Drive é a origem secundária; a situação operacional vem do banco.</p></div></div>
-        {registration.files.length ? <div class="admin-v2-file-list">{registration.files.map((file) => <div class="admin-v2-file-row"><span class="admin-v2-file-icon"><AdminIcon name={file.fileType === 'cosplay_audio' ? 'spark' : 'folder'} /></span><span><strong>{fileLabel(file.fileType)}</strong><small>{file.originalName} · {(file.sizeBytes / 1024).toFixed(0)} KB · {statusLabel(file.syncStatus)}</small></span>{driveFileUrl(file.driveFileId) && <a href={driveFileUrl(file.driveFileId)!} target="_blank" rel="noreferrer" class="admin-v2-icon-link" aria-label={'Abrir ' + fileLabel(file.fileType)}><AdminIcon name="external" /></a>}</div>)}</div> : <div class="admin-v2-inline-empty">Nenhum arquivo registrado para esta inscrição.</div>}
+        {registration.files.length ? <div class="admin-v2-file-list">{registration.files.map((file) => <div class="admin-v2-file-row"><span class="admin-v2-file-icon"><AdminIcon name={file.fileType === 'cosplay_audio' || file.fileType === 'kpop_audio' ? 'spark' : 'folder'} /></span><span><strong>{fileLabel(file.fileType)}</strong><small>{file.originalName} · {(file.sizeBytes / 1024).toFixed(0)} KB · {statusLabel(file.syncStatus)}</small></span>{(file.fileType === 'cosplay_audio' || file.fileType === 'kpop_audio') && <a href={`/api/admin/files/${file.id}`} target="_blank" rel="noreferrer" class="admin-v2-icon-link" aria-label={'Ouvir ' + fileLabel(file.fileType)}>Ouvir</a>}{driveFileUrl(file.driveFileId) && <a href={driveFileUrl(file.driveFileId)!} target="_blank" rel="noreferrer" class="admin-v2-icon-link" aria-label={'Abrir ' + fileLabel(file.fileType)}><AdminIcon name="external" /></a>}</div>)}</div> : <div class="admin-v2-inline-empty">Nenhum arquivo registrado para esta inscrição.</div>}
       </section>
 
       <section class="admin-v2-card" aria-labelledby="consents-title">

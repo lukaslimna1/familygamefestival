@@ -33,15 +33,28 @@ const competitorTicketDays = [
   entries: competitorTicketEntries.filter((entry) => entry.schedule.day === ticketDay.day)
 }));
 const guestVideoDirectory = join(process.cwd(), 'public/assets/videos');
+const guestVideoOrder: Record<string, number> = {
+  'Raul.mp4': 0,
+  'Lana.mp4': 1,
+  'Hélia de Cosplay.mp4': 2,
+  'Bruno Werner.mp4': 3,
+  'Diga Ação Podcast.mp4': 4,
+  'zoofiss.mp4': 5
+};
+const guestVideoTitles: Record<string, string> = {
+  'Bruno Werner.mp4': 'Bruno Werner',
+  'Diga Ação Podcast.mp4': 'Diga Ação Podcast',
+  'zoofiss.mp4': 'Zoofiss'
+};
 const guestVideos = existsSync(guestVideoDirectory)
   ? readdirSync(guestVideoDirectory, { withFileTypes: true })
       .filter((entry) => entry.isFile() && /\.(mp4|webm|mov|m4v)$/i.test(entry.name))
-      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+      .sort((a, b) => (guestVideoOrder[a.name] ?? Number.MAX_SAFE_INTEGER) - (guestVideoOrder[b.name] ?? Number.MAX_SAFE_INTEGER) || a.name.localeCompare(b.name, 'pt-BR'))
       .map((entry) => {
         const extension = extname(entry.name).toLowerCase();
         const filenameTitle = basename(entry.name, extension).replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
         const guest = guests.find((item) => filenameTitle.toLowerCase().startsWith(item.name.split(' ')[0].toLowerCase()));
-        return { filename: entry.name, title: guest?.name ?? filenameTitle, sourceType: extension === '.webm' ? 'video/webm' : extension === '.mov' ? 'video/quicktime' : 'video/mp4' };
+        return { filename: entry.name, title: guestVideoTitles[entry.name] ?? guest?.name ?? filenameTitle, sourceType: extension === '.webm' ? 'video/webm' : extension === '.mov' ? 'video/quicktime' : 'video/mp4' };
       })
   : [];
 ---

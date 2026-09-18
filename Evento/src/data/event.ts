@@ -164,22 +164,6 @@ function formatCurrency(cents: number) {
   return `R$ ${(cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-const publicOnlyTournaments = [
-  {
-    id: 'k-pop-individual',
-    category: 'Dance Game',
-    title: 'K-Pop Individual',
-    accent: 'pink',
-    prize: '',
-    detail: 'Suba ao palco e mostre sua performance.',
-    registrationPrice: '',
-    registrationUrl: '',
-    capacityLabel: '32 vagas',
-    participants: '32 vagas',
-    publicOnly: true
-  }
-] as const;
-
 export const tournaments = [
   ...competitionDefinitions.map((competition) => ({
   id: competition.id,
@@ -199,8 +183,7 @@ export const tournaments = [
   ...(competition.registrationFree ? { registrationFree: true } : {}),
   ...(competition.regulationId ? { regulationId: competition.regulationId } : {}),
   ...(competition.featured ? { featured: true } : {})
-  })),
-  ...publicOnlyTournaments
+  }))
 ];
 
 export const tournamentCategories = [
@@ -228,13 +211,7 @@ export const tournamentSchedule = competitionDefinitions.map((competition) => ({
   date: competition.displayDate,
   time: competition.startTime,
   note: competition.detail ?? ''
-})).concat({
-  tournamentId: 'k-pop-individual',
-  day: 'SÁBADO',
-  date: '19/09',
-  time: '13h',
-  note: '32 vagas'
-});
+}));
 
 export const eventScheduleExtras = [
   { day: 'SÁBADO', date: '19/09', time: '15h00', title: 'Painel Dublador', detail: 'Raul Schlosser', category: 'Atração', note: 'Painel, fotos e autógrafos', href: '#presencas-confirmadas', linkLabel: 'Ver convidado', accent: 'pink' },
@@ -497,6 +474,34 @@ export const mediaPartners = [
     image: '/assets/logos/midias/Voando%20Bauru.png',
     href: 'https://www.instagram.com/voandobauru',
     accent: 'cyan'
+  },
+  {
+    name: 'Rackoon',
+    handle: 'rackoon.com.br',
+    image: '/assets/logos/midias/Rackoon.png',
+    href: 'https://rackoon.com.br',
+    accent: 'yellow'
+  },
+  {
+    name: 'JWave',
+    handle: 'jwave.com.br',
+    image: '/assets/logos/midias/JWave-Logo-.png',
+    href: 'https://www.jwave.com.br/',
+    accent: 'pink'
+  },
+  {
+    name: 'Calendário Nerd',
+    handle: 'calendarionerd.com.br',
+    image: '/assets/logos/midias/Calendario%20Nerd.webp',
+    href: 'https://calendarionerd.com.br/',
+    accent: 'cyan'
+  },
+  {
+    name: 'Vaga Nerd',
+    handle: '@vaganerd',
+    image: '/assets/logos/midias/Vaga%20Nerd%20Portal.webp',
+    href: 'https://www.instagram.com/vaganerd/',
+    accent: 'red'
   }
 ] as const;
 

@@ -9,6 +9,7 @@ import {
   getRegistrationCapacity,
   getRegistrationWindowStatus,
   ONLINE_REGISTRATION_CLOSED_NOTICE,
+  isKpopCompetition,
   isValidCpf,
   isValidPhone,
   normalizeCpf,
@@ -20,6 +21,7 @@ import {
   consents,
   cosplayEntries,
   guardians,
+  kpopEntries,
   minorAuthorizations,
   participants,
   registrationFiles,
@@ -37,6 +39,13 @@ const linkInput = z.object({
   label: z.string().trim().min(1).max(80),
   url: z.string().trim().url().max(2048)
 });
+const kpopReferenceUrl = z.string().trim().url().max(2048).refine((value) => {
+  try {
+    return ['http:', 'https:'].includes(new URL(value).protocol);
+  } catch {
+    return false;
+  }
+}, 'O link de referência deve usar http ou https.');
 
 export const registrationDraftSchema = z.object({
   participant: z.object({
@@ -76,6 +85,17 @@ export const registrationDraftSchema = z.object({
     judgeNotes: z.string().trim().max(5000).optional(),
     musicTitle: z.string().trim().max(200).optional(),
     links: z.array(linkInput).max(10).optional()
+  }).optional(),
+  kpop: z.object({
+    stageName: z.string().trim().max(160).optional(),
+    originalArtist: z.string().trim().min(1).max(200),
+    songTitle: z.string().trim().min(1).max(200),
+    songVersion: z.string().trim().max(200).optional(),
+    editedCut: z.enum(['yes', 'no']),
+    referenceUrl: kpopReferenceUrl,
+    audioNotes: z.string().trim().max(5000).optional(),
+    judgeNotes: z.string().trim().max(5000).optional(),
+    pendriveAcknowledged: z.literal(true)
   }).optional()
 }).strict();
 
@@ -136,14 +156,19 @@ function humanValidationMessage(error: z.ZodError) {
     'guardian.email': 'Informe um e-mail válido para o responsável.',
     'guardian.relationship': 'Informe o parentesco ou relação com o participante.',
     'links': 'Confira os links informados.',
-    'competitionId': 'Selecione uma competição válida.'
+    'competitionId': 'Selecione uma competição válida.',
+    'kpop.originalArtist': 'Informe o artista ou grupo original.',
+    'kpop.songTitle': 'Informe o nome da música.',
+    'kpop.editedCut': 'Informe se a música foi editada ou cortada.',
+    'kpop.referenceUrl': 'Informe um link válido de coreografia, MV ou vídeo de referência.',
+    'kpop.pendriveAcknowledged': 'Confirme que levará uma cópia do MP3 em pendrive.'
   };
   return messages[path] || 'Confira os dados informados e tente novamente.';
 }
 
-function normalizeOptional(value: string | undefined) {
+function normalizeOptional(value: string | undefined, maxLength = 500) {
   const normalized = value?.trim();
-  return normalized || undefined;
+  return normalized ? normalized.slice(0, maxLength) : undefined;
 }
 
 function parseAuthorizationCompetitionIds(value: string | null | undefined) {
@@ -201,12 +226,19 @@ function validateDraftBusinessRules(draft: RegistrationDraft, competitionDefinit
   if (!consentTypes.has('competition_regulation') || !consentTypes.has('image_use')) {
     throw new RegistrationError('invalid', 'É necessário aceitar o regulamento e autorizar o uso de imagem.');
   }
+  const isKpop = isKpopCompetition(competitionDefinition);
   if (competitionDefinition.type === 'cosplay') {
     if (!draft.cosplay) throw new RegistrationError('invalid', 'Os dados do Cosplay são obrigatórios.');
+  } else if (isKpop) {
+    if (!draft.kpop) throw new RegistrationError('invalid', 'Os dados da apresentação do K-Pop são obrigatórios.');
+    if (draft.cosplay) throw new RegistrationError('invalid', 'Dados de Cosplay não pertencem a esta competição.');
+    if (!consentTypes.has('pendrive_backup') || !draft.kpop.pendriveAcknowledged) {
+      throw new RegistrationError('invalid', 'Confirme que levará uma cópia do MP3 em pendrive.');
+    }
   } else if (draft.cosplay) {
     throw new RegistrationError('invalid', 'Dados de Cosplay não pertencem a esta competição.');
   } else if (consentTypes.has('pendrive_backup')) {
-    throw new RegistrationError('invalid', 'O aceite de backup em pendrive é exclusivo do Cosplay.');
+    throw new RegistrationError('invalid', 'O aceite de backup em pendrive é exclusivo das modalidades com áudio.');
   }
 }
 
@@ -480,6 +512,22 @@ export async function createRegistrationDraft(input: RegistrationDraft) {
             })));
           }
         }
+
+        if (draft.kpop) {
+          await transaction.insert(kpopEntries).values({
+            id: randomUUID(),
+            registrationId,
+            stageName: normalizeOptional(draft.kpop.stageName),
+            originalArtist: draft.kpop.originalArtist,
+            songTitle: draft.kpop.songTitle,
+            songVersion: normalizeOptional(draft.kpop.songVersion),
+            editedCut: draft.kpop.editedCut,
+            referenceUrl: draft.kpop.referenceUrl,
+            audioNotes: normalizeOptional(draft.kpop.audioNotes, 5000),
+            judgeNotes: normalizeOptional(draft.kpop.judgeNotes, 5000),
+            pendriveAcknowledged: draft.kpop.pendriveAcknowledged
+          });
+        }
       });
 
       return {
@@ -547,7 +595,7 @@ async function getRegistrationById(registrationId: string) {
 
   if (!base) return null;
 
-  const [guardianRows, authorizationRows, cosplayRows, files, links, consentRows] = await Promise.all([
+  const [guardianRows, authorizationRows, cosplayRows, kpopRows, files, links, consentRows] = await Promise.all([
     database
       .select({
         id: guardians.id,
@@ -601,6 +649,23 @@ async function getRegistrationById(registrationId: string) {
       .limit(1),
     database
       .select({
+        id: kpopEntries.id,
+        stageName: kpopEntries.stageName,
+        originalArtist: kpopEntries.originalArtist,
+        songTitle: kpopEntries.songTitle,
+        songVersion: kpopEntries.songVersion,
+        editedCut: kpopEntries.editedCut,
+        referenceUrl: kpopEntries.referenceUrl,
+        audioNotes: kpopEntries.audioNotes,
+        judgeNotes: kpopEntries.judgeNotes,
+        pendriveAcknowledged: kpopEntries.pendriveAcknowledged,
+        updatedAt: kpopEntries.updatedAt
+      })
+      .from(kpopEntries)
+      .where(eq(kpopEntries.registrationId, registrationId))
+      .limit(1),
+    database
+      .select({
         id: registrationFiles.id,
         fileType: registrationFiles.fileType,
         originalName: registrationFiles.originalName,
@@ -650,6 +715,7 @@ async function getRegistrationById(registrationId: string) {
   const minorAuthorization = authorizationHistory[0] ?? null;
 
   const cosplay = cosplayRows[0];
+  const kpop = kpopRows[0];
 
   return {
     ...base,
@@ -657,6 +723,7 @@ async function getRegistrationById(registrationId: string) {
     minorAuthorization,
     minorAuthorizationHistory: authorizationHistory,
     cosplay: cosplay ?? null,
+    kpop: kpop ?? null,
     files,
     links,
     consents: consentRows
@@ -714,7 +781,13 @@ const publicRegistrationUpdateSchema = z.object({
   presentationNotes: z.string().trim().max(5000).optional(),
   technicalNotes: z.string().trim().max(5000).optional(),
   judgeNotes: z.string().trim().max(5000).optional(),
-  musicTitle: z.string().trim().max(200).optional()
+  musicTitle: z.string().trim().max(200).optional(),
+  originalArtist: z.string().trim().min(1).max(200).optional(),
+  songTitle: z.string().trim().min(1).max(200).optional(),
+  songVersion: z.string().trim().max(200).optional(),
+  editedCut: z.enum(['yes', 'no']).optional(),
+  referenceUrl: kpopReferenceUrl.optional(),
+  audioNotes: z.string().trim().max(5000).optional()
 });
 
 export type PublicRegistrationUpdate = z.infer<typeof publicRegistrationUpdateSchema>;
@@ -762,6 +835,25 @@ export async function updatePublicRegistration(registrationId: string, input: Pu
         updatedAt: now
       };
       await transaction.update(cosplayEntries).set(cosplayUpdate).where(eq(cosplayEntries.registrationId, registrationId));
+    } else if (current.kpop) {
+      const referenceUrl = update.referenceUrl ?? current.kpop.referenceUrl;
+      try {
+        const parsedUrl = new URL(referenceUrl);
+        if (!['http:', 'https:'].includes(parsedUrl.protocol)) throw new Error('protocol');
+      } catch {
+        throw new RegistrationError('invalid', 'O link de referência deve usar http ou https.');
+      }
+      await transaction.update(kpopEntries).set({
+        stageName: normalizeOptional(update.stageName ?? current.kpop.stageName ?? undefined),
+        originalArtist: update.originalArtist ?? current.kpop.originalArtist,
+        songTitle: update.songTitle ?? current.kpop.songTitle,
+        songVersion: normalizeOptional(update.songVersion ?? current.kpop.songVersion ?? undefined),
+        editedCut: update.editedCut ?? current.kpop.editedCut,
+        referenceUrl,
+        audioNotes: normalizeOptional(update.audioNotes ?? current.kpop.audioNotes ?? undefined, 5000),
+        judgeNotes: normalizeOptional(update.judgeNotes ?? current.kpop.judgeNotes ?? undefined, 5000),
+        updatedAt: now
+      }).where(eq(kpopEntries.registrationId, registrationId));
     } else if (Object.entries(update).some(([key, value]) => ['stageName', 'stageCallName', 'characterName', 'sourceWork', 'cosplayDescription', 'presentationDescription', 'presentationNotes', 'technicalNotes', 'judgeNotes', 'musicTitle'].includes(key) && value !== undefined)) {
       throw new RegistrationError('invalid', 'Campos de Cosplay não pertencem a esta competição.');
     }

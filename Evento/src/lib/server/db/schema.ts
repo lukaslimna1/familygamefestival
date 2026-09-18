@@ -145,6 +145,24 @@ export const cosplayEntries = sqliteTable('cosplay_entries', {
   registrationUnique: uniqueIndex('cosplay_entries_registration_unique').on(table.registrationId)
 }));
 
+export const kpopEntries = sqliteTable('kpop_entries', {
+  id: text('id').primaryKey(),
+  registrationId: text('registration_id').notNull().references(() => registrations.id, { onDelete: 'cascade' }),
+  stageName: text('stage_name'),
+  originalArtist: text('original_artist').notNull(),
+  songTitle: text('song_title').notNull(),
+  songVersion: text('song_version'),
+  editedCut: text('edited_cut').notNull(),
+  referenceUrl: text('reference_url').notNull(),
+  audioNotes: text('audio_notes'),
+  judgeNotes: text('judge_notes'),
+  pendriveAcknowledged: integer('pendrive_acknowledged', { mode: 'boolean' }).notNull().default(false),
+  createdAt: timestamp('created_at'),
+  updatedAt: timestamp('updated_at')
+}, (table) => ({
+  registrationUnique: uniqueIndex('kpop_entries_registration_unique').on(table.registrationId)
+}));
+
 export const registrationFiles = sqliteTable('registration_files', {
   id: text('id').primaryKey(),
   registrationId: text('registration_id').notNull().references(() => registrations.id, { onDelete: 'cascade' }),
@@ -211,6 +229,7 @@ export const databaseSchema = {
   guardians,
   minorAuthorizations,
   cosplayEntries,
+  kpopEntries,
   registrationFiles,
   registrationLinks,
   admins,
