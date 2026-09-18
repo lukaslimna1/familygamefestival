@@ -409,7 +409,7 @@ const guestVideos = existsSync(guestVideoDirectory)
           <div class="competitor-day-panels">
             {competitorTicketDays.map((ticketDay) => (
               <section class={`competitor-day-panel competitor-day-${ticketDay.slug}`} aria-labelledby={`competitor-day-${ticketDay.slug}`}>
-                <div class="competitor-day-heading"><div><p class="eyebrow eyebrow-cyan">Ingressos de competidor</p><h4 id={`competitor-day-${ticketDay.slug}`}>{ticketDay.day}</h4></div><strong>{ticketDay.date} · {ticketDay.entries.length} inscrições</strong></div>
+                <div class="competitor-day-heading"><div><p class="eyebrow eyebrow-cyan">Ingressos de competidor</p><h4 id={`competitor-day-${ticketDay.slug}`}>{ticketDay.day}</h4></div><strong>{ticketDay.date} · {ticketDay.entries.length} modalidades</strong></div>
                 <div class="competitor-carousel" data-ticket-carousel>
                   <div class="competitor-carousel-controls">
                     <span>Carrossel automático · deslize ou use as setas</span>

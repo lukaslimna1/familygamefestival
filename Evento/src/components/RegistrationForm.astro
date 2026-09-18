@@ -225,7 +225,7 @@ const consentStep = isCosplay ? '07' : '04';
       if (!competitionId) return;
       if (statusCard) statusCard.dataset.registrationStatus = 'loading';
       try {
-        const result = await getRegistrationApi<{ registration: { registered: number; capacity: number; remaining: number; full: boolean; onlineOpen: boolean; deadlineLabel: string; onlineMessage: string } }>(`inscricoes/${encodeURIComponent(competitionId)}/status`);
+        const result = await getRegistrationApi<{ registration: { capacity: number; full: boolean; onlineOpen: boolean; deadlineLabel: string; onlineMessage: string } }>(`inscricoes/${encodeURIComponent(competitionId)}/status`);
         const registration = result.registration;
         statusLoaded = true;
         statusUnavailable = false;
@@ -248,7 +248,7 @@ const consentStep = isCosplay ? '07' : '04';
             ? 'O limite desta competição foi atingido. Consulte a organização sobre a possibilidade de inscrição presencial.'
             : onlineClosedMessage;
         }
-        if (statusAvailability) statusAvailability.textContent = `${registration.registered}/${registration.capacity} inscritos · ${registration.remaining} vagas restantes`;
+        if (statusAvailability) statusAvailability.textContent = `${registration.capacity} vagas`;
       } catch {
         statusLoaded = true;
         statusUnavailable = true;

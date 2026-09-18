@@ -23,9 +23,9 @@ export async function createCompetitionStatusResponse(competitionSlug: string, n
         startTime: status.competition.startTime
       },
       registration: {
-        registered: status.registered,
+        // Occupancy is an internal/admin concern. The public status exposes
+        // only the configured capacity and whether registration is available.
         capacity: status.capacity,
-        remaining: status.remaining,
         full: status.full,
         onlineOpen: status.onlineOpen,
         deadline: status.deadline.toISOString(),
