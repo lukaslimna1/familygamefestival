@@ -3,11 +3,13 @@ import { uploadRegistrationFile, syncRegistrationToDrive } from '../drive/regist
 import { createPublicRegistrationAccessToken, getPublicRegistrationAccessCookieOptions, PUBLIC_REGISTRATION_ACCESS_COOKIE } from './access';
 import {
   COSPLAY_AUDIO_MAX_BYTES,
+  KPOP_AUDIO_MAX_BYTES,
   COSPLAY_REFERENCE_FILE_LIMIT,
   COSPLAY_REFERENCE_MAX_BYTES,
   getCompetitionDefinitionBySlug,
   getCompetitionRegulationVersion,
   isCosplayCompetition,
+  isKpopCompetition,
   REGISTRATION_POLICY_VERSIONS
 } from './config';
 
@@ -56,6 +58,10 @@ function isAudioFile(file: File) {
     && !file.type.startsWith('video/');
 }
 
+function isKpopAudioFile(file: File) {
+  return extension(file.name) === 'mp3' && (!file.type || file.type === 'audio/mpeg');
+}
+
 function wantsJson(request: Request) {
   return request.headers.get('accept')?.includes('application/json') || request.headers.get('x-fgf-api') === 'json';
 }
@@ -69,7 +75,7 @@ function errorStatus(code: string) {
 }
 
 function redirectToForm(request: Request, slug: string, error: string) {
-  const location = new URL(`/inscricoes/${slug}`, request.url);
+  const location = new URL(`/inscricao/${slug}`, request.url);
   location.searchParams.set('error', error === 'online_closed' ? 'closed' : error);
   return new Response(null, {
     status: 303,
@@ -139,17 +145,24 @@ export async function createPublicRegistration(request: Request, competitionSlug
   }
 
   const cosplay = isCosplayCompetition(definition);
+  const kpop = isKpopCompetition(definition);
   const referenceFiles = form.getAll('referenceFiles').filter(isFile);
   const audioEntries = form.getAll('audioFile').filter(isFile);
   const selectedAuthorizationCompetitionIds = authorizationCompetitionIds(form);
-  if (!cosplay && (referenceFiles.length > 0 || audioEntries.length > 0)) {
+  if (!cosplay && !kpop && (referenceFiles.length > 0 || audioEntries.length > 0)) {
     return errorResponse(request, definition.slug, new RegistrationError('invalid', 'Arquivos de Cosplay não pertencem a esta competição.'));
+  }
+  if (kpop && audioEntries.length !== 1) {
+    return errorResponse(request, definition.slug, new RegistrationError('invalid', 'O envio do MP3 da apresentação é obrigatório.'));
   }
   if (referenceFiles.length > COSPLAY_REFERENCE_FILE_LIMIT || referenceFiles.some((file) => !isReferenceFile(file) || file.size > COSPLAY_REFERENCE_MAX_BYTES)) {
     return errorResponse(request, definition.slug, new RegistrationError('invalid', 'Uma ou mais referências possuem formato ou tamanho inválido.'));
   }
   if (audioEntries.length > 1 || audioEntries.some((file) => !isAudioFile(file) || file.size > COSPLAY_AUDIO_MAX_BYTES)) {
     return errorResponse(request, definition.slug, new RegistrationError('invalid', 'O áudio deve ser MP3, M4A ou WAV e respeitar o tamanho máximo.'));
+  }
+  if (kpop && audioEntries.some((file) => !isKpopAudioFile(file) || file.size > KPOP_AUDIO_MAX_BYTES)) {
+    return errorResponse(request, definition.slug, new RegistrationError('invalid', 'O áudio do K-Pop Individual deve ser um único MP3 com até 25 MB.'));
   }
 
   const labels = form.getAll('referenceLinkLabel').filter((value): value is string => typeof value === 'string');
@@ -185,7 +198,7 @@ export async function createPublicRegistration(request: Request, competitionSlug
       },
       competitionId: definition.id,
       ...(selectedAuthorizationCompetitionIds.length > 0 ? { authorizationCompetitionIds: selectedAuthorizationCompetitionIds } : {}),
-      links,
+      links: cosplay ? links : [],
       consents: [
         { type: 'competition_regulation', granted: true, policyVersion: getCompetitionRegulationVersion(definition) },
         { type: 'image_use', granted: true, policyVersion: REGISTRATION_POLICY_VERSIONS.imageUse },
@@ -213,6 +226,19 @@ export async function createPublicRegistration(request: Request, competitionSlug
           technicalNotes: optionalText(form, 'technicalNotes'),
           judgeNotes: optionalText(form, 'judgeNotes'),
           musicTitle: optionalText(form, 'musicTitle')
+        }
+      } : {}),
+      ...(kpop ? {
+        kpop: {
+          stageName: optionalText(form, 'stageName'),
+          originalArtist: text(form, 'originalArtist'),
+          songTitle: text(form, 'songTitle'),
+          songVersion: optionalText(form, 'songVersion'),
+          editedCut: text(form, 'editedCut') as 'yes' | 'no',
+          referenceUrl: text(form, 'referenceUrl'),
+          audioNotes: optionalText(form, 'audioNotes'),
+          judgeNotes: optionalText(form, 'judgeNotes'),
+          pendriveAcknowledged: true as const
         }
       } : {})
     });
@@ -243,7 +269,7 @@ export async function createPublicRegistration(request: Request, competitionSlug
       try {
         await uploadRegistrationFile({
           registrationId: created.registrationId,
-          fileType: 'cosplay_audio',
+          fileType: kpop ? 'kpop_audio' : 'cosplay_audio',
           originalName: audio.name,
           mimeType: audio.type || 'audio/mpeg',
           bytes: new Uint8Array(await audio.arrayBuffer())

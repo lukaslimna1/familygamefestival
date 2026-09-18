@@ -27,6 +27,7 @@ import { registrationRoutes } from '../../lib/registration';
         <RegistrationAuthorization variant="success" />
         <p class="success-save-note">Guarde este código. Você precisará dele junto com seu CPF para consultar ou atualizar sua inscrição.</p>
         <p class="success-save-note">Recomendamos salvar este código ou tirar uma captura desta tela.</p>
+        <p class="success-save-note" data-success-kpop hidden>Para o K-Pop Individual, leve no dia do evento uma cópia do MP3 em um pendrive devidamente identificado.</p>
         <p class="success-sync-note" data-success-sync hidden>O cadastro foi salvo, mas a sincronização de arquivos continuará em processamento.</p>
         <div class="success-actions">
           <a class="button button-outline-light" href={registrationRoutes.access}>Acessar minha inscrição <span aria-hidden="true">↗</span></a>
@@ -56,10 +57,13 @@ import { registrationRoutes } from '../../lib/registration';
   const copyFeedback = document.querySelector<HTMLElement>('[data-copy-feedback]');
   const syncNote = document.querySelector<HTMLElement>('[data-success-sync]');
   const code = new URLSearchParams(window.location.search).get('code')?.trim().toUpperCase() || '';
+  const competition = new URLSearchParams(window.location.search).get('competition') || '';
   const sync = new URLSearchParams(window.location.search).get('sync');
 
   if (codeElement) codeElement.textContent = code || 'Código indisponível';
   if (syncNote) syncNote.hidden = sync !== 'pending';
+  const kpopNote = document.querySelector<HTMLElement>('[data-success-kpop]');
+  if (kpopNote) kpopNote.hidden = competition !== 'k-pop-individual';
   if (copyButton) copyButton.disabled = !code;
   copyButton?.addEventListener('click', async () => {
     if (!code) return;

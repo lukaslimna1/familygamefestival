@@ -1,0 +1,108 @@
+---
+interface Props {
+  required?: boolean;
+  onlyMp3?: boolean;
+  formatsLabel?: string;
+}
+
+const {
+  required = false,
+  onlyMp3 = false,
+  formatsLabel = 'MP3, M4A ou WAV'
+} = Astro.props;
+const accept = onlyMp3 ? '.mp3,audio/mpeg' : '.mp3,.m4a,.wav,audio/mpeg,audio/x-m4a,audio/wav';
+---
+
+<div class="registration-audio-manager" data-audio-uploader data-audio-only-mp3={onlyMp3 ? 'true' : 'false'} data-audio-required={required ? 'true' : 'false'}>
+  <input hidden type="file" accept={accept} data-audio-input />
+  <input hidden type="file" name="audioFile" accept={accept} data-audio-submit-input />
+  <div class="registration-upload-panel">
+    <div><strong>Envie o áudio da apresentação</strong><span>{formatsLabel} · um arquivo</span></div>
+    <button class="button button-outline-light" type="button" data-select-audio>Selecionar áudio <span aria-hidden="true">＋</span></button>
+  </div>
+  <div class="registration-audio-file" data-audio-file hidden>
+    <div><strong data-audio-name></strong><span data-audio-size></span></div>
+    <audio controls data-audio-player hidden></audio>
+    <div class="registration-item-actions"><button class="registration-text-button" type="button" data-replace-audio>Substituir</button><button class="registration-text-button is-danger" type="button" data-remove-audio>× Remover</button></div>
+  </div>
+  <p class="registration-inline-feedback" data-audio-feedback aria-live="polite"></p>
+</div>
+<label class="registration-check registration-audio-warning"><input type="checkbox" name="audioBackupAcknowledgement" data-audio-ack disabled={required ? undefined : true} required={required ? true : undefined} /><span>Estou ciente de que devo levar no dia do evento uma cópia do MP3 da apresentação em pendrive devidamente identificado, para utilização em caso de falha técnica.</span></label>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-audio-uploader]').forEach((root) => {
+    const input = root.querySelector<HTMLInputElement>('[data-audio-input]');
+    const submitInput = root.querySelector<HTMLInputElement>('[data-audio-submit-input]');
+    const audioFile = root.querySelector<HTMLElement>('[data-audio-file]');
+    const audioPlayer = root.querySelector<HTMLAudioElement>('[data-audio-player]');
+    const audioName = root.querySelector<HTMLElement>('[data-audio-name]');
+    const audioSize = root.querySelector<HTMLElement>('[data-audio-size]');
+    const emptyPanel = root.querySelector<HTMLElement>('.registration-upload-panel');
+    const ack = root.parentElement?.querySelector<HTMLInputElement>('[data-audio-ack]');
+    const onlyMp3 = root.dataset.audioOnlyMp3 === 'true';
+    const required = root.dataset.audioRequired === 'true';
+    if (!input || !submitInput || !audioFile || !audioPlayer) return;
+
+    let audioUrl = '';
+    const formatBytes = (bytes: number) => bytes < 1024 * 1024 ? `${Math.round(bytes / 1024)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    const validAudio = (file: File) => {
+      const extension = file.name.split('.').pop()?.toLowerCase() || '';
+      if (onlyMp3) return extension === 'mp3' && (!file.type || file.type === 'audio/mpeg');
+      return ['mp3', 'm4a', 'wav'].includes(extension) && !file.type.startsWith('video/');
+    };
+    const message = root.querySelector<HTMLElement>('[data-audio-feedback]');
+
+    const clearAudio = () => {
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      audioUrl = '';
+      audioFile.hidden = true;
+      if (emptyPanel) emptyPanel.hidden = false;
+      audioPlayer.pause();
+      audioPlayer.removeAttribute('src');
+      audioPlayer.load();
+      audioPlayer.hidden = true;
+      submitInput.files = new DataTransfer().files;
+      if (ack) {
+        ack.checked = false;
+        ack.disabled = true;
+        if (!required) ack.required = false;
+      }
+    };
+
+    const showAudio = (file: File) => {
+      if (!validAudio(file)) {
+        if (message) message.textContent = onlyMp3 ? 'Formato não aceito. Envie um arquivo MP3 com áudio/mpeg.' : 'Formato não aceito. Selecione MP3, M4A ou WAV. MP4 não é aceito.';
+        return;
+      }
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      audioUrl = URL.createObjectURL(file);
+      if (audioName) audioName.textContent = file.name;
+      if (audioSize) audioSize.textContent = formatBytes(file.size);
+      audioFile.hidden = false;
+      if (emptyPanel) emptyPanel.hidden = true;
+      audioPlayer.src = audioUrl;
+      audioPlayer.hidden = false;
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      submitInput.files = transfer.files;
+      if (ack) {
+        ack.disabled = false;
+        ack.required = true;
+      }
+      if (message) message.textContent = '';
+    };
+
+    root.querySelector('[data-select-audio]')?.addEventListener('click', () => input.click());
+    root.querySelector('[data-replace-audio]')?.addEventListener('click', () => input.click());
+    root.querySelector('[data-remove-audio]')?.addEventListener('click', clearAudio);
+    input.addEventListener('change', () => {
+      const file = input.files?.[0];
+      if (file) showAudio(file);
+      input.value = '';
+    });
+    if (ack && !required) {
+      ack.required = false;
+      ack.disabled = true;
+    }
+  });
+</script>

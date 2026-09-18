@@ -82,6 +82,21 @@ import { registrationRoutes } from '../../lib/registration';
           </div>
         </section>
 
+        <section class="management-card" data-management-kpop hidden>
+          <div class="management-card-heading"><div><p class="eyebrow eyebrow-pink">Editável</p><h2>Dados da apresentação.</h2></div><span class="management-editable">Você pode editar</span></div>
+          <div class="registration-grid">
+            <div class="registration-field"><label for="mine-kpop-stage-name">Nome artístico</label><input id="mine-kpop-stage-name" name="stageName" /></div>
+            <div class="registration-field"><label for="mine-kpop-artist">Artista / grupo original</label><input id="mine-kpop-artist" name="originalArtist" required /></div>
+            <div class="registration-field"><label for="mine-kpop-song">Nome da música</label><input id="mine-kpop-song" name="songTitle" required /></div>
+            <div class="registration-field"><label for="mine-kpop-version">Versão da música</label><input id="mine-kpop-version" name="songVersion" /></div>
+            <div class="registration-field"><label for="mine-kpop-edited">Música editada ou cortada?</label><select id="mine-kpop-edited" name="editedCut" required><option value="yes">Sim</option><option value="no">Não</option></select></div>
+            <div class="registration-field registration-field-full"><label for="mine-kpop-reference">Link da coreografia / MV / vídeo de referência</label><input id="mine-kpop-reference" name="referenceUrl" type="url" required /></div>
+            <div class="registration-field registration-field-full"><label for="mine-kpop-audio-notes">Observações sobre o áudio</label><textarea id="mine-kpop-audio-notes" name="audioNotes" rows="3"></textarea></div>
+            <div class="registration-field registration-field-full"><label for="mine-kpop-judge-notes">Observações para os jurados</label><textarea id="mine-kpop-judge-notes" name="judgeNotes" rows="3"></textarea></div>
+          </div>
+          <p class="registration-helper">O MP3 é atualizado na seção de arquivos. O aceite de levar uma cópia em pendrive permanece registrado.</p>
+        </section>
+
         <section class="management-card" data-management-files-card hidden>
           <div class="management-card-heading"><div><p class="eyebrow eyebrow-yellow">Editável</p><h2>Arquivos e referências.</h2></div><span class="management-editable">Adicionar, substituir ou remover</span></div>
           <div class="management-resource-list" data-management-files></div>
@@ -120,6 +135,7 @@ import { registrationRoutes } from '../../lib/registration';
     guardian: { fullName: string; cpf: string; phone: string; email: string; relationship: string } | null;
     minorAuthorization: { version: number; competitionIds: string[]; status: string; generatedFileId: string | null; signedDriveFileId: string | null; deliveryType: string | null; coversCurrentCompetition: boolean } | null;
     cosplay: { stageName: string | null; stageCallName: string; characterName: string; sourceWork: string; cosplayDescription: string | null; presentationDescription: string | null; presentationNotes: string | null; technicalNotes: string | null; judgeNotes: string | null; musicTitle: string | null } | null;
+    kpop: { stageName: string | null; originalArtist: string; songTitle: string; songVersion: string | null; editedCut: string; referenceUrl: string; audioNotes: string | null; judgeNotes: string | null; pendriveAcknowledged: boolean } | null;
     links: Array<{ id: string; label: string; url: string }>;
     consents: Array<{ type: string; granted: boolean; policyVersion: string; grantedAt: string }>;
     files: Array<{ id: string; fileType: string; originalName: string; mimeType: string; sizeBytes: number; authorizationVersion: number | null; syncStatus: string; createdAt: string; updatedAt: string }>;
@@ -136,7 +152,7 @@ import { registrationRoutes } from '../../lib/registration';
   const socialList = document.querySelector<HTMLElement>('[data-management-social-list]');
   const uploadInput = document.querySelector<HTMLInputElement>('[data-management-upload-input]');
   let currentData: RegistrationData | null = null;
-  let pendingFileType: 'cosplay_reference' | 'cosplay_audio' | null = null;
+  let pendingFileType: 'cosplay_reference' | 'cosplay_audio' | 'kpop_audio' | null = null;
   let replacementFileId: string | null = null;
 
   const textField = (id: string) => document.querySelector<HTMLInputElement | HTMLTextAreaElement>(`#${id}`);
@@ -144,7 +160,7 @@ import { registrationRoutes } from '../../lib/registration';
   const formatDate = (value: string | undefined) => value ? new Intl.DateTimeFormat('pt-BR').format(new Date(`${value}T12:00:00`)) : '—';
   const formatDateTime = (value: string | undefined) => value ? new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value)) : '—';
   const formatBytes = (bytes: number) => bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  const fileLabel = (type: string) => ({ cosplay_reference: 'Referência', cosplay_audio: 'Áudio', guardian_authorization_signed: 'Autorização assinada', guardian_authorization: 'Autorização preenchida', registration_sheet: 'Ficha da inscrição' } as Record<string, string>)[type] || 'Arquivo';
+  const fileLabel = (type: string) => ({ cosplay_reference: 'Referência', cosplay_audio: 'Áudio', kpop_audio: 'MP3 da apresentação', guardian_authorization_signed: 'Autorização assinada', guardian_authorization: 'Autorização preenchida', registration_sheet: 'Ficha da inscrição' } as Record<string, string>)[type] || 'Arquivo';
   const statusLabel = (value: string) => ({ submitted: 'Em análise', pending: 'Pendente', approved: 'Confirmada', rejected: 'Revisar dados' } as Record<string, string>)[value] || value.replaceAll('_', ' ');
   const setPageFeedback = (message: string) => { if (pageFeedback) pageFeedback.textContent = message; };
   const showManagementFieldError = (name: string, message: string) => {
@@ -245,7 +261,7 @@ import { registrationRoutes } from '../../lib/registration';
       row.className = 'management-resource-row';
       const icon = document.createElement('span');
       icon.className = 'management-resource-icon';
-      icon.textContent = file.fileType === 'cosplay_audio' ? '♪' : file.fileType.includes('authorization') ? 'AUT' : file.fileType === 'registration_sheet' ? 'PDF' : 'IMG';
+      icon.textContent = file.fileType === 'cosplay_audio' || file.fileType === 'kpop_audio' ? '♪' : file.fileType.includes('authorization') ? 'AUT' : file.fileType === 'registration_sheet' ? 'PDF' : 'IMG';
       const details = document.createElement('div');
       const name = document.createElement('strong');
       name.textContent = file.originalName;
@@ -262,17 +278,17 @@ import { registrationRoutes } from '../../lib/registration';
         view.rel = 'noreferrer';
         view.textContent = 'Visualizar';
         actions.append(view);
-        if (file.fileType === 'cosplay_reference' || file.fileType === 'cosplay_audio') {
+        if (file.fileType === 'cosplay_reference' || file.fileType === 'cosplay_audio' || file.fileType === 'kpop_audio') {
           const replace = document.createElement('button');
           replace.type = 'button';
           replace.className = 'registration-text-button';
           replace.textContent = 'Substituir';
           replace.addEventListener('click', () => {
-            pendingFileType = file.fileType === 'cosplay_audio' ? 'cosplay_audio' : 'cosplay_reference';
+            pendingFileType = file.fileType === 'kpop_audio' ? 'kpop_audio' : file.fileType === 'cosplay_audio' ? 'cosplay_audio' : 'cosplay_reference';
             replacementFileId = file.id;
             if (uploadInput) {
               uploadInput.multiple = false;
-              uploadInput.accept = pendingFileType === 'cosplay_audio' ? '.mp3,.m4a,.wav,audio/mpeg,audio/x-m4a,audio/wav' : '.jpg,.jpeg,.png,.webp,.pdf';
+              uploadInput.accept = pendingFileType === 'cosplay_audio' ? '.mp3,.m4a,.wav,audio/mpeg,audio/x-m4a,audio/wav' : pendingFileType === 'kpop_audio' ? '.mp3,audio/mpeg' : '.jpg,.jpeg,.png,.webp,.pdf';
               uploadInput.click();
             }
           });
@@ -339,9 +355,13 @@ import { registrationRoutes } from '../../lib/registration';
       (socials.length ? socials : [{ label: '', url: '' }]).forEach((social) => addSocialRow(social.label, social.url));
     }
     const cosplayCard = document.querySelector<HTMLElement>('[data-management-cosplay]');
+    const kpopCard = document.querySelector<HTMLElement>('[data-management-kpop]');
     const filesCard = document.querySelector<HTMLElement>('[data-management-files-card]');
     if (cosplayCard) cosplayCard.hidden = !data.cosplay;
-    if (filesCard) filesCard.hidden = !data.cosplay;
+    if (kpopCard) kpopCard.hidden = !data.kpop;
+    if (filesCard) filesCard.hidden = !data.cosplay && !data.kpop;
+    const referenceButton = document.querySelector<HTMLButtonElement>('[data-add-management-reference]');
+    if (referenceButton) referenceButton.hidden = !data.cosplay;
     if (data.cosplay) {
       setValue('mine-stage-name', data.cosplay.stageName);
       setValue('mine-call-name', data.cosplay.stageCallName);
@@ -353,6 +373,17 @@ import { registrationRoutes } from '../../lib/registration';
       setValue('mine-technical-notes', data.cosplay.technicalNotes);
       setValue('mine-judge-notes', data.cosplay.judgeNotes);
       setValue('mine-music-title', data.cosplay.musicTitle);
+      renderFiles(data);
+    }
+    if (data.kpop) {
+      setValue('mine-kpop-stage-name', data.kpop.stageName);
+      setValue('mine-kpop-artist', data.kpop.originalArtist);
+      setValue('mine-kpop-song', data.kpop.songTitle);
+      setValue('mine-kpop-version', data.kpop.songVersion);
+      setValue('mine-kpop-edited', data.kpop.editedCut);
+      setValue('mine-kpop-reference', data.kpop.referenceUrl);
+      setValue('mine-kpop-audio-notes', data.kpop.audioNotes);
+      setValue('mine-kpop-judge-notes', data.kpop.judgeNotes);
       renderFiles(data);
     }
     renderAuthorization(data);
@@ -390,8 +421,8 @@ import { registrationRoutes } from '../../lib/registration';
     }
   };
 
-  const uploadFile = async (fileType: 'cosplay_reference' | 'cosplay_audio', file: File, replaceId?: string | null) => {
-    const needsPendriveConsent = fileType === 'cosplay_audio' && !currentData?.consents.some((consent) => consent.type === 'pendrive_backup' && consent.granted);
+  const uploadFile = async (fileType: 'cosplay_reference' | 'cosplay_audio' | 'kpop_audio', file: File, replaceId?: string | null) => {
+    const needsPendriveConsent = (fileType === 'cosplay_audio' || fileType === 'kpop_audio') && !currentData?.consents.some((consent) => consent.type === 'pendrive_backup' && consent.granted);
     if (needsPendriveConsent) {
       const accepted = window.confirm('Este áudio precisa de uma cópia de segurança em pendrive no dia do evento. Você confirma essa orientação para continuar?');
       if (!accepted) return;
@@ -401,7 +432,7 @@ import { registrationRoutes } from '../../lib/registration';
     form.append('fileType', fileType);
     form.append('file', file, file.name);
     if (needsPendriveConsent) form.append('consentPendrive', 'yes');
-    const label = fileType === 'cosplay_audio' ? 'áudio' : 'referência';
+    const label = fileType === 'kpop_audio' ? 'MP3 da apresentação' : fileType === 'cosplay_audio' ? 'áudio' : 'referência';
     if (fileFeedback) fileFeedback.textContent = `Enviando ${label}…`;
     try {
       await postRegistrationAction('inscricao/arquivo', form);
@@ -435,7 +466,7 @@ import { registrationRoutes } from '../../lib/registration';
     label.focus();
   });
   document.querySelector('[data-add-management-reference]')?.addEventListener('click', () => { pendingFileType = 'cosplay_reference'; replacementFileId = null; if (uploadInput) { uploadInput.multiple = false; uploadInput.accept = '.jpg,.jpeg,.png,.webp,.pdf'; uploadInput.click(); } });
-  document.querySelector('[data-add-management-audio]')?.addEventListener('click', () => { pendingFileType = 'cosplay_audio'; replacementFileId = null; if (uploadInput) { uploadInput.multiple = false; uploadInput.accept = '.mp3,.m4a,.wav,audio/mpeg,audio/x-m4a,audio/wav'; uploadInput.click(); } });
+  document.querySelector('[data-add-management-audio]')?.addEventListener('click', () => { pendingFileType = currentData?.kpop ? 'kpop_audio' : 'cosplay_audio'; replacementFileId = null; if (uploadInput) { uploadInput.multiple = false; uploadInput.accept = pendingFileType === 'kpop_audio' ? '.mp3,audio/mpeg' : '.mp3,.m4a,.wav,audio/mpeg,audio/x-m4a,audio/wav'; uploadInput.click(); } });
   uploadInput?.addEventListener('change', async () => {
     if (!pendingFileType || !uploadInput.files?.[0]) return;
     const file = uploadInput.files[0];

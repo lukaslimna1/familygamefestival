@@ -33,6 +33,7 @@ export const PUBLIC_REGISTRATION_ACCESS_TTL_SECONDS = 60 * 60;
 export const COSPLAY_REFERENCE_FILE_LIMIT = 5;
 export const COSPLAY_REFERENCE_MAX_BYTES = 10 * 1024 * 1024;
 export const COSPLAY_AUDIO_MAX_BYTES = 25 * 1024 * 1024;
+export const KPOP_AUDIO_MAX_BYTES = COSPLAY_AUDIO_MAX_BYTES;
 
 export const REGISTRATION_POLICY_VERSIONS = {
   competitionRegulation: 'cosplay-2026-v1',
@@ -81,6 +82,10 @@ export function getCompetitionRegulationVersion(definition: CompetitionDefinitio
 
 export function isCosplayCompetition(definition: CompetitionDefinition) {
   return definition.type === 'cosplay';
+}
+
+export function isKpopCompetition(definition: CompetitionDefinition) {
+  return definition.type === 'kpop';
 }
 
 export function getRegistrationCapacity(

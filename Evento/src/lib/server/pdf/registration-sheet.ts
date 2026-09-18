@@ -47,6 +47,17 @@ export type RegistrationSheetData = {
     judgeNotes?: string | null;
     musicTitle?: string | null;
   } | null;
+  kpop?: {
+    stageName?: string | null;
+    originalArtist: string;
+    songTitle: string;
+    songVersion?: string | null;
+    editedCut: string;
+    referenceUrl: string;
+    audioNotes?: string | null;
+    judgeNotes?: string | null;
+    pendriveAcknowledged: boolean;
+  } | null;
   links?: Array<{ label: string; url: string }>;
   files?: Array<{ fileType: string; originalName: string; mimeType: string; sizeBytes: number }>;
   consents: Array<{ type: string; granted: boolean; policyVersion: string; grantedAt: string }>;
@@ -267,6 +278,20 @@ export async function createRegistrationSheetPdf(data: RegistrationSheetData) {
       ['Observações da apresentação', data.cosplay.presentationNotes],
       ['Observações técnicas', data.cosplay.technicalNotes],
       ['Observações para os jurados', data.cosplay.judgeNotes]
+    ]);
+  }
+  if (data.kpop) {
+    section('DADOS DA APRESENTAÇÃO', [
+      ['Nome artístico', data.kpop.stageName],
+      ['Artista / grupo original', data.kpop.originalArtist],
+      ['Nome da música', data.kpop.songTitle],
+      ['Versão da música', data.kpop.songVersion],
+      ['Música editada ou cortada?', data.kpop.editedCut === 'yes' ? 'Sim' : 'Não'],
+      ['Referência', data.kpop.referenceUrl],
+      ['Cópia em pendrive', data.kpop.pendriveAcknowledged ? 'Confirmado' : 'Não confirmado']
+    ], [
+      ['Observações sobre o áudio', data.kpop.audioNotes],
+      ['Observações para os jurados', data.kpop.judgeNotes]
     ]);
   }
   section('ACEITES', data.consents.filter((consent) => consent.granted).map((consent) => [consentLabel(consent.type), 'Confirmado'] as [string, string]));

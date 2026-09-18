@@ -1,0 +1,141 @@
+---
+interface Option {
+  label: string;
+  value: string;
+}
+
+interface Props {
+  id: string;
+  name: string;
+  ariaLabel: string;
+  placeholder?: string;
+  options: Option[];
+}
+
+const {
+  id,
+  name,
+  ariaLabel,
+  placeholder = 'Selecione',
+  options
+} = Astro.props;
+const optionsId = `${id}-options`;
+---
+
+<div class="registration-combobox" data-registration-select>
+  <input
+    class="registration-combobox-trigger"
+    id={id}
+    name={name}
+    type="text"
+    placeholder={placeholder}
+    autocomplete="off"
+    readonly
+    required
+    role="combobox"
+    aria-autocomplete="none"
+    aria-haspopup="listbox"
+    aria-expanded="false"
+    aria-controls={optionsId}
+    data-registration-select-trigger
+  />
+  <span class="registration-combobox-chevron" aria-hidden="true">⌄</span>
+  <div class="registration-combobox-panel" data-registration-select-panel hidden>
+    <div class="registration-combobox-options" id={optionsId} role="listbox" aria-label={ariaLabel} data-registration-select-options>
+      {options.map((option) => (
+        <button
+          type="button"
+          class="registration-combobox-option"
+          role="option"
+          aria-selected="false"
+          data-value={option.value}
+          data-label={option.label}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
+
+<script>
+  const selectRoots = document.querySelectorAll<HTMLElement>('[data-registration-select]');
+
+  selectRoots.forEach((root) => {
+    const trigger = root.querySelector<HTMLInputElement>('[data-registration-select-trigger]');
+    const panel = root.querySelector<HTMLElement>('[data-registration-select-panel]');
+    const options = root.querySelectorAll<HTMLButtonElement>('[data-registration-select-options] [role="option"]');
+    if (!trigger || !panel || !options.length) return;
+
+    const setExpanded = (expanded: boolean) => {
+      root.classList.toggle('is-open', expanded);
+      panel.hidden = !expanded;
+      trigger.setAttribute('aria-expanded', String(expanded));
+    };
+
+    const close = () => setExpanded(false);
+
+    const syncSelection = (selectedValue: string) => {
+      options.forEach((option) => option.setAttribute('aria-selected', String(option.dataset.value === selectedValue)));
+    };
+
+    const choose = (option: HTMLButtonElement) => {
+      trigger.value = option.dataset.label || '';
+      trigger.dataset.selectedValue = option.dataset.value || '';
+      syncSelection(option.dataset.value || '');
+      close();
+      trigger.dispatchEvent(new Event('input', { bubbles: true }));
+      trigger.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+
+    const focusOption = (index: number) => {
+      const nextIndex = Math.max(0, Math.min(index, options.length - 1));
+      options[nextIndex]?.focus();
+    };
+
+    const open = () => {
+      const isOpen = !panel.hidden;
+      document.querySelectorAll<HTMLElement>('[data-registration-select-panel]').forEach((otherPanel) => {
+        if (otherPanel !== panel) otherPanel.hidden = true;
+      });
+      document.querySelectorAll<HTMLElement>('[data-registration-select].is-open').forEach((otherRoot) => {
+        if (otherRoot !== root) otherRoot.classList.remove('is-open');
+      });
+      if (isOpen) {
+        close();
+        return;
+      }
+      setExpanded(true);
+      const selectedIndex = [...options].findIndex((option) => option.getAttribute('aria-selected') === 'true');
+      window.setTimeout(() => focusOption(selectedIndex >= 0 ? selectedIndex : 0), 0);
+    };
+
+    trigger.addEventListener('click', open);
+    trigger.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
+        event.preventDefault();
+        open();
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+      }
+    });
+
+    options.forEach((option, index) => {
+      option.addEventListener('click', () => choose(option));
+      option.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowDown') { event.preventDefault(); focusOption(index + 1); }
+        if (event.key === 'ArrowUp') { event.preventDefault(); focusOption(index - 1); }
+        if (event.key === 'Home') { event.preventDefault(); focusOption(0); }
+        if (event.key === 'End') { event.preventDefault(); focusOption(options.length - 1); }
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choose(option); trigger.focus(); }
+        if (event.key === 'Escape') { event.preventDefault(); close(); trigger.focus(); }
+      });
+    });
+
+    document.addEventListener('click', (event) => {
+      if (event.target instanceof Node && !root.contains(event.target)) close();
+    });
+  });
+</script>

@@ -1,0 +1,54 @@
+---
+import AudioUploadField from './AudioUploadField.astro';
+import RegistrationSelect from './RegistrationSelect.astro';
+---
+
+<div class="registration-section" id="kpop-data">
+  <div class="registration-section-heading"><span>03</span><div><p class="eyebrow eyebrow-pink">K-Pop Individual</p><h3>Dados da apresentação.</h3></div></div>
+  <p class="registration-helper">Conte o que será apresentado no palco. Os campos usam o mesmo formulário e os mesmos componentes das demais inscrições.</p>
+  <div class="registration-grid">
+    <div class="registration-field">
+      <label for="stage-name">Nome artístico <span class="registration-optional">(opcional)</span></label>
+      <input id="stage-name" name="stageName" type="text" placeholder="Como você gostaria de ser anunciado?" />
+    </div>
+    <div class="registration-field">
+      <label for="original-artist">Artista / grupo original <span aria-hidden="true">*</span></label>
+      <input id="original-artist" name="originalArtist" type="text" placeholder="Ex.: BTS, BLACKPINK, TWICE" required />
+    </div>
+    <div class="registration-field">
+      <label for="song-title">Nome da música <span aria-hidden="true">*</span></label>
+      <input id="song-title" name="songTitle" type="text" placeholder="Título da música apresentada" required />
+    </div>
+    <div class="registration-field">
+      <label for="song-version">Versão da música <span class="registration-optional">(opcional)</span></label>
+      <input id="song-version" name="songVersion" type="text" placeholder="Ex.: dance practice, remix, cover" />
+    </div>
+    <div class="registration-field">
+      <label for="edited-cut">Música editada ou cortada? <span aria-hidden="true">*</span></label>
+      <RegistrationSelect
+        id="edited-cut"
+        name="editedCut"
+        ariaLabel="Música editada ou cortada?"
+        options={[{ label: 'Selecione', value: '' }, { label: 'Sim', value: 'yes' }, { label: 'Não', value: 'no' }]}
+      />
+    </div>
+    <div class="registration-field registration-field-full">
+      <label for="reference-url">Link da coreografia / MV / vídeo de referência <span aria-hidden="true">*</span></label>
+      <span class="registration-field-helper">Use um link público e completo, começando por https://.</span>
+      <input id="reference-url" name="referenceUrl" type="url" placeholder="https://www.youtube.com/..." required />
+    </div>
+    <div class="registration-field registration-field-full">
+      <label for="audio-notes">Observações sobre o áudio <span class="registration-optional">(opcional)</span></label>
+      <textarea id="audio-notes" name="audioNotes" rows="3" placeholder="Informe cortes, entradas, trechos ou outros detalhes importantes."></textarea>
+    </div>
+    <div class="registration-field registration-field-full">
+      <label for="judge-notes">Observações para os jurados <span class="registration-optional">(opcional)</span></label>
+      <textarea id="judge-notes" name="judgeNotes" rows="3" placeholder="Há algo que você gostaria de destacar para os jurados?"></textarea>
+    </div>
+    <div class="registration-field registration-field-full">
+      <label>MP3 da apresentação <span aria-hidden="true">*</span></label>
+      <span class="registration-field-helper">Envio obrigatório de um único arquivo .mp3, com até 25 MB.</span>
+      <AudioUploadField required onlyMp3 formatsLabel="MP3 · obrigatório" />
+    </div>
+  </div>
+</div>

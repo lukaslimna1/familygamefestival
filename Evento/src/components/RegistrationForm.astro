@@ -3,6 +3,7 @@ import AudioUploader from './AudioUploader.astro';
 import ConsentFields from './ConsentFields.astro';
 import CosplayFields from './CosplayFields.astro';
 import GuardianFields from './GuardianFields.astro';
+import KpopFields from './KpopFields.astro';
 import ParticipantFields from './ParticipantFields.astro';
 import ReferenceUploader from './ReferenceUploader.astro';
 import SocialFields from './SocialFields.astro';
@@ -14,9 +15,10 @@ interface Props {
 const { entry } = Astro.props;
 const { tournament, schedule, regulation, generalRegulation } = entry;
 const isCosplay = tournament.id === 'cosplay';
+const isKpop = tournament.id === 'k-pop-individual';
 const regulationLink = regulation?.pageUrl || generalRegulation?.pageUrl || entry.pageUrl;
-const responsibleStep = isCosplay ? '06' : '03';
-const consentStep = isCosplay ? '07' : '04';
+const responsibleStep = isCosplay ? '06' : isKpop ? '04' : '03';
+const consentStep = isCosplay ? '07' : isKpop ? '05' : '04';
 ---
 
 <section class="registration-page" data-registration-page>
@@ -65,6 +67,7 @@ const consentStep = isCosplay ? '07' : '04';
       {isCosplay && <CosplayFields />}
       {isCosplay && <ReferenceUploader />}
       {isCosplay && <AudioUploader />}
+      {isKpop && <KpopFields />}
 
       <GuardianFields step={responsibleStep} competitionId={tournament.id} />
       <ConsentFields step={consentStep} regulationLink={regulationLink} />
@@ -107,6 +110,7 @@ const consentStep = isCosplay ? '07' : '04';
   registrationForms.forEach((form) => {
     const competitionId = form.dataset.registrationCompetition || '';
     const isCosplay = competitionId === 'cosplay';
+    const isKpop = competitionId === 'k-pop-individual';
     const birthDate = form.querySelector<HTMLInputElement>('[data-birth-date]');
     const responsibleSection = form.querySelector<HTMLElement>('[data-responsible-section]');
     const responsibleFields = form.querySelectorAll<HTMLInputElement>('[data-responsible-required]');
@@ -145,6 +149,10 @@ const consentStep = isCosplay ? '07' : '04';
       if (name === 'stageCallName') return 'Informe o nome para chamada no palco.';
       if (name === 'character') return 'Informe o personagem.';
       if (name === 'franchise') return 'Informe a obra ou franquia.';
+      if (name === 'originalArtist') return 'Informe o artista ou grupo original.';
+      if (name === 'songTitle') return 'Informe o nome da música.';
+      if (name === 'editedCut') return 'Informe se a música foi editada ou cortada.';
+      if (name === 'referenceUrl') return 'Informe um link válido de coreografia, MV ou vídeo de referência.';
       if (name === 'acceptRules') return 'Aceite o regulamento para continuar.';
       if (name === 'acceptImageUse') return 'Autorize o uso de imagem para continuar.';
       if (name === 'audioBackupAcknowledgement') return 'Confirme que levará uma cópia do áudio em pendrive.';
@@ -189,7 +197,18 @@ const consentStep = isCosplay ? '07' : '04';
         first.focus({ preventScroll: true });
         first.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-      return invalid.length === 0;
+      let audioValid = true;
+      if (isKpop) {
+        const audioInput = form.querySelector<HTMLInputElement>('[name="audioFile"]');
+        audioValid = Boolean(audioInput?.files?.length);
+        if (!audioValid) {
+          const manager = form.querySelector<HTMLElement>('[data-audio-uploader]');
+          const feedback = manager?.querySelector<HTMLElement>('[data-audio-feedback]');
+          if (feedback) feedback.textContent = 'Envie o MP3 da apresentação para continuar.';
+          manager?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+      return invalid.length === 0 && audioValid;
     };
     form.addEventListener('input', (event) => {
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement || event.target instanceof HTMLTextAreaElement) clearFieldError(event.target);
@@ -199,7 +218,10 @@ const consentStep = isCosplay ? '07' : '04';
       const requiredFields = [...form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('input[required], select[required], textarea[required]')]
         .filter((field) => !field.disabled && !field.closest('[hidden]'));
       const completed = requiredFields.filter((field) => field instanceof HTMLInputElement && field.type === 'checkbox' ? field.checked : field.value.trim() !== '').length;
-      const percentage = requiredFields.length ? Math.round((completed / requiredFields.length) * 100) : 0;
+      const audioInput = isKpop ? form.querySelector<HTMLInputElement>('[name="audioFile"]') : null;
+      const requiredCount = requiredFields.length + (isKpop ? 1 : 0);
+      const completedCount = completed + (audioInput?.files?.length ? 1 : 0);
+      const percentage = requiredCount ? Math.round((completedCount / requiredCount) * 100) : 0;
       if (progressBar) progressBar.style.width = `${percentage}%`;
       if (progressLabel) progressLabel.textContent = `${percentage}%`;
     };
@@ -308,7 +330,7 @@ const consentStep = isCosplay ? '07' : '04';
       try {
         const result = await postRegistrationForm<{ registrationId: string; publicCode: string; competitionId: string; driveSyncStatus: string }>(
           `inscricoes/${encodeURIComponent(competitionId)}`,
-          buildRegistrationPayload(form, competitionId, isCosplay)
+          buildRegistrationPayload(form, competitionId, isCosplay, isKpop)
         );
         const successUrl = new URL('/inscricao/sucesso', window.location.origin);
         successUrl.searchParams.set('code', result.publicCode);
@@ -336,8 +358,12 @@ const consentStep = isCosplay ? '07' : '04';
                     : message.includes('nascimento') ? 'birthDate'
                       : message.includes('cidade') ? 'city'
                         : message.includes('estado') ? 'state'
-                          : message.includes('personagem') ? 'character'
-                            : message.includes('franquia') || message.includes('obra') ? 'franchise' : '';
+                      : message.includes('personagem') ? 'character'
+                            : message.includes('franquia') || message.includes('obra') ? 'franchise'
+                              : message.includes('artista') || message.includes('grupo original') ? 'originalArtist'
+                                : message.includes('música') && message.includes('nome') ? 'songTitle'
+                                  : message.includes('editada') || message.includes('cortada') ? 'editedCut'
+                                    : message.includes('referência') || message.includes('coreografia') || message.includes('vídeo') ? 'referenceUrl' : '';
           const field = targetName ? form.elements.namedItem(targetName) : null;
           if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement || field instanceof HTMLTextAreaElement) {
             showFieldError(field, error.message);

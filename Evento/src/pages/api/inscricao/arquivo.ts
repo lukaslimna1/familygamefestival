@@ -31,7 +31,7 @@ function isFile(value: FormDataEntryValue | null): value is File {
 }
 
 function isRegistrationFileType(value: string): value is RegistrationUploadFileType {
-  return ['cosplay_reference', 'cosplay_audio', 'guardian_authorization_signed'].includes(value);
+  return ['cosplay_reference', 'cosplay_audio', 'kpop_audio', 'guardian_authorization_signed'].includes(value);
 }
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -48,7 +48,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const registration = await getRegistrationByAccess(access.registrationId, access.publicCode);
     if (!registration) return redirect(request, 'error=invalid');
-    if (fileType !== 'guardian_authorization_signed' && registration.competitionId !== 'cosplay') return redirect(request, 'error=file');
+    if (fileType === 'kpop_audio' && registration.competitionId !== 'k-pop-individual') return redirect(request, 'error=file');
+    if ((fileType === 'cosplay_reference' || fileType === 'cosplay_audio') && registration.competitionId !== 'cosplay') return redirect(request, 'error=file');
     if (fileType === 'guardian_authorization_signed' && !registration.minorAuthorization) return redirect(request, 'error=file');
     const ext = extension(file.name);
     if (fileType === 'cosplay_reference') {
@@ -58,6 +59,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
     if (fileType === 'cosplay_audio') {
       if (!['mp3', 'm4a', 'wav'].includes(ext) || file.size > COSPLAY_AUDIO_MAX_BYTES) return redirect(request, 'error=file');
+      const hasPendriveConsent = registration.consents.some((consent) => consent.type === 'pendrive_backup' && consent.granted);
+      if (!hasPendriveConsent && form.get('consentPendrive') !== 'yes') return redirect(request, 'error=file');
+    }
+    if (fileType === 'kpop_audio') {
+      if (ext !== 'mp3' || (file.type && file.type !== 'audio/mpeg') || file.size > COSPLAY_AUDIO_MAX_BYTES) return redirect(request, 'error=file');
       const hasPendriveConsent = registration.consents.some((consent) => consent.type === 'pendrive_backup' && consent.granted);
       if (!hasPendriveConsent && form.get('consentPendrive') !== 'yes') return redirect(request, 'error=file');
     }
@@ -72,7 +78,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       mimeType: file.type || (ext === 'pdf' ? 'application/pdf' : 'application/octet-stream'),
       bytes: new Uint8Array(await file.arrayBuffer())
     });
-    if (fileType === 'cosplay_audio' && !registration.consents.some((consent) => consent.type === 'pendrive_backup' && consent.granted)) {
+    if ((fileType === 'cosplay_audio' || fileType === 'kpop_audio') && !registration.consents.some((consent) => consent.type === 'pendrive_backup' && consent.granted)) {
       await getDatabase().insert(consents).values({
         id: randomUUID(),
         registrationId: access.registrationId,
