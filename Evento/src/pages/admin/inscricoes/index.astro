@@ -24,7 +24,7 @@ const [competitions, initialRows] = await Promise.all([
   listAdminRegistrations({ competitionId: competitionId || undefined, search, status: dbStatus, age: age || undefined, limit: 1000 })
 ]);
 let rows = initialRows;
-rows = rows.filter((row) => row.competitionId !== 'cosplay');
+rows = rows.filter((row) => !['cosplay', 'k-pop-individual'].includes(row.competitionId));
 
 if (requestedStatus === 'drive_failed') rows = rows.filter((row) => row.hasDriveIssue);
 if (requestedStatus === 'needs_attention') rows = rows.filter((row) => row.needsAttention);
@@ -46,7 +46,7 @@ if (registrationDate) {
   });
 }
 
-const commonCompetitions = competitions.filter((competition) => competition.type !== 'cosplay');
+const commonCompetitions = competitions.filter((competition) => !['cosplay', 'kpop'].includes(competition.type));
 const competitionOptions = [{ value: '', label: 'Todas as competições' }, ...commonCompetitions.map((competition) => ({ value: competition.id, label: competition.title }))];
 const ageOptions = [{ value: '', label: 'Maior ou menor' }, { value: 'adult', label: 'Maior de idade' }, { value: 'minor', label: 'Menor de idade' }];
 const statusOptions = [{ value: '', label: 'Todos os status' }, { value: 'needs_attention', label: 'Atualização necessária' }, { value: 'pending', label: 'Pendente' }, { value: 'synced', label: 'Sincronizada' }, { value: 'failed', label: 'Falha' }, { value: 'drive_failed', label: 'Falha de arquivo' }];
@@ -92,7 +92,7 @@ const fieldValue = (value: string) => value || '';
         <button class="admin-button admin-button-primary" type="submit">Aplicar filtros</button>
         <a class="admin-button admin-button-secondary" href="/admin/inscricoes">Limpar</a>
       </form>
-      <p class="admin-v2-filter-note"><AdminIcon name="spark" /> Cosplay possui uma área especializada própria e não aparece nesta lista.</p>
+      <p class="admin-v2-filter-note"><AdminIcon name="spark" /> Cosplay e K-Pop Individual possuem áreas especializadas próprias e não aparecem nesta lista.</p>
     </section>
 
     <section class="admin-v2-card" aria-labelledby="registrations-list-title">

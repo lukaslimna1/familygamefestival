@@ -2,7 +2,7 @@
 import AdminIcon from '../../../components/admin/AdminIcon.astro';
 import AdminSelect from '../../../components/admin/AdminSelect.astro';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { listAdminRegistrations } from '../../../lib/server/admin/data';
+import { getAdminCompetitionSummaries, listAdminRegistrations } from '../../../lib/server/admin/data';
 
 const admin = Astro.locals.admin;
 if (!admin) return Astro.redirect('/admin/login');
@@ -13,9 +13,10 @@ const search = query.get('q') ?? '';
 const age = query.get('age') === 'minor' || query.get('age') === 'adult' ? query.get('age') as 'minor' | 'adult' : '';
 const requestedStatus = query.get('status') ?? '';
 const dbStatus = ['pending', 'synced', 'failed'].includes(requestedStatus) ? requestedStatus : undefined;
-const [rowsFromQuery, summaryRows] = await Promise.all([
+const [rowsFromQuery, summaryRows, competitions] = await Promise.all([
   listAdminRegistrations({ competitionId: 'k-pop-individual', search, status: dbStatus, age: age || undefined, limit: 1000 }),
-  listAdminRegistrations({ competitionId: 'k-pop-individual', limit: 1000 })
+  listAdminRegistrations({ competitionId: 'k-pop-individual', limit: 1000 }),
+  getAdminCompetitionSummaries()
 ]);
 
 let rows = rowsFromQuery;
@@ -30,6 +31,7 @@ const summary = {
   audio: summaryRows.filter((row) => row.hasAudio).length,
   references: summaryRows.filter((row) => row.hasReference).length
 };
+const kpopSummary = competitions.find((competition) => competition.id === 'k-pop-individual');
 const statusLabel = (status: string) => ({ pending: 'Pendente', synced: 'Sincronizada', failed: 'Falha' }[status] ?? status);
 const fieldValue = (value: string) => value || '';
 const ageOptions = [{ value: '', label: 'Maior ou menor' }, { value: 'adult', label: 'Maior de idade' }, { value: 'minor', label: 'Menor de idade' }];
@@ -54,7 +56,7 @@ const statusOptions = [
   <div class="admin-v2-page admin-v2-cosplay-page">
     <section class="admin-v2-page-intro admin-v2-cosplay-intro">
       <div><p class="admin-eyebrow">Módulo especializado · competição</p><h2>K-Pop Individual</h2><p>Participantes, músicas, MP3, referências e observações para a operação e os jurados.</p></div>
-      <div class="admin-v2-intro-meta"><strong>32</strong><span>vagas oficiais</span></div>
+      {kpopSummary && <div class="admin-v2-cosplay-capacity"><span>Ocupação</span><strong>{kpopSummary.enrolled}<small>/{kpopSummary.capacity}</small></strong><i><span style={'width: ' + Math.min(100, kpopSummary.capacity ? kpopSummary.enrolled / kpopSummary.capacity * 100 : 0) + '%'}></span></i><small>{kpopSummary.remaining} vagas restantes</small></div>}
     </section>
 
     <section class="admin-v2-kpi-grid" aria-label="Resumo administrativo do K-Pop Individual">

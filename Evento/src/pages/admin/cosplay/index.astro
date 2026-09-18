@@ -1,5 +1,6 @@
 ---
 import AdminIcon from '../../../components/admin/AdminIcon.astro';
+import AdminSelect from '../../../components/admin/AdminSelect.astro';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { getAdminCompetitionSummaries, listAdminRegistrations } from '../../../lib/server/admin/data';
 
@@ -7,15 +8,42 @@ const admin = Astro.locals.admin;
 if (!admin) return Astro.redirect('/admin/login');
 if (admin.mustChangePassword) return Astro.redirect('/admin/account/password');
 
-const search = Astro.url.searchParams.get('q') ?? '';
-const requestedStatus = Astro.url.searchParams.get('status') ?? '';
-const [allRows, competitions] = await Promise.all([
-  listAdminRegistrations({ competitionId: 'cosplay', search, status: ['pending', 'synced', 'failed'].includes(requestedStatus) ? requestedStatus : undefined, limit: 1000 }),
+const query = Astro.url.searchParams;
+const search = query.get('q') ?? '';
+const age = query.get('age') === 'minor' || query.get('age') === 'adult' ? query.get('age') as 'minor' | 'adult' : '';
+const requestedStatus = query.get('status') ?? '';
+const dbStatus = ['pending', 'synced', 'failed'].includes(requestedStatus) ? requestedStatus : undefined;
+const [rowsFromQuery, summaryRows, competitions] = await Promise.all([
+  listAdminRegistrations({ competitionId: 'cosplay', search, status: dbStatus, age: age || undefined, limit: 1000 }),
+  listAdminRegistrations({ competitionId: 'cosplay', limit: 1000 }),
   getAdminCompetitionSummaries()
 ]);
-const rows = allRows.filter((row) => requestedStatus !== 'without_audio' || !row.hasAudio);
+
+let rows = rowsFromQuery;
+if (requestedStatus === 'without_audio') rows = rows.filter((row) => !row.hasAudio);
+if (requestedStatus === 'without_reference') rows = rows.filter((row) => !row.hasReference);
+if (requestedStatus === 'needs_attention') rows = rows.filter((row) => row.needsAttention);
+
+const summary = {
+  total: summaryRows.length,
+  adults: summaryRows.filter((row) => !row.isMinor).length,
+  minors: summaryRows.filter((row) => row.isMinor).length,
+  audio: summaryRows.filter((row) => row.hasAudio).length,
+  references: summaryRows.filter((row) => row.hasReference).length
+};
 const cosplaySummary = competitions.find((competition) => competition.id === 'cosplay');
 const statusLabel = (status: string) => ({ pending: 'Pendente', synced: 'Sincronizada', failed: 'Falha' }[status] ?? status);
+const fieldValue = (value: string) => value || '';
+const ageOptions = [{ value: '', label: 'Maior ou menor' }, { value: 'adult', label: 'Maior de idade' }, { value: 'minor', label: 'Menor de idade' }];
+const statusOptions = [
+  { value: '', label: 'Todos os status' },
+  { value: 'needs_attention', label: 'Atenção necessária' },
+  { value: 'without_audio', label: 'Sem áudio' },
+  { value: 'without_reference', label: 'Sem referência' },
+  { value: 'pending', label: 'Pendente' },
+  { value: 'synced', label: 'Sincronizada' },
+  { value: 'failed', label: 'Falha' }
+];
 ---
 
 <AdminLayout
@@ -23,17 +51,36 @@ const statusLabel = (status: string) => ({ pending: 'Pendente', synced: 'Sincron
   subtitle="Módulo especializado do concurso e seus arquivos."
   admin={admin}
   search={{ action: '/admin/cosplay', value: search, placeholder: 'Buscar cosplayer, personagem ou código' }}
-  notificationCount={rows.filter((row) => row.needsAttention).length}
+  notificationCount={summaryRows.filter((row) => row.needsAttention).length}
 >
   <div class="admin-v2-page admin-v2-cosplay-page">
     <section class="admin-v2-page-intro admin-v2-cosplay-intro">
       <div><p class="admin-eyebrow">Módulo especializado · concurso</p><h2>Cosplay</h2><p>Personagem, apresentação, referências, áudio e documentação em uma visão feita para a curadoria.</p></div>
-      {cosplaySummary && <div class="admin-v2-cosplay-capacity"><span>Ocupação</span><strong>{cosplaySummary.enrolled}<small>/{cosplaySummary.capacity}</small></strong><i><span style={'width: ' + Math.min(100, cosplaySummary.enrolled / cosplaySummary.capacity * 100) + '%'}></span></i><small>{cosplaySummary.remaining} vagas restantes</small></div>}
+      {cosplaySummary && <div class="admin-v2-cosplay-capacity"><span>Ocupação</span><strong>{cosplaySummary.enrolled}<small>/{cosplaySummary.capacity}</small></strong><i><span style={'width: ' + Math.min(100, cosplaySummary.capacity ? cosplaySummary.enrolled / cosplaySummary.capacity * 100 : 0) + '%'}></span></i><small>{cosplaySummary.remaining} vagas restantes</small></div>}
+    </section>
+
+    <section class="admin-v2-kpi-grid" aria-label="Resumo administrativo do Cosplay">
+      <article class="admin-v2-kpi kpi-magenta"><span class="admin-v2-kpi-icon"><AdminIcon name="clipboard" /></span><strong class="admin-v2-kpi-value">{summary.total}</strong><span class="admin-v2-kpi-label">Inscrições registradas</span><small>Registros ativos no sistema</small></article>
+      <article class="admin-v2-kpi kpi-cyan"><span class="admin-v2-kpi-icon"><AdminIcon name="grid" /></span><strong class="admin-v2-kpi-value">{summary.adults}</strong><span class="admin-v2-kpi-label">Maiores de idade</span><small>Participantes adultos</small></article>
+      <article class="admin-v2-kpi kpi-purple"><span class="admin-v2-kpi-icon"><AdminIcon name="shield" /></span><strong class="admin-v2-kpi-value">{summary.minors}</strong><span class="admin-v2-kpi-label">Menores</span><small>Com fluxo de responsável</small></article>
+      <article class="admin-v2-kpi kpi-yellow"><span class="admin-v2-kpi-icon"><AdminIcon name="music" /></span><strong class="admin-v2-kpi-value">{summary.audio}</strong><span class="admin-v2-kpi-label">Áudios recebidos</span><small>Arquivos ligados à ficha</small></article>
+      <article class="admin-v2-kpi kpi-green"><span class="admin-v2-kpi-icon"><AdminIcon name="external" /></span><strong class="admin-v2-kpi-value">{summary.references}</strong><span class="admin-v2-kpi-label">Referências recebidas</span><small>Links para a curadoria</small></article>
     </section>
 
     <section class="admin-v2-cosplay-toolbar">
-      <div class="admin-v2-segmented"><a class:list={{ 'is-active': !requestedStatus }} href="/admin/cosplay">Todos</a><a class:list={{ 'is-active': requestedStatus === 'pending' }} href="/admin/cosplay?status=pending">Pendentes</a><a class:list={{ 'is-active': requestedStatus === 'without_audio' }} href="/admin/cosplay?status=without_audio">Sem áudio</a><a class:list={{ 'is-active': requestedStatus === 'failed' }} href="/admin/cosplay?status=failed">Com falha</a></div>
+      <div class="admin-v2-segmented"><a class:list={{ 'is-active': !requestedStatus }} href="/admin/cosplay">Todos</a><a class:list={{ 'is-active': requestedStatus === 'needs_attention' }} href="/admin/cosplay?status=needs_attention">Atenção</a><a class:list={{ 'is-active': requestedStatus === 'without_audio' }} href="/admin/cosplay?status=without_audio">Sem áudio</a><a class:list={{ 'is-active': requestedStatus === 'without_reference' }} href="/admin/cosplay?status=without_reference">Sem referência</a><a class:list={{ 'is-active': requestedStatus === 'failed' }} href="/admin/cosplay?status=failed">Com falha</a></div>
       <span class="admin-v2-toolbar-count">{rows.length} inscriç{rows.length === 1 ? 'ão' : 'ões'}</span>
+    </section>
+
+    <section class="admin-v2-card admin-v2-filter-card" aria-label="Filtros de Cosplay">
+      <form class="admin-v2-filter-form" method="get">
+        <label class="admin-v2-filter-wide">Busca<input name="q" value={fieldValue(search)} placeholder="Nome, personagem, obra ou código" /></label>
+        <AdminSelect name="age" label="Perfil" options={ageOptions} value={age} />
+        <AdminSelect name="status" label="Status" options={statusOptions} value={requestedStatus} />
+        <button class="admin-button admin-button-primary" type="submit">Aplicar filtros</button>
+        <a class="admin-button admin-button-secondary" href="/admin/cosplay">Limpar</a>
+      </form>
+      <p class="admin-v2-filter-note"><AdminIcon name="spark" /> Esta é uma visão administrativa especializada; os registros continuam únicos na base geral.</p>
     </section>
 
     <section class="admin-v2-card" aria-labelledby="cosplay-list-title">
@@ -49,11 +96,11 @@ const statusLabel = (status: string) => ({ pending: 'Pendente', synced: 'Sincron
               <td><span class="admin-v2-compact-label">{row.hasAudio ? 'Áudio enviado' : 'Sem áudio'}</span><small>{row.isMinor ? 'Menor de idade' : 'Maior de idade'}</small></td>
               <td><span class="admin-v2-file-count">{row.referenceCount} ref.</span><small>{row.hasAudio ? '1 áudio' : 'Nenhum áudio'}</small></td>
               <td><span class:list={['admin-v2-age-badge', row.isMinor ? 'is-minor' : 'is-adult']}>{row.isMinor ? 'Menor' : 'Maior'}</span></td>
-              <td><span class:list={['admin-v2-status', 'status-' + row.status]}>{statusLabel(row.status)}</span></td>
+              <td><span class:list={['admin-v2-status', 'status-' + row.status]}>{statusLabel(row.status)}</span>{row.needsAttention && <small class="admin-v2-alert-text">Conferir ficha</small>}</td>
             </tr>)}</tbody>
           </table>
         </div>
-      ) : <div class="admin-v2-empty"><span class="admin-v2-empty-icon"><AdminIcon name="spark" /></span><strong>Nenhuma inscrição de Cosplay encontrada.</strong><p>A lista usa os registros reais do banco e respeita o filtro selecionado.</p><a href="/admin/cosplay">Limpar filtros <AdminIcon name="arrow" /></a></div>}
+      ) : <div class="admin-v2-empty"><span class="admin-v2-empty-icon"><AdminIcon name="spark" /></span><strong>Nenhuma inscrição de Cosplay encontrada.</strong><p>A lista usa os registros reais do banco e respeita os filtros selecionados.</p><a href="/admin/cosplay">Limpar filtros <AdminIcon name="arrow" /></a></div>}
     </section>
   </div>
 </AdminLayout>
