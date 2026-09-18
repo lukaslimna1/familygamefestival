@@ -555,6 +555,14 @@ export const mediaPartners = [
     image: '/assets/logos/midias/Game%20Agenda.png',
     href: 'https://www.gameagenda.com.br/eventos/family-game-festival-2026',
     accent: 'red'
+  },
+  {
+    name: 'Portal K-Pop Brasil',
+    handle: 'portalkpopbrasil.com',
+    image: '/assets/logos/midias/PortalKpop.png',
+    href: 'https://portalkpopbrasil.com',
+    accent: 'red',
+    lightLogo: true
   }
 ] as const;
 
