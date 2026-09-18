@@ -548,6 +548,13 @@ export const mediaPartners = [
     href: 'https://www.geekconnection.net/',
     accent: 'yellow',
     lightLogo: true
+  },
+  {
+    name: 'Game Agenda',
+    handle: 'gameagenda.com.br',
+    image: '/assets/logos/midias/Game%20Agenda.png',
+    href: 'https://www.gameagenda.com.br/eventos/family-game-festival-2026',
+    accent: 'red'
   }
 ] as const;
 

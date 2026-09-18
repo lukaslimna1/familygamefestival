@@ -655,6 +655,16 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
 .press-kit-material > span { color: var(--accent); font-family: var(--display); font-size: 18px; font-weight: 800; }
 .press-kit-material h3 { margin: 18px 0 7px; color: #fff; font-size: 24px; }
 .press-kit-material p { margin: 0; color: rgba(255,255,255,.58); font-size: 11px; line-height: 1.4; }
+.press-kit-downloads { grid-column: 1 / -1; margin-top: 9px; padding-top: 31px; border-top: 1px solid var(--line-dark); }
+.press-kit-download-heading { display: flex; align-items: end; justify-content: space-between; gap: 36px; margin-bottom: 18px; }
+.press-kit-download-heading h3 { margin: 10px 0 0; color: #fff; font-size: clamp(1.7rem, 3vw, 2.5rem); }
+.press-kit-download-heading > p { max-width: 420px; margin: 0; color: rgba(255,255,255,.64); font-size: 13px; line-height: 1.5; }
+.press-kit-download-card { display: grid; grid-template-columns: minmax(220px, .72fr) minmax(0, 1.28fr); gap: 24px; align-items: center; padding: 16px; border: 1px solid rgba(255,255,255,.16); border-left: 3px solid var(--cyan); background: rgba(255,255,255,.035); }
+.press-kit-download-preview { display: grid; min-height: 190px; place-items: center; padding: 18px; background: #fff; }
+.press-kit-download-preview img { display: block; width: 100%; max-height: 190px; object-fit: contain; }
+.press-kit-download-copy > span { color: var(--cyan); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.press-kit-download-copy h4 { margin: 13px 0 8px; color: #fff; font-family: var(--display); font-size: clamp(2rem, 4vw, 3.1rem); line-height: .9; text-transform: uppercase; }
+.press-kit-download-copy p { max-width: 430px; margin: 0 0 20px; color: rgba(255,255,255,.64); font-size: 13px; line-height: 1.5; }
 .press-kit-snippet-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .press-kit-snippet { min-height: 190px; padding: 23px 22px 21px; border: 1px solid var(--line-light); border-top: 4px solid var(--accent); background: var(--paper-2); }
 .press-kit-snippet-label { margin-bottom: 18px !important; color: var(--accent) !important; font-size: 10px !important; font-weight: 700; letter-spacing: .1em; line-height: 1.25 !important; text-transform: uppercase; }
@@ -1290,6 +1300,8 @@ h2 { max-width: 720px; margin-bottom: 0; font-size: clamp(3.2rem, 6vw, 5.5rem); 
   .press-kit-fact span { grid-row: span 2; margin: 0; }
   .press-kit-fact small { grid-column: 2; margin-top: 3px; }
   .press-kit-material-list, .press-kit-snippet-grid, .press-kit-source-grid { grid-template-columns: 1fr; }
+  .press-kit-download-heading { align-items: flex-start; flex-direction: column; gap: 16px; }
+  .press-kit-download-card { grid-template-columns: 1fr; }
   .press-kit-material { min-height: 0; }
   .press-source-card { grid-template-columns: 112px minmax(0, 1fr); }
   .press-source-art { min-height: 170px; }
