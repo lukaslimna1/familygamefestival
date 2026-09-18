@@ -3,6 +3,7 @@ import AdminIcon from '../../components/admin/AdminIcon.astro';
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import {
   formatAdminDate,
+  adminReviewStatusLabel,
   getAdminDashboardData,
   getAdminServiceStatus
 } from '../../lib/server/admin/data';
@@ -17,6 +18,7 @@ const pendingTotal = data.attention.authorizations + data.attention.physical + d
 
 const statusLabel = (status: string) => ({
   pending: 'Pendente',
+  drive_pending: 'Pendente',
   synced: 'Sincronizada',
   failed: 'Falha',
   cancelled: 'Cancelada'
@@ -146,7 +148,7 @@ const formatCount = (value: number) => value.toLocaleString('pt-BR');
                     <td><a href={'/admin/inscricoes/' + row.registrationId}><strong>{row.fullName}</strong><small>{row.isMinor ? 'Menor de idade' : 'Maior de idade'}</small></a></td>
                     <td>{row.competitionTitle}</td>
                     <td>{formatAdminDate(row.submittedAt ?? row.registrationCreatedAt)}</td>
-                    <td><span class:list={['admin-v2-status', 'status-' + row.status]}>{statusLabel(row.status)}</span></td>
+                    <td><span class:list={['admin-v2-status', 'status-' + row.reviewStatus]}>{adminReviewStatusLabel(row.reviewStatus)}</span><small class="admin-v2-technical-status">Sincronização: {statusLabel(row.driveSyncStatus)}</small></td>
                   </tr>
                 ))}
               </tbody>

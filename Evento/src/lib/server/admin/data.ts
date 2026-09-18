@@ -1,16 +1,11 @@
 import { and, desc, eq, inArray, like, ne, or, sql } from 'drizzle-orm';
-import { z } from 'zod';
 import competitionDefinitions from '../../../config/competitions.json';
 import {
   calculateAge,
   formatRegistrationDateTime,
   getCompetitionRegulationVersion,
   getRegistrationCapacity,
-  getRegistrationWindowStatus,
-  isValidCpf,
-  isValidPhone,
-  normalizeCpf,
-  normalizePhone
+  getRegistrationWindowStatus
 } from '../registration/config';
 import { getDriveConfig, getTursoConfig } from '../config/env';
 import { getRegistrationDetails } from '../db/repository';
@@ -29,14 +24,26 @@ type AdminListFilters = {
   competitionId?: string;
   search?: string;
   status?: string;
+  reviewStatus?: AdminReviewStatus;
   age?: 'minor' | 'adult';
   limit?: number;
 };
+
+export const ADMIN_REVIEW_STATUSES = ['pending', 'approved', 'rejected', 'correction'] as const;
+export type AdminReviewStatus = typeof ADMIN_REVIEW_STATUSES[number];
+
+export const adminReviewStatusLabel = (status: string) => ({
+  pending: 'Pendente',
+  approved: 'Aprovado',
+  rejected: 'Recusado',
+  correction: 'Solicitar correção'
+}[status] ?? status);
 
 export type AdminRegistrationRow = {
   registrationId: string;
   publicCode: string | null;
   status: string;
+  reviewStatus: AdminReviewStatus;
   source: string;
   driveSyncStatus: string;
   driveLastError: string | null;
@@ -87,24 +94,11 @@ export type AdminAuthorizationSummary = {
   rejectionReason: string | null;
 };
 
-const participantUpdateSchema = z.object({
-  fullName: z.string().trim().min(3).max(160),
-  cpf: z.string().trim().min(11).max(18),
-  phone: z.string().trim().max(30),
-  email: z.string().trim().max(254).refine((value) => value === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), 'E-mail inválido.'),
-  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data de nascimento inválida.'),
-  city: z.string().trim().min(2).max(120),
-  state: z.string().trim().min(2).max(80),
-  instagram: z.string().trim().max(240),
-  tiktok: z.string().trim().max(240),
-  facebook: z.string().trim().max(240),
-  otherSocials: z.string().trim().max(1000)
-});
-
 const baseSelection = {
   registrationId: registrations.id,
   publicCode: registrations.publicCode,
   status: registrations.status,
+  reviewStatus: registrations.reviewStatus,
   source: registrations.source,
   driveSyncStatus: registrations.driveSyncStatus,
   driveLastError: registrations.driveLastError,
@@ -193,7 +187,13 @@ export async function listAdminRegistrations(filters: AdminListFilters = {}) {
   const database = getDatabase();
   const predicates = [ne(registrations.status, 'cancelled')];
   if (filters.competitionId) predicates.push(eq(registrations.competitionId, filters.competitionId));
-  if (filters.status) predicates.push(eq(registrations.status, filters.status));
+  if (filters.status) {
+    const driveStatus = filters.status === 'pending' ? 'drive_pending' : filters.status;
+    predicates.push(['drive_pending', 'synced', 'failed'].includes(driveStatus)
+      ? eq(registrations.driveSyncStatus, driveStatus)
+      : eq(registrations.status, filters.status));
+  }
+  if (filters.reviewStatus) predicates.push(eq(registrations.reviewStatus, filters.reviewStatus));
 
   const search = filters.search?.trim();
   if (search) {
@@ -244,6 +244,9 @@ export async function listAdminRegistrations(filters: AdminListFilters = {}) {
 
     return {
       ...row,
+      reviewStatus: ADMIN_REVIEW_STATUSES.includes(row.reviewStatus as AdminReviewStatus)
+        ? row.reviewStatus as AdminReviewStatus
+        : 'pending',
       stageName: row.competitionId === 'k-pop-individual' ? row.kpopStageName : row.cosplayStageName,
       characterName: row.cosplayCharacterName,
       sourceWork: row.cosplaySourceWork,
@@ -333,8 +336,21 @@ export async function getAdminDashboardData() {
 export async function getAdminRegistrationDetails(registrationId: string) {
   const details = await getRegistrationDetails(registrationId);
   if (!details) return null;
+  const [review] = await getDatabase()
+    .select({ reviewStatus: registrations.reviewStatus })
+    .from(registrations)
+    .where(eq(registrations.id, registrationId))
+    .limit(1);
   const age = calculateAge(details.dateOfBirth);
-  return { ...details, age, isMinor: Number.isInteger(age) && age < 18 };
+  const reviewStatus = review?.reviewStatus;
+  return {
+    ...details,
+    reviewStatus: ADMIN_REVIEW_STATUSES.includes(reviewStatus as AdminReviewStatus)
+      ? reviewStatus as AdminReviewStatus
+      : 'pending',
+    age,
+    isMinor: Number.isInteger(age) && age < 18
+  };
 }
 
 export async function getAdminMinorRows(filters: { competitionId?: string; status?: string; age?: 'minor' | 'adult' } = {}) {
@@ -342,38 +358,12 @@ export async function getAdminMinorRows(filters: { competitionId?: string; statu
   return rows.filter((row) => row.authorization || row.isMinor);
 }
 
-export async function updateAdminParticipant(participantId: string, input: unknown) {
-  const parsed = participantUpdateSchema.parse(input);
-  const cpf = normalizeCpf(parsed.cpf);
-  const phone = normalizePhone(parsed.phone);
-  if (!isValidCpf(cpf)) throw new Error('CPF inválido.');
-  if (phone && !isValidPhone(phone)) throw new Error('Telefone inválido.');
-  const date = new Date(`${parsed.dateOfBirth}T00:00:00.000Z`);
-  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== parsed.dateOfBirth) throw new Error('Data de nascimento inválida.');
-
-  const existing = await getDatabase().select({ id: participants.id }).from(participants).where(eq(participants.id, participantId)).limit(1);
-  if (!existing[0]) throw new Error('Participante não encontrado.');
-
-  await getDatabase().update(participants).set({
-    fullName: parsed.fullName,
-    cpf,
-    phone,
-    email: parsed.email,
-    dateOfBirth: parsed.dateOfBirth,
-    city: parsed.city,
-    state: parsed.state,
-    instagram: parsed.instagram || null,
-    tiktok: parsed.tiktok || null,
-    facebook: parsed.facebook || null,
-    otherSocials: parsed.otherSocials || null,
-    updatedAt: new Date().toISOString()
-  }).where(eq(participants.id, participantId));
-}
-
-export async function updateAdminRegistrationParticipant(registrationId: string, input: unknown) {
-  const registration = await getRegistrationDetails(registrationId);
-  if (!registration) throw new Error('Inscrição não encontrada.');
-  return updateAdminParticipant(registration.participantId, input);
+export async function updateAdminReviewStatus(registrationId: string, status: AdminReviewStatus) {
+  if (!ADMIN_REVIEW_STATUSES.includes(status)) throw new Error('Status de conferência inválido.');
+  const result = await getDatabase().update(registrations)
+    .set({ reviewStatus: status })
+    .where(eq(registrations.id, registrationId));
+  if (result.rowsAffected === 0) throw new Error('Inscrição não encontrada.');
 }
 
 export async function updateAdminMinorAuthorization(authorizationId: string, action: 'received' | 'rejected', rejectionReason?: string) {
@@ -412,4 +402,28 @@ export function formatAdminDate(value: string | null | undefined) {
 
 export function driveFileUrl(fileId: string | null | undefined) {
   return fileId ? `https://drive.google.com/open?id=${encodeURIComponent(fileId)}` : null;
+}
+
+export function whatsappUrl(phone: string | null | undefined) {
+  const digits = phone?.replace(/\D/g, '') ?? '';
+  if (!digits) return null;
+  const brazilianNumber = digits.startsWith('55') ? digits : `55${digits}`;
+  return `https://wa.me/${brazilianNumber}`;
+}
+
+export function youtubeVideoId(value: string | null | undefined) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (url.hostname === 'youtu.be') return url.pathname.slice(1).split('/')[0] || null;
+    if (['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtube-nocookie.com'].includes(url.hostname)) {
+      const queryId = url.searchParams.get('v');
+      if (queryId) return queryId;
+      const match = url.pathname.match(/\/(?:embed|shorts|live)\/([^/?]+)/);
+      return match?.[1] ?? null;
+    }
+  } catch {
+    return null;
+  }
+  return null;
 }

@@ -2,7 +2,7 @@
 import AdminIcon from '../../../components/admin/AdminIcon.astro';
 import AdminSelect from '../../../components/admin/AdminSelect.astro';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { getAdminCompetitionSummaries, listAdminRegistrations } from '../../../lib/server/admin/data';
+import { adminReviewStatusLabel, getAdminCompetitionSummaries, listAdminRegistrations } from '../../../lib/server/admin/data';
 
 const admin = Astro.locals.admin;
 if (!admin) return Astro.redirect('/admin/login');
@@ -13,8 +13,10 @@ const search = query.get('q') ?? '';
 const age = query.get('age') === 'minor' || query.get('age') === 'adult' ? query.get('age') as 'minor' | 'adult' : '';
 const requestedStatus = query.get('status') ?? '';
 const dbStatus = ['pending', 'synced', 'failed'].includes(requestedStatus) ? requestedStatus : undefined;
+const requestedReviewStatus = query.get('review') ?? '';
+const reviewStatus = ['pending', 'approved', 'rejected', 'correction'].includes(requestedReviewStatus) ? requestedReviewStatus as 'pending' | 'approved' | 'rejected' | 'correction' : undefined;
 const [rowsFromQuery, summaryRows, competitions] = await Promise.all([
-  listAdminRegistrations({ competitionId: 'k-pop-individual', search, status: dbStatus, age: age || undefined, limit: 1000 }),
+  listAdminRegistrations({ competitionId: 'k-pop-individual', search, status: dbStatus, reviewStatus, age: age || undefined, limit: 1000 }),
   listAdminRegistrations({ competitionId: 'k-pop-individual', limit: 1000 }),
   getAdminCompetitionSummaries()
 ]);
@@ -32,11 +34,11 @@ const summary = {
   references: summaryRows.filter((row) => row.hasReference).length
 };
 const kpopSummary = competitions.find((competition) => competition.id === 'k-pop-individual');
-const statusLabel = (status: string) => ({ pending: 'Pendente', synced: 'Sincronizada', failed: 'Falha' }[status] ?? status);
+const statusLabel = (status: string) => ({ pending: 'Pendente', drive_pending: 'Pendente', synced: 'Sincronizada', failed: 'Falha' }[status] ?? status);
 const fieldValue = (value: string) => value || '';
 const ageOptions = [{ value: '', label: 'Maior ou menor' }, { value: 'adult', label: 'Maior de idade' }, { value: 'minor', label: 'Menor de idade' }];
 const statusOptions = [
-  { value: '', label: 'Todos os status' },
+  { value: '', label: 'Todos os status técnicos' },
   { value: 'needs_attention', label: 'Atenção necessária' },
   { value: 'without_audio', label: 'Sem MP3' },
   { value: 'without_reference', label: 'Sem referência' },
@@ -44,6 +46,7 @@ const statusOptions = [
   { value: 'synced', label: 'Sincronizada' },
   { value: 'failed', label: 'Falha' }
 ];
+const reviewOptions = [{ value: '', label: 'Todos os status' }, { value: 'pending', label: 'Pendente' }, { value: 'approved', label: 'Aprovado' }, { value: 'rejected', label: 'Recusado' }, { value: 'correction', label: 'Solicitar correção' }];
 ---
 
 <AdminLayout
@@ -76,7 +79,8 @@ const statusOptions = [
       <form class="admin-v2-filter-form" method="get">
         <label class="admin-v2-filter-wide">Busca<input name="q" value={fieldValue(search)} placeholder="Nome, nome artístico, música, artista ou código" /></label>
         <AdminSelect name="age" label="Perfil" options={ageOptions} value={age} />
-        <AdminSelect name="status" label="Status" options={statusOptions} value={requestedStatus} />
+        <AdminSelect name="status" label="Status técnico" options={statusOptions} value={requestedStatus} />
+        <AdminSelect name="review" label="Conferência" options={reviewOptions} value={requestedReviewStatus} />
         <button class="admin-button admin-button-primary" type="submit">Aplicar filtros</button>
         <a class="admin-button admin-button-secondary" href="/admin/kpop">Limpar</a>
       </form>
@@ -96,7 +100,7 @@ const statusOptions = [
               <td><span class="admin-v2-compact-label">{row.hasAudio ? 'MP3 enviado' : 'Sem MP3'}</span><small>{row.hasAudio ? 'Arquivo disponível' : 'Ação necessária'}</small></td>
               <td><span class="admin-v2-compact-label">{row.hasReference ? 'Enviada' : 'Ausente'}</span><small>{row.hasReference ? 'Link disponível' : 'Ação necessária'}</small></td>
               <td><span class:list={['admin-v2-age-badge', row.isMinor ? 'is-minor' : 'is-adult']}>{row.isMinor ? 'Menor' : 'Maior'}</span></td>
-              <td><span class:list={['admin-v2-status', 'status-' + row.status]}>{statusLabel(row.status)}</span>{row.needsAttention && <small class="admin-v2-alert-text">Conferir ficha</small>}</td>
+              <td><span class:list={['admin-v2-status', 'status-' + row.reviewStatus]}>{adminReviewStatusLabel(row.reviewStatus)}</span><small class="admin-v2-technical-status">Sincronização: {statusLabel(row.driveSyncStatus)}</small>{row.needsAttention && <small class="admin-v2-alert-text">Conferir ficha</small>}</td>
             </tr>)}</tbody>
           </table>
         </div>

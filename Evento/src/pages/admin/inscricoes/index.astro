@@ -4,6 +4,7 @@ import AdminSelect from '../../../components/admin/AdminSelect.astro';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import {
   formatAdminDate,
+  adminReviewStatusLabel,
   getAdminCompetitionSummaries,
   listAdminRegistrations
 } from '../../../lib/server/admin/data';
@@ -17,11 +18,13 @@ const search = query.get('q') ?? '';
 const competitionId = query.get('competition') ?? '';
 const age = query.get('age') === 'minor' || query.get('age') === 'adult' ? query.get('age') as 'minor' | 'adult' : '';
 const requestedStatus = query.get('status') ?? '';
+const requestedReviewStatus = query.get('review') ?? '';
 const registrationDate = query.get('date') ?? '';
 const dbStatus = ['pending', 'synced', 'failed', 'cancelled'].includes(requestedStatus) ? requestedStatus : undefined;
+const reviewStatus = ['pending', 'approved', 'rejected', 'correction'].includes(requestedReviewStatus) ? requestedReviewStatus as 'pending' | 'approved' | 'rejected' | 'correction' : undefined;
 const [competitions, initialRows] = await Promise.all([
   getAdminCompetitionSummaries(),
-  listAdminRegistrations({ competitionId: competitionId || undefined, search, status: dbStatus, age: age || undefined, limit: 1000 })
+  listAdminRegistrations({ competitionId: competitionId || undefined, search, status: dbStatus, reviewStatus, age: age || undefined, limit: 1000 })
 ]);
 let rows = initialRows;
 rows = rows.filter((row) => !['cosplay', 'k-pop-individual'].includes(row.competitionId));
@@ -49,9 +52,10 @@ if (registrationDate) {
 const commonCompetitions = competitions.filter((competition) => !['cosplay', 'kpop'].includes(competition.type));
 const competitionOptions = [{ value: '', label: 'Todas as competições' }, ...commonCompetitions.map((competition) => ({ value: competition.id, label: competition.title }))];
 const ageOptions = [{ value: '', label: 'Maior ou menor' }, { value: 'adult', label: 'Maior de idade' }, { value: 'minor', label: 'Menor de idade' }];
-const statusOptions = [{ value: '', label: 'Todos os status' }, { value: 'needs_attention', label: 'Atualização necessária' }, { value: 'pending', label: 'Pendente' }, { value: 'synced', label: 'Sincronizada' }, { value: 'failed', label: 'Falha' }, { value: 'drive_failed', label: 'Falha de arquivo' }];
+const statusOptions = [{ value: '', label: 'Todos os status técnicos' }, { value: 'needs_attention', label: 'Atualização necessária' }, { value: 'pending', label: 'Pendente' }, { value: 'synced', label: 'Sincronizada' }, { value: 'failed', label: 'Falha' }, { value: 'drive_failed', label: 'Falha de arquivo' }];
+const reviewOptions = [{ value: '', label: 'Todos os status' }, { value: 'pending', label: 'Pendente' }, { value: 'approved', label: 'Aprovado' }, { value: 'rejected', label: 'Recusado' }, { value: 'correction', label: 'Solicitar correção' }];
 const pendingCount = rows.filter((row) => row.needsAttention).length;
-const statusLabel = (status: string) => ({ pending: 'Pendente', synced: 'Sincronizada', failed: 'Falha', cancelled: 'Cancelada' }[status] ?? status);
+const statusLabel = (status: string) => ({ pending: 'Pendente', drive_pending: 'Pendente', synced: 'Sincronizada', failed: 'Falha', cancelled: 'Cancelada' }[status] ?? status);
 const fieldValue = (value: string) => value || '';
 ---
 
@@ -87,7 +91,8 @@ const fieldValue = (value: string) => value || '';
         <label class="admin-v2-filter-wide">Busca<input name="q" value={fieldValue(search)} placeholder="Nome, CPF ou código" /></label>
         <AdminSelect name="competition" label="Competição" options={competitionOptions} value={competitionId} />
         <AdminSelect name="age" label="Perfil" options={ageOptions} value={age} />
-        <AdminSelect name="status" label="Status" options={statusOptions} value={requestedStatus} />
+        <AdminSelect name="status" label="Status técnico" options={statusOptions} value={requestedStatus} />
+        <AdminSelect name="review" label="Conferência" options={reviewOptions} value={requestedReviewStatus} />
         <label>Data da inscrição<input name="date" type="date" value={registrationDate} /></label>
         <button class="admin-button admin-button-primary" type="submit">Aplicar filtros</button>
         <a class="admin-button admin-button-secondary" href="/admin/inscricoes">Limpar</a>
@@ -111,7 +116,7 @@ const fieldValue = (value: string) => value || '';
                 <td><span class="admin-v2-competition-tag">{row.competitionTitle}</span><small>{row.competitionCategory}</small></td>
                 <td><span class:list={['admin-v2-age-badge', row.isMinor ? 'is-minor' : 'is-adult']}>{row.isMinor ? 'Menor' : 'Maior'} · {row.age}</span></td>
                 <td>{formatAdminDate(row.registrationUpdatedAt)}</td>
-                <td><span class:list={['admin-v2-status', 'status-' + row.status]}>{statusLabel(row.status)}</span>{row.hasDriveIssue && <small class="admin-v2-alert-text">Arquivo com falha</small>}</td>
+                <td><span class:list={['admin-v2-status', 'status-' + row.reviewStatus]}>{adminReviewStatusLabel(row.reviewStatus)}</span><small class="admin-v2-technical-status">Sincronização: {statusLabel(row.driveSyncStatus)}</small>{row.hasDriveIssue && <small class="admin-v2-alert-text">Arquivo com falha</small>}</td>
               </tr>
             ))}</tbody>
           </table>

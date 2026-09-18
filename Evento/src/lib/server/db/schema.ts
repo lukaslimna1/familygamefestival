@@ -60,6 +60,7 @@ export const registrations = sqliteTable('registrations', {
   participantId: text('participant_id').notNull().references(() => participants.id, { onDelete: 'cascade' }),
   competitionId: text('competition_id').notNull().references(() => competitions.id, { onDelete: 'restrict' }),
   status: text('status').notNull().default('pending'),
+  reviewStatus: text('review_status').notNull().default('pending'),
   source: text('source').notNull().default('online'),
   driveSyncStatus: text('drive_sync_status').notNull().default('drive_pending'),
   driveLastError: text('drive_last_error'),

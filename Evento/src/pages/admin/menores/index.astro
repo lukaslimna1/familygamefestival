@@ -26,7 +26,7 @@ if (requestedStatus === 'needs_attention') {
   rows = rows.filter((row) => row.authorization?.status === requestedStatus);
 }
 const pending = rows.filter((row) => !row.authorization || ['pending', 'physical_pending', 'rejected'].includes(row.authorization.status)).length;
-const statusLabel = (status: string | null | undefined) => ({ pending: 'Pendente', uploaded: 'Documento enviado', physical_pending: 'Entrega física', received: 'Recebida', rejected: 'Rejeitada' }[status ?? ''] ?? 'Sem autorização');
+const statusLabel = (status: string | null | undefined) => ({ pending: 'Pendente', drive_pending: 'Pendente', uploaded: 'Documento enviado', physical_pending: 'Entrega física', received: 'Recebida', rejected: 'Rejeitada' }[status ?? ''] ?? 'Sem autorização');
 ---
 
 <AdminLayout
