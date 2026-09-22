@@ -12,10 +12,13 @@ import '../styles/snap-v2.css';
   bodyClass="snap-page"
 >
   <main class="snap-v2-shell">
-    <SnapHeader />
+    <SnapHeader toHome />
 
     <section class="snap-v2-hero" aria-labelledby="snap-home-title">
       <div class="snap-v2-hero-copy">
+        <a href="/" class="snap-v2-back-link" style="text-decoration: none;">
+          ← <span>VOLTAR PARA A HOME</span>
+        </a>
         <p class="snap-v2-eyebrow">ATIVAÇÃO OFICIAL · FGF 2026</p>
         <h1 id="snap-home-title">VIVA O FESTIVAL.<br /><em>CRIE SEU SNAP.</em></h1>
         <p class="snap-v2-lede">Escolha uma experiência e registre seu momento no Family Game Festival.</p>
@@ -51,7 +54,10 @@ import '../styles/snap-v2.css';
       </button>
     </section>
 
-    <footer class="snap-v2-footer"><span>FGF SNAP · FAMILY GAME FESTIVAL 2026</span></footer>
+    <footer class="snap-v2-footer">
+      <span>FGF SNAP · FAMILY GAME FESTIVAL 2026</span>
+      <a href="/" style="color: var(--yellow); text-decoration: none; font-weight: 800;">← VOLTAR PARA A HOME</a>
+    </footer>
   </main>
 
   <div class="snap-v2-install-modal-backdrop" data-snap-ios-modal hidden aria-hidden="true">

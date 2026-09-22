@@ -1,0 +1,371 @@
+---
+import AdminIcon from '../../../components/admin/AdminIcon.astro';
+import AdminSelect from '../../../components/admin/AdminSelect.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { formatAdminDate, whatsappUrl } from '../../../lib/server/admin/data';
+import {
+  FEEDBACK_CATEGORIES,
+  getAdminFeedbacks,
+  getAdminFeedbackStats,
+  type FeedbackStatus,
+  type FeedbackType
+} from '../../../lib/server/feedback/repository';
+
+const admin = Astro.locals.admin;
+if (!admin) return Astro.redirect('/admin/login');
+if (admin.mustChangePassword) return Astro.redirect('/admin/account/password');
+
+const query = Astro.url.searchParams;
+const search = query.get('q') ?? '';
+const requestedTipo = query.get('tipo') ?? '';
+const tipo = ['sugestao', 'elogio', 'reclamacao'].includes(requestedTipo) ? (requestedTipo as FeedbackType) : undefined;
+const requestedStatus = query.get('status') ?? '';
+const status = ['novo', 'lido', 'em_analise', 'respondido', 'resolvido', 'arquivado'].includes(requestedStatus)
+  ? (requestedStatus as FeedbackStatus)
+  : undefined;
+const categoria = query.get('categoria') ?? undefined;
+const publicado = query.get('publicado') ?? undefined;
+const page = Math.max(1, Number(query.get('page') || 1));
+const pageSize = 50;
+
+const [stats, listResult] = await Promise.all([
+  getAdminFeedbackStats(),
+  getAdminFeedbacks({
+    search: search || undefined,
+    tipo,
+    status,
+    categoria: categoria || undefined,
+    publicado: publicado === '1' ? '1' : publicado === '0' ? '0' : undefined,
+    limit: pageSize,
+    offset: (page - 1) * pageSize
+  })
+]);
+
+const rows = listResult.items;
+const total = listResult.total;
+const totalPages = Math.ceil(total / pageSize);
+
+const tipoOptions = [
+  { value: '', label: 'Todos os tipos' },
+  { value: 'elogio', label: 'Elogio' },
+  { value: 'sugestao', label: 'Sugestão' },
+  { value: 'reclamacao', label: 'Reclamação' }
+];
+
+const statusOptions = [
+  { value: '', label: 'Todos os status' },
+  { value: 'novo', label: 'Novo (não lido)' },
+  { value: 'lido', label: 'Lido' },
+  { value: 'em_analise', label: 'Em análise' },
+  { value: 'respondido', label: 'Respondido' },
+  { value: 'resolvido', label: 'Resolvido' },
+  { value: 'arquivado', label: 'Arquivado' }
+];
+
+const categoriaOptions = [
+  { value: '', label: 'Todas as categorias' },
+  ...FEEDBACK_CATEGORIES.map((cat) => ({ value: cat, label: cat }))
+];
+
+const publicadoOptions = [
+  { value: '', label: 'Status no site' },
+  { value: '1', label: 'Publicado na Home' },
+  { value: '0', label: 'Não publicado' }
+];
+
+const tipoBadgeClass: Record<string, string> = {
+  elogio: 'status-approved',
+  sugestao: 'status-pending',
+  reclamacao: 'status-rejected'
+};
+
+const tipoLabels: Record<string, string> = {
+  elogio: 'Elogio',
+  sugestao: 'Sugestão',
+  reclamacao: 'Reclamação'
+};
+
+const statusBadgeClass: Record<string, string> = {
+  novo: 'status-pending',
+  lido: 'status-correction',
+  em_analise: 'status-correction',
+  respondido: 'status-approved',
+  resolvido: 'status-approved',
+  arquivado: 'status-rejected'
+};
+
+const statusLabels: Record<string, string> = {
+  novo: 'Novo',
+  lido: 'Lido',
+  em_analise: 'Em análise',
+  respondido: 'Respondido',
+  resolvido: 'Resolvido',
+  arquivado: 'Arquivado'
+};
+---
+
+<AdminLayout
+  title="Feedbacks & Depoimentos | Family Game Festival"
+  subtitle="Módulo especializado de escuta da comunidade e curadoria de depoimentos."
+  admin={admin}
+  search={{ action: '/admin/feedbacks', value: search, placeholder: 'Buscar mensagem, autor, e-mail, instagram ou categoria' }}
+  notificationCount={stats.pendentes}
+>
+  <div class="admin-v2-page admin-v2-cosplay-page">
+    <section class="admin-v2-page-intro admin-v2-cosplay-intro">
+      <div>
+        <p class="admin-eyebrow">Módulo especializado · pós-evento</p>
+        <h2>Feedbacks & Depoimentos</h2>
+        <p>Elogios, sugestões, críticas construtivas e curadoria direta de depoimentos para o site oficial.</p>
+      </div>
+      <div class="admin-v2-cosplay-capacity">
+        <span>Avaliação Geral</span>
+        <strong>{stats.mediaFormatada}<small>/5.0</small></strong>
+        <i>
+          <span style={`width: ${Math.min(100, (stats.mediaEstrelas / 5) * 100)}%`}></span>
+        </i>
+        <small>{stats.total} manifestações no total</small>
+      </div>
+    </section>
+
+    <!-- KPIs Administrativos de Feedbacks -->
+    <section class="admin-v2-kpi-grid" aria-label="Resumo administrativo de Feedbacks">
+      <article class="admin-v2-kpi kpi-magenta">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="chat" /></span>
+        <strong class="admin-v2-kpi-value">{stats.total}</strong>
+        <span class="admin-v2-kpi-label">Manifestações</span>
+        <small>Total recebido no sistema</small>
+      </article>
+
+      <article class="admin-v2-kpi kpi-yellow">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="heart" /></span>
+        <strong class="admin-v2-kpi-value">{stats.elogios}</strong>
+        <span class="admin-v2-kpi-label">Elogios</span>
+        <small>Percepções positivas</small>
+      </article>
+
+      <article class="admin-v2-kpi kpi-cyan">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="bulb" /></span>
+        <strong class="admin-v2-kpi-value">{stats.sugestoes}</strong>
+        <span class="admin-v2-kpi-label">Sugestões</span>
+        <small>Ideias para melhorias</small>
+      </article>
+
+      <article class="admin-v2-kpi kpi-purple">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="alert" /></span>
+        <strong class="admin-v2-kpi-value">{stats.reclamacoes}</strong>
+        <span class="admin-v2-kpi-label">Reclamações</span>
+        <small>Atenção da organização</small>
+      </article>
+
+      <article class="admin-v2-kpi kpi-green">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="check" /></span>
+        <strong class="admin-v2-kpi-value">{stats.publicados}</strong>
+        <span class="admin-v2-kpi-label">No site oficial</span>
+        <small>Exibidos na Home</small>
+      </article>
+
+      <article class="admin-v2-kpi kpi-yellow">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="star" /></span>
+        <strong class="admin-v2-kpi-value">{stats.pendentes}</strong>
+        <span class="admin-v2-kpi-label">Não respondidos</span>
+        <small>Aguardando atendimento</small>
+      </article>
+    </section>
+
+    <!-- Toolbar com Abas Segmentadas -->
+    <section class="admin-v2-cosplay-toolbar">
+      <div class="admin-v2-segmented">
+        <a class:list={{ 'is-active': !requestedTipo && !requestedStatus && !publicado }} href="/admin/feedbacks">
+          Todos
+        </a>
+        <a class:list={{ 'is-active': requestedStatus === 'novo' }} href="/admin/feedbacks?status=novo">
+          Novos
+        </a>
+        <a class:list={{ 'is-active': requestedTipo === 'elogio' }} href="/admin/feedbacks?tipo=elogio">
+          Elogios
+        </a>
+        <a class:list={{ 'is-active': requestedTipo === 'sugestao' }} href="/admin/feedbacks?tipo=sugestao">
+          Sugestões
+        </a>
+        <a class:list={{ 'is-active': requestedTipo === 'reclamacao' }} href="/admin/feedbacks?tipo=reclamacao">
+          Reclamações
+        </a>
+        <a class:list={{ 'is-active': publicado === '1' }} href="/admin/feedbacks?publicado=1">
+          Publicados no Site
+        </a>
+      </div>
+      <span class="admin-v2-toolbar-count">
+        {total} manifestaç{total === 1 ? 'ão' : 'ões'}
+      </span>
+    </section>
+
+    <!-- Filtros Especializados -->
+    <section class="admin-v2-card admin-v2-filter-card" aria-label="Filtros de Feedback">
+      <form class="admin-v2-filter-form" method="get">
+        <label class="admin-v2-filter-wide">
+          Busca
+          <input
+            name="q"
+            value={search}
+            placeholder="Mensagem, autor, e-mail, @instagram ou palavra-chave"
+          />
+        </label>
+        <AdminSelect name="tipo" label="Tipo de manifestação" options={tipoOptions} value={requestedTipo} />
+        <AdminSelect name="categoria" label="Área / Categoria" options={categoriaOptions} value={categoria ?? ''} />
+        <AdminSelect name="status" label="Status" options={statusOptions} value={requestedStatus} />
+        <AdminSelect name="publicado" label="Exibição" options={publicadoOptions} value={publicado ?? ''} />
+        <button class="admin-button admin-button-primary" type="submit">Aplicar filtros</button>
+        <a class="admin-button admin-button-secondary" href="/admin/feedbacks">Limpar</a>
+      </form>
+      <p class="admin-v2-filter-note">
+        <AdminIcon name="spark" /> Visualização completa e especializada. Todos os dados permanecem auditáveis no banco.
+      </p>
+    </section>
+
+    <!-- Tabela Principal de Feedbacks -->
+    <section class="admin-v2-card" aria-labelledby="feedbacks-list-title">
+      <div class="admin-v2-card-heading">
+        <div>
+          <p class="admin-section-kicker">Curadoria e escuta ativa</p>
+          <h2 id="feedbacks-list-title">Manifestações registradas</h2>
+          <p>Clique em uma linha para abrir a ficha completa, responder, registrar notas e gerenciar a publicação no site.</p>
+        </div>
+      </div>
+
+      {rows.length > 0 ? (
+        <div class="admin-v2-table-wrap">
+          <table class="admin-v2-table admin-v2-cosplay-table">
+            <thead>
+              <tr>
+                <th style="width: 110px;">Data</th>
+                <th style="width: 110px;">Tipo</th>
+                <th style="width: 100px;">Avaliação</th>
+                <th style="width: 140px;">Área</th>
+                <th>Mensagem (trecho)</th>
+                <th style="width: 180px;">Autor / Identificação</th>
+                <th style="width: 130px;">Site Oficial</th>
+                <th style="width: 120px;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr>
+                  <td>
+                    <a class="admin-v2-code" href={`/admin/feedbacks/${row.id}`}>
+                      {formatAdminDate(row.createdAt).split(' ')[0]}
+                      <small style="display: block; font-size: 0.65rem; color: var(--admin-muted);">
+                        {formatAdminDate(row.createdAt).split(' ')[1] || ''}
+                      </small>
+                    </a>
+                  </td>
+
+                  <td>
+                    <span class:list={['admin-v2-status', tipoBadgeClass[row.tipo] || 'status-pending']}>
+                      {tipoLabels[row.tipo] || row.tipo}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span style="color: var(--admin-yellow); font-weight: 800; font-size: 0.85rem; letter-spacing: -0.05em;">
+                      {'★'.repeat(row.estrelas)}
+                    </span>
+                    <small style="display: block; font-size: 0.65rem; color: var(--admin-muted);">
+                      {row.estrelas} de 5
+                    </small>
+                  </td>
+
+                  <td>
+                    <strong style="font-size: 0.75rem; color: #fff;">{row.categoria}</strong>
+                  </td>
+
+                  <td>
+                    <a href={`/admin/feedbacks/${row.id}`} style="text-decoration: none; color: inherit; display: block;">
+                      <p style="margin: 0; font-size: 0.75rem; color: var(--admin-muted-strong); line-height: 1.4; max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        {row.mensagem}
+                      </p>
+                      {row.resposta && (
+                        <small style="display: inline-flex; align-items: center; gap: 4px; color: #73e6a5; font-size: 0.65rem; margin-top: 3px;">
+                          <AdminIcon name="check" /> Respondido
+                        </small>
+                      )}
+                    </a>
+                  </td>
+
+                  <td>
+                    {row.anonimo ? (
+                      <span class="admin-v2-compact-label" style="opacity: 0.8;">Anônimo</span>
+                    ) : (
+                      <a href={`/admin/feedbacks/${row.id}`} style="text-decoration: none;">
+                        <strong style="font-size: 0.75rem; color: #fff; display: block;">
+                          {row.nome || 'Não informado'}
+                        </strong>
+                        {row.instagram ? (
+                          <small style="color: var(--admin-cyan); display: block;">
+                            {row.instagram.startsWith('@') ? row.instagram : `@${row.instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//, '')}`}
+                          </small>
+                        ) : row.email ? (
+                          <small style="color: var(--admin-muted); display: block; overflow: hidden; text-overflow: ellipsis; max-width: 160px;">
+                            {row.email}
+                          </small>
+                        ) : null}
+                      </a>
+                    )}
+                  </td>
+
+                  <td>
+                    {row.publicadoSite ? (
+                      <div>
+                        <span class="admin-v2-status status-approved">
+                          {row.destaque ? '★ Destaque' : 'Publicado'}
+                        </span>
+                        <small style="display: block; font-size: 0.62rem; color: var(--admin-muted);">
+                          Como: {row.nomePublico}
+                        </small>
+                      </div>
+                    ) : (
+                      <span style="font-size: 0.68rem; color: var(--admin-muted);">
+                        {row.autorizacaoPublicacao === 'nao' ? 'Não autorizado' : 'Não publicado'}
+                      </span>
+                    )}
+                  </td>
+
+                  <td>
+                    <span class:list={['admin-v2-status', statusBadgeClass[row.status] || 'status-pending']}>
+                      {statusLabels[row.status] || row.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div class="admin-v2-empty">
+          <span class="admin-v2-empty-icon"><AdminIcon name="spark" /></span>
+          <strong>Nenhuma manifestação encontrada.</strong>
+          <p>Não encontramos feedbacks com os critérios e filtros selecionados.</p>
+          <a href="/admin/feedbacks">Limpar filtros <AdminIcon name="arrow" /></a>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div class="admin-v2-toolbar-count" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 1rem;">
+          {page > 1 && (
+            <a class="admin-button admin-button-secondary" href={`/admin/feedbacks?page=${page - 1}&q=${encodeURIComponent(search)}&tipo=${requestedTipo}&status=${requestedStatus}`}>
+              ← Anterior
+            </a>
+          )}
+          <span style="align-self: center; font-size: 0.72rem; color: var(--admin-muted);">
+            Página {page} de {totalPages}
+          </span>
+          {page < totalPages && (
+            <a class="admin-button admin-button-secondary" href={`/admin/feedbacks?page=${page + 1}&q=${encodeURIComponent(search)}&tipo=${requestedTipo}&status=${requestedStatus}`}>
+              Próxima →
+            </a>
+          )}
+        </div>
+      )}
+    </section>
+  </div>
+</AdminLayout>

@@ -222,6 +222,51 @@ export const adminSessions = sqliteTable('admin_sessions', {
   activeIndex: index('admin_sessions_active_idx').on(table.adminId, table.expiresAt, table.revokedAt)
 }));
 
+
+export const feedbacks = sqliteTable('feedbacks', {
+  id: text('id').primaryKey(),
+  tipo: text('tipo').notNull(),
+  estrelas: integer('estrelas').notNull(),
+  categoria: text('categoria').notNull(),
+  mensagem: text('mensagem').notNull(),
+  anonimo: integer('anonimo', { mode: 'boolean' }).notNull().default(false),
+  nome: text('nome'),
+  email: text('email'),
+  telefone: text('telefone'),
+  instagram: text('instagram'),
+  permiteContato: integer('permite_contato', { mode: 'boolean' }).notNull().default(false),
+  autorizacaoPublicacao: text('autorizacao_publicacao').notNull().default('nao'),
+  nomePublico: text('nome_publico'),
+  status: text('status').notNull().default('novo'),
+  resposta: text('resposta'),
+  respondidoPor: text('respondido_por'),
+  respondidoEm: text('respondido_em'),
+  notaInterna: text('nota_interna'),
+  publicadoSite: integer('publicado_site', { mode: 'boolean' }).notNull().default(false),
+  textoPublico: text('texto_publico'),
+  destaque: integer('destaque', { mode: 'boolean' }).notNull().default(false),
+  createdAt: timestamp('criado_em'),
+  updatedAt: timestamp('atualizado_em')
+}, (table) => ({
+  statusIndex: index('feedbacks_status_idx').on(table.status, table.createdAt),
+  tipoIndex: index('feedbacks_tipo_idx').on(table.tipo, table.createdAt),
+  publicadoSiteIndex: index('feedbacks_publicado_site_idx').on(table.publicadoSite, table.destaque, table.createdAt),
+  categoriaIndex: index('feedbacks_categoria_idx').on(table.categoria)
+}));
+
+export const newsletterLeads = sqliteTable('newsletter_leads', {
+  id: text('id').primaryKey(),
+  nome: text('nome').notNull(),
+  email: text('email').notNull(),
+  whatsapp: text('whatsapp').notNull(),
+  origem: text('origem').notNull().default('home_pos_evento'),
+  createdAt: timestamp('criado_em'),
+  updatedAt: timestamp('atualizado_em')
+}, (table) => ({
+  emailUnique: uniqueIndex('newsletter_leads_email_unique').on(table.email),
+  createdAtIdx: index('newsletter_leads_criado_em_idx').on(table.createdAt)
+}));
+
 export const databaseSchema = {
   participants,
   competitions,
@@ -234,5 +279,7 @@ export const databaseSchema = {
   registrationFiles,
   registrationLinks,
   admins,
-  adminSessions
+  adminSessions,
+  feedbacks,
+  newsletterLeads
 };

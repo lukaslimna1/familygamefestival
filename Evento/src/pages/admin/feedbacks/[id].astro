@@ -1,0 +1,546 @@
+---
+import AdminIcon from '../../../components/admin/AdminIcon.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { formatAdminDate, whatsappUrl } from '../../../lib/server/admin/data';
+import { getAdminFeedbackById } from '../../../lib/server/feedback/repository';
+
+const admin = Astro.locals.admin;
+if (!admin) return Astro.redirect('/admin/login');
+if (admin.mustChangePassword) return Astro.redirect('/admin/account/password');
+
+const id = Astro.params.id;
+if (!id) return Astro.redirect('/admin/feedbacks');
+
+const feedback = await getAdminFeedbackById(id);
+if (!feedback) {
+  return new Response('Manifestação de feedback não encontrada.', { status: 404 });
+}
+
+const whatsapp = feedback.telefone ? whatsappUrl(feedback.telefone) : null;
+const instagramRaw = feedback.instagram?.trim() || '';
+const instagramHandle = instagramRaw.replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/^@/, '');
+const instagramUrl = instagramHandle ? `https://instagram.com/${instagramHandle}` : null;
+
+const tipoBadgeClass: Record<string, string> = {
+  elogio: 'status-approved',
+  sugestao: 'status-pending',
+  reclamacao: 'status-rejected'
+};
+
+const tipoLabels: Record<string, string> = {
+  elogio: 'Elogio',
+  sugestao: 'Sugestão',
+  reclamacao: 'Reclamação'
+};
+
+const statusBadgeClass: Record<string, string> = {
+  novo: 'status-pending',
+  lido: 'status-correction',
+  em_analise: 'status-correction',
+  respondido: 'status-approved',
+  resolvido: 'status-approved',
+  arquivado: 'status-rejected'
+};
+
+const statusLabels: Record<string, string> = {
+  novo: 'Novo',
+  lido: 'Lido',
+  em_analise: 'Em análise',
+  respondido: 'Respondido',
+  resolvido: 'Resolvido',
+  arquivado: 'Arquivado'
+};
+---
+
+<AdminLayout
+  title={`Feedback de ${feedback.anonimo ? 'Participante Anônimo' : (feedback.nome || 'Participante')} | Family Game Festival`}
+  subtitle={`Manifestação sobre ${feedback.categoria}`}
+  admin={admin}
+  action={{ label: 'Voltar para Feedbacks', href: '/admin/feedbacks' }}
+>
+  <div class="admin-v2-page admin-v2-cosplay-detail">
+    <!-- Breadcrumb -->
+    <div class="admin-v2-breadcrumb">
+      <a href="/admin">Dashboard</a>
+      <span>/</span>
+      <a href="/admin/feedbacks">Feedbacks</a>
+      <span>/</span>
+      <strong>{feedback.anonimo ? 'Anônimo' : (feedback.nome || 'Ficha')}</strong>
+    </div>
+
+    <!-- Hero do Feedback -->
+    <section class="admin-v2-detail-hero cosplay-hero">
+      <div>
+        <p class="admin-eyebrow">Manifestação da comunidade · {feedback.categoria}</p>
+        <h2>{feedback.anonimo ? 'Participante Anônimo' : (feedback.nome || 'Participante')}</h2>
+        <p class="admin-v2-detail-code">
+          {tipoLabels[feedback.tipo] || feedback.tipo} · Avaliação: {'★'.repeat(feedback.estrelas)} ({feedback.estrelas}/5) · Enviada em {formatAdminDate(feedback.createdAt)}
+        </p>
+      </div>
+      <div class="admin-v2-detail-hero-tags">
+        <span class:list={['admin-v2-status', tipoBadgeClass[feedback.tipo] || 'status-pending']}>
+          {tipoLabels[feedback.tipo] || feedback.tipo}
+        </span>
+        <span class:list={['admin-v2-status', statusBadgeClass[feedback.status] || 'status-pending']}>
+          {statusLabels[feedback.status] || feedback.status}
+        </span>
+        {feedback.publicadoSite && (
+          <span class="admin-v2-status status-approved">
+            {feedback.destaque ? '★ Publicado em Destaque' : '✓ Publicado no Site'}
+          </span>
+        )}
+        <span class:list={['admin-v2-age-badge', feedback.anonimo ? 'is-minor' : 'is-adult']}>
+          {feedback.anonimo ? 'Anônimo' : 'Identificado'}
+        </span>
+      </div>
+    </section>
+
+    <!-- Barra de Navegação Interna -->
+    <nav class="admin-v2-detail-tabs" aria-label="Seções do feedback">
+      <a class="is-active" href="#mensagem">Manifestação</a>
+      <a href="#curadoria">Curadoria no Site</a>
+      <a href="#resposta">Resposta & Atendimento</a>
+      <a href="#autor">Autor & Contatos</a>
+      <a href="#notas">Notas Internas</a>
+    </nav>
+
+    <!-- Notificação Flutuante de Sucesso/Erro -->
+    <div id="admin-feedback-toast" class="admin-v2-feedback is-success" style="display: none; margin-bottom: 1rem;">
+      <span id="toast-message">Salvo com sucesso.</span>
+    </div>
+
+    <!-- Grid de Detalhes -->
+    <div class="admin-v2-detail-grid admin-v2-cosplay-content">
+      <!-- Coluna Principal -->
+      <div class="admin-v2-detail-main" style="display: grid; gap: 1.25rem;">
+        <!-- Seção 1: Mensagem Recebida -->
+        <section id="mensagem" class="admin-v2-card">
+          <div class="admin-v2-card-heading">
+            <div>
+              <p class="admin-section-kicker">Conteúdo da mensagem</p>
+              <h2>Manifestação do Participante</h2>
+            </div>
+          </div>
+
+          <div class="admin-v2-highlight-grid" style="margin-bottom: 1.25rem;">
+            <div>
+              <small>Tipo</small>
+              <strong>{tipoLabels[feedback.tipo] || feedback.tipo}</strong>
+            </div>
+            <div>
+              <small>Avaliação</small>
+              <strong style="color: var(--admin-yellow); font-size: 1rem;">
+                {'★'.repeat(feedback.estrelas)} <span style="font-size: 0.75rem; color: #fff;">({feedback.estrelas}/5)</span>
+              </strong>
+            </div>
+            <div>
+              <small>Área / Categoria</small>
+              <strong>{feedback.categoria}</strong>
+            </div>
+            <div>
+              <small>Envio</small>
+              <strong>{feedback.anonimo ? 'Anônimo' : 'Identificado'}</strong>
+            </div>
+            <div>
+              <small>Permite Contato</small>
+              <strong>{feedback.permiteContato ? 'Sim, autorizou' : 'Não autorizou'}</strong>
+            </div>
+            <div>
+              <small>Data de Registro</small>
+              <strong>{formatAdminDate(feedback.createdAt)}</strong>
+            </div>
+          </div>
+
+          <div class="admin-v2-long-field" style="border-left: 3px solid var(--admin-cyan); background: rgba(25, 198, 242, 0.04);">
+            <span>Mensagem enviada pelo participante</span>
+            <p style="font-size: 0.92rem; line-height: 1.6; color: #fff; margin-top: 0.5rem;">
+              {feedback.mensagem}
+            </p>
+          </div>
+
+          <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--admin-line); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <span style="font-size: 0.72rem; color: var(--admin-muted);">
+              Consentimento de publicação informado no formulário:
+            </span>
+            <strong style="font-size: 0.75rem; color: {feedback.autorizacaoPublicacao === 'nao' ? 'var(--admin-red)' : 'var(--admin-green)'};">
+              {feedback.autorizacaoPublicacao === 'nome' && '✓ Autorizou com primeiro nome'}
+              {feedback.autorizacaoPublicacao === 'anonimo' && '✓ Autorizou apenas de forma anônima'}
+              {feedback.autorizacaoPublicacao === 'nao' && '✕ Não autorizou publicação'}
+            </strong>
+          </div>
+        </section>
+
+        <!-- Seção 2: Curadoria para a Home Oficial -->
+        <section id="curadoria" class="admin-v2-card">
+          <div class="admin-v2-card-heading">
+            <div>
+              <p class="admin-section-kicker">Exibição pública</p>
+              <h2>Curadoria para o Site Oficial</h2>
+              <p>Gerencie como este relato aparecerá na seção "O Que Vocês Disseram" da página inicial.</p>
+            </div>
+            {feedback.autorizacaoPublicacao === 'nao' && (
+              <span class="admin-v2-status status-rejected" style="align-self: flex-start;">
+                ✕ Usuário não autorizou publicação
+              </span>
+            )}
+          </div>
+
+          <form id="form-publish" style="display: grid; gap: 1rem;">
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; padding: 0.75rem; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--admin-line);">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; color: #fff; font-weight: 700;">
+                <input
+                  type="checkbox"
+                  id="pub-switch"
+                  name="publicadoSite"
+                  checked={Boolean(feedback.publicadoSite)}
+                  style="width: 16px; height: 16px; accent-color: var(--admin-green);"
+                />
+                Publicar este depoimento na Home oficial
+              </label>
+
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; color: var(--admin-yellow); font-weight: 700;">
+                <input
+                  type="checkbox"
+                  id="destaque-switch"
+                  name="destaque"
+                  checked={Boolean(feedback.destaque)}
+                  style="width: 16px; height: 16px; accent-color: var(--admin-yellow);"
+                />
+                Destaque especial (fixar no topo da lista)
+              </label>
+            </div>
+
+            <div class="admin-v2-long-field" style="margin-bottom: 0.5rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--admin-line);">
+              <span style="color: var(--admin-cyan);">Texto original da manifestação (preservado e inalterado)</span>
+              <p style="font-size: 0.9rem; color: #fff; line-height: 1.5; margin-top: 0.4rem; font-style: italic;">
+                “{feedback.mensagem}”
+              </p>
+            </div>
+
+            <!-- Preview Visual de como o Card fica na Home -->
+            <div style="padding: 1rem; background: #0d1b2e; border: 1px solid rgba(255, 201, 40, 0.3); border-radius: 4px;">
+              <small style="display: block; font-size: 0.65rem; color: var(--admin-yellow); font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.5rem;">
+                PRÉVIA DO CARD NA HOME
+              </small>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span style="color: var(--admin-yellow); font-size: 0.85rem;">
+                  {'★'.repeat(feedback.estrelas)}
+                </span>
+                <span style="font-size: 0.65rem; padding: 2px 8px; background: rgba(25, 198, 242, 0.15); color: var(--admin-cyan); border-radius: 999px;">
+                  {feedback.categoria}
+                </span>
+              </div>
+              <blockquote id="preview-quote" style="margin: 0 0 0.75rem; font-size: 0.85rem; color: #fff; font-style: italic; line-height: 1.4;">
+                “{feedback.mensagem}”
+              </blockquote>
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem;">
+                <strong style="color: #fff;">{feedback.nomePublico || 'Anônimo'}</strong>
+                <span style="color: var(--admin-muted);">Participante FGF 2026</span>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end;">
+              <button class="admin-button admin-button-primary" type="submit" id="btn-save-pub">
+                Salvar status de publicação
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Seção 3: Resposta & Atendimento Oficial -->
+        <section id="resposta" class="admin-v2-card">
+          <div class="admin-v2-card-heading">
+            <div>
+              <p class="admin-section-kicker">Relacionamento e devolutiva</p>
+              <h2>Resposta & Atendimento</h2>
+              <p>Registre a resposta da equipe para esta manifestação e utilize o modelo pronto para contato externo.</p>
+            </div>
+          </div>
+
+          <form id="form-reply" style="display: grid; gap: 1rem;">
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--admin-muted); font-weight: 700;">
+                Status da Manifestação:
+                <select
+                  id="select-status"
+                  style="padding: 0.4rem 0.6rem; background: #071321; border: 1px solid var(--admin-line); color: #fff; font-size: 0.75rem;"
+                >
+                  <option value="novo" selected={feedback.status === 'novo'}>Novo (não lido)</option>
+                  <option value="lido" selected={feedback.status === 'lido'}>Lido</option>
+                  <option value="em_analise" selected={feedback.status === 'em_analise'}>Em análise</option>
+                  <option value="respondido" selected={feedback.status === 'respondido'}>Respondido</option>
+                  <option value="resolvido" selected={feedback.status === 'resolvido'}>Resolvido</option>
+                  <option value="arquivado" selected={feedback.status === 'arquivado'}>Arquivado</option>
+                </select>
+              </label>
+
+              <button type="button" class="admin-button admin-button-secondary" id="btn-update-status">
+                Atualizar Apenas Status
+              </button>
+            </div>
+
+            <div>
+              <label for="textarea-reply" style="display: block; font-size: 0.72rem; color: var(--admin-muted); font-weight: 800; text-transform: uppercase; margin-bottom: 0.35rem;">
+                Resposta Oficial da Organização
+              </label>
+              <textarea
+                id="textarea-reply"
+                name="resposta"
+                rows="5"
+                placeholder="Escreva a resposta ou esclarecimento que será enviado ao participante..."
+                style="width: 100%; padding: 0.75rem; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--admin-line); color: #fff; font-family: inherit; font-size: 0.82rem; line-height: 1.5;"
+              >{feedback.resposta || ''}</textarea>
+            </div>
+
+            {feedback.respondidoPor && (
+              <p style="font-size: 0.72rem; color: var(--admin-muted); margin: 0;">
+                Última resposta salva por <strong>{feedback.respondidoPor}</strong> em {formatAdminDate(feedback.respondidoEm)}.
+              </p>
+            )}
+
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap;">
+              <button
+                type="button"
+                class="admin-button admin-button-secondary"
+                id="btn-copy-reply"
+                title="Copiar texto de resposta formatado para colar no WhatsApp, Instagram ou E-mail"
+              >
+                <AdminIcon name="copy" />
+                <span>Copiar Resposta Pronta</span>
+              </button>
+
+              <button class="admin-button admin-button-primary" type="submit" id="btn-save-reply">
+                Salvar Resposta Oficial
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <!-- Coluna Lateral (Autor, Redes, Contato e Notas) -->
+      <aside class="admin-v2-detail-side" style="display: grid; gap: 1.25rem; align-content: start;">
+        <!-- Seção 4: Autor & Contato -->
+        <section id="autor" class="admin-v2-card">
+          <div class="admin-v2-card-heading">
+            <div>
+              <p class="admin-section-kicker">Identificação</p>
+              <h2>Autor & Redes</h2>
+            </div>
+          </div>
+
+          {feedback.anonimo ? (
+            <div style="padding: 1rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--admin-line); text-align: center;">
+              <span style="display: block; font-size: 1.5rem; margin-bottom: 0.5rem;">🕶️</span>
+              <strong style="color: #fff; font-size: 0.85rem; display: block;">Envio 100% Anônimo</strong>
+              <p style="font-size: 0.72rem; color: var(--admin-muted); margin: 0.35rem 0 0;">
+                O participante optou por não vincular seu nome, e-mail, telefone ou perfil social.
+              </p>
+            </div>
+          ) : (
+            <div class="admin-v2-social-list">
+              <div style="padding: 0.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <small style="color: var(--admin-muted); font-size: 0.62rem; text-transform: uppercase; font-weight: 800; display: block;">Nome Civil / Informado</small>
+                <strong style="color: #fff; font-size: 0.85rem;">{feedback.nome || 'Não informado'}</strong>
+              </div>
+
+              {whatsapp ? (
+                <a class="admin-v2-contact-whatsapp" href={whatsapp} target="_blank" rel="noreferrer">
+                  <span>WhatsApp / Telefone</span>
+                  <strong>{feedback.telefone}</strong>
+                  <AdminIcon name="whatsapp" />
+                </a>
+              ) : feedback.telefone ? (
+                <div style="padding: 0.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                  <small style="color: var(--admin-muted); font-size: 0.62rem;">Telefone</small>
+                  <strong style="color: #fff; font-size: 0.75rem;">{feedback.telefone}</strong>
+                </div>
+              ) : null}
+
+              {instagramUrl ? (
+                <a href={instagramUrl} target="_blank" rel="noreferrer">
+                  <span>Instagram</span>
+                  <strong>@{instagramHandle}</strong>
+                  <AdminIcon name="external" />
+                </a>
+              ) : feedback.instagram ? (
+                <div style="padding: 0.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                  <small style="color: var(--admin-muted); font-size: 0.62rem;">Instagram</small>
+                  <strong style="color: #fff; font-size: 0.75rem;">{feedback.instagram}</strong>
+                </div>
+              ) : null}
+
+              {feedback.email ? (
+                <a href={`mailto:${feedback.email}`}>
+                  <span>E-mail</span>
+                  <strong style="font-size: 0.72rem;">{feedback.email}</strong>
+                  <AdminIcon name="external" />
+                </a>
+              ) : null}
+
+              <div style="margin-top: 0.75rem; padding: 0.5rem 0;">
+                <span class:list={['admin-v2-status', feedback.permiteContato ? 'status-approved' : 'status-pending']}>
+                  {feedback.permiteContato ? '✓ Autorizou contato da equipe' : '✕ Não solicitou contato'}
+                </span>
+              </div>
+            </div>
+          )}
+        </section>
+
+        <!-- Seção 5: Notas Internas Privadas -->
+        <section id="notas" class="admin-v2-card">
+          <div class="admin-v2-card-heading">
+            <div>
+              <p class="admin-section-kicker">Anotações da equipe</p>
+              <h2>Notas Internas</h2>
+              <p>Visível apenas para administradores.</p>
+            </div>
+          </div>
+
+          <form id="form-note" style="display: grid; gap: 0.75rem;">
+            <textarea
+              id="textarea-note"
+              name="notaInterna"
+              rows="6"
+              placeholder="Adicione notas de atendimento, encaminhamentos ou observações internas..."
+              style="width: 100%; padding: 0.65rem; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--admin-line); color: #fff; font-family: inherit; font-size: 0.78rem; line-height: 1.4;"
+            >{feedback.notaInterna || ''}</textarea>
+
+            <div style="display: flex; justify-content: flex-end;">
+              <button class="admin-button admin-button-primary" type="submit" id="btn-save-note">
+                Salvar Nota
+              </button>
+            </div>
+          </form>
+        </section>
+      </aside>
+    </div>
+  </div>
+</AdminLayout>
+
+<script define:vars={{ feedbackId: feedback.id, feedbackAuthor: feedback.nome || 'Participante', feedbackCategory: feedback.categoria }}>
+  const toast = document.getElementById('admin-feedback-toast');
+  const toastMsg = document.getElementById('toast-message');
+
+  function showToast(message, isError = false) {
+    if (!toast || !toastMsg) return;
+    toastMsg.textContent = message;
+    toast.className = `admin-v2-feedback ${isError ? 'is-error' : 'is-success'}`;
+    toast.style.display = 'block';
+    toast.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    setTimeout(() => {
+      if (toast) toast.style.display = 'none';
+    }, 4000);
+  }
+
+  // Salvar Status de Publicação no Site
+  const formPublish = document.getElementById('form-publish');
+  formPublish?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pubSwitch = document.getElementById('pub-switch');
+    const destaqueSwitch = document.getElementById('destaque-switch');
+
+    try {
+      const res = await fetch(`/api/admin/feedbacks/${feedbackId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'publish',
+          publicadoSite: Boolean(pubSwitch?.checked),
+          destaque: Boolean(destaqueSwitch?.checked)
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Erro ao salvar publicação.');
+      showToast('Status de publicação no site salvo com sucesso!');
+    } catch (err) {
+      showToast(err.message, true);
+    }
+  });
+
+  // Salvar Resposta Oficial
+  const formReply = document.getElementById('form-reply');
+  formReply?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const textareaReply = document.getElementById('textarea-reply');
+    const resposta = textareaReply?.value || '';
+
+    try {
+      const res = await fetch(`/api/admin/feedbacks/${feedbackId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reply',
+          resposta
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Erro ao salvar resposta.');
+      showToast('Resposta oficial registrada com sucesso!');
+    } catch (err) {
+      showToast(err.message, true);
+    }
+  });
+
+  // Atualizar Status
+  const btnUpdateStatus = document.getElementById('btn-update-status');
+  const selectStatus = document.getElementById('select-status');
+  btnUpdateStatus?.addEventListener('click', async () => {
+    const status = selectStatus?.value;
+    if (!status) return;
+
+    try {
+      const res = await fetch(`/api/admin/feedbacks/${feedbackId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'status',
+          status
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Erro ao atualizar status.');
+      showToast('Status atualizado com sucesso!');
+    } catch (err) {
+      showToast(err.message, true);
+    }
+  });
+
+  // Salvar Nota Interna
+  const formNote = document.getElementById('form-note');
+  formNote?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const textareaNote = document.getElementById('textarea-note');
+    const notaInterna = textareaNote?.value || '';
+
+    try {
+      const res = await fetch(`/api/admin/feedbacks/${feedbackId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'note',
+          notaInterna
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Erro ao salvar nota.');
+      showToast('Nota interna privada salva com sucesso!');
+    } catch (err) {
+      showToast(err.message, true);
+    }
+  });
+
+  // Copiar Resposta Pronta
+  const btnCopy = document.getElementById('btn-copy-reply');
+  btnCopy?.addEventListener('click', () => {
+    const textareaReply = document.getElementById('textarea-reply');
+    const replyText = textareaReply?.value.trim() || '';
+    const greeting = `Olá, ${feedbackAuthor}! Obrigado por compartilhar sua experiência no Family Game Festival 2026.`;
+    const messageToCopy = `${greeting}\n\nSobre sua manifestação a respeito de ${feedbackCategory}:\n\n${replyText}\n\nAtenciosamente,\nEquipe Family Game Festival`;
+
+    navigator.clipboard.writeText(messageToCopy).then(() => {
+      showToast('Modelo de resposta copiado para a área de transferência!');
+    }).catch(() => {
+      showToast('Não foi possível copiar automaticamente.', true);
+    });
+  });
+</script>

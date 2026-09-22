@@ -1,0 +1,205 @@
+---
+import AdminIcon from '../../../components/admin/AdminIcon.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { formatAdminDate, whatsappUrl } from '../../../lib/server/admin/data';
+import { getNewsletterStats, listNewsletterLeads } from '../../../lib/server/newsletter/repository';
+
+const admin = Astro.locals.admin;
+if (!admin) return Astro.redirect('/admin/login');
+if (admin.mustChangePassword) return Astro.redirect('/admin/account/password');
+
+const query = Astro.url.searchParams;
+const search = query.get('q') ?? '';
+const page = Math.max(1, Number(query.get('page') || 1));
+const pageSize = 50;
+
+const [stats, listResult] = await Promise.all([
+  getNewsletterStats(),
+  listNewsletterLeads({
+    search: search || undefined,
+    limit: pageSize,
+    offset: (page - 1) * pageSize
+  })
+]);
+
+const rows = listResult.items;
+const total = listResult.total;
+const totalPages = Math.ceil(total / pageSize);
+---
+
+<AdminLayout
+  title="Newsletter & Leads | Family Game Festival"
+  subtitle="Lista VIP e pessoas interessadas nas próximas edições do festival."
+  admin={admin}
+  search={{ action: '/admin/newsletter', value: search, placeholder: 'Buscar por nome, e-mail ou WhatsApp' }}
+>
+  <div class="admin-v2-page admin-v2-cosplay-page">
+    <section class="admin-v2-page-intro admin-v2-cosplay-intro">
+      <div>
+        <p class="admin-eyebrow">Relacionamento · Leads & Comunidade</p>
+        <h2>Newsletter & Lista VIP</h2>
+        <p>Contatos cadastrados na página inicial para receber novidades, fotos e ingressos em primeira mão.</p>
+      </div>
+      <div class="admin-v2-cosplay-capacity">
+        <span>Base Total</span>
+        <strong>{stats.total}<small> contatos</small></strong>
+        <i><span style="width: 100%;"></span></i>
+        <small>Interessados nas próximas edições</small>
+      </div>
+    </section>
+
+    <!-- KPIs -->
+    <section class="admin-v2-kpi-grid" aria-label="Resumo administrativo da Newsletter">
+      <article class="admin-v2-kpi kpi-magenta">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="folder" /></span>
+        <strong class="admin-v2-kpi-value">{stats.total}</strong>
+        <span class="admin-v2-kpi-label">Total Cadastrado</span>
+        <small>Contatos únicos na base</small>
+      </article>
+
+      <article class="admin-v2-kpi kpi-green">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="whatsapp" /></span>
+        <strong class="admin-v2-kpi-value">{rows.filter((r) => Boolean(r.whatsapp)).length}</strong>
+        <span class="admin-v2-kpi-label">Com WhatsApp</span>
+        <small>Prontos para disparos</small>
+      </article>
+
+      <article class="admin-v2-kpi kpi-yellow">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="spark" /></span>
+        <strong class="admin-v2-kpi-value">{total}</strong>
+        <span class="admin-v2-kpi-label">Filtro Atual</span>
+        <small>Registros exibidos</small>
+      </article>
+    </section>
+
+    <!-- Barra de Ações & Filtro -->
+    <section class="admin-v2-card admin-v2-filter-card" aria-label="Filtros da Newsletter">
+      <form class="admin-v2-filter-form" method="get">
+        <label class="admin-v2-filter-wide">
+          Busca
+          <input
+            name="q"
+            value={search}
+            placeholder="Nome, e-mail ou número de telefone"
+          />
+        </label>
+        <button class="admin-button admin-button-primary" type="submit">Buscar</button>
+        <a class="admin-button admin-button-secondary" href="/admin/newsletter">Limpar</a>
+        <button type="button" class="admin-button admin-button-secondary" id="btn-export-csv" style="margin-left: auto;">
+          <AdminIcon name="download" />
+          <span>Exportar CSV</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- Tabela de Leads -->
+    <section class="admin-v2-card" aria-labelledby="newsletter-list-title">
+      <div class="admin-v2-card-heading">
+        <div>
+          <p class="admin-section-kicker">Base de contatos</p>
+          <h2 id="newsletter-list-title">Inscritos da Newsletter</h2>
+          <p>Contatos capturados no pós-evento para engajamento das próximas edições.</p>
+        </div>
+      </div>
+
+      {rows.length > 0 ? (
+        <div class="admin-v2-table-wrap">
+          <table class="admin-v2-table admin-v2-cosplay-table" id="leads-table">
+            <thead>
+              <tr>
+                <th style="width: 140px;">Data de Cadastro</th>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th style="width: 180px;">WhatsApp</th>
+                <th style="width: 140px;">Origem</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => {
+                const wa = whatsappUrl(row.whatsapp);
+                return (
+                  <tr>
+                    <td>
+                      <span class="admin-v2-code">
+                        {formatAdminDate(row.createdAt)}
+                      </span>
+                    </td>
+                    <td>
+                      <strong style="color: #fff; font-size: 0.8rem;">{row.nome}</strong>
+                    </td>
+                    <td>
+                      <a href={`mailto:${row.email}`} style="color: var(--admin-cyan); font-size: 0.78rem;">
+                        {row.email}
+                      </a>
+                    </td>
+                    <td>
+                      {wa ? (
+                        <a class="admin-v2-contact-whatsapp" href={wa} target="_blank" rel="noreferrer" style="display: inline-flex; align-items: center; gap: 4px;">
+                          <span>{row.whatsapp}</span>
+                          <AdminIcon name="whatsapp" />
+                        </a>
+                      ) : (
+                        <span style="color: var(--admin-muted); font-size: 0.75rem;">{row.whatsapp}</span>
+                      )}
+                    </td>
+                    <td>
+                      <span class="admin-v2-compact-label" style="text-transform: none;">
+                        {row.origem}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div class="admin-v2-empty">
+          <span class="admin-v2-empty-icon"><AdminIcon name="spark" /></span>
+          <strong>Nenhum contato encontrado.</strong>
+          <p>Os cadastros realizados no formulário de newsletter da Home serão listados aqui em tempo real.</p>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div class="admin-v2-toolbar-count" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 1rem;">
+          {page > 1 && (
+            <a class="admin-button admin-button-secondary" href={`/admin/newsletter?page=${page - 1}&q=${encodeURIComponent(search)}`}>
+              ← Anterior
+            </a>
+          )}
+          <span style="align-self: center; font-size: 0.72rem; color: var(--admin-muted);">
+            Página {page} de {totalPages}
+          </span>
+          {page < totalPages && (
+            <a class="admin-button admin-button-secondary" href={`/admin/newsletter?page=${page + 1}&q=${encodeURIComponent(search)}`}>
+              Próxima →
+            </a>
+          )}
+        </div>
+      )}
+    </section>
+  </div>
+</AdminLayout>
+
+<script>
+  const btnExport = document.getElementById('btn-export-csv');
+  btnExport?.addEventListener('click', () => {
+    const table = document.getElementById('leads-table') as HTMLTableElement | null;
+    if (!table) return;
+
+    const rows = Array.from(table.querySelectorAll('tr'));
+    const csvContent = rows.map((row) => {
+      const cols = Array.from(row.querySelectorAll('th, td'));
+      return cols.map((col) => `"${(col.textContent || '').trim().replace(/"/g, '""')}"`).join(';');
+    }).join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `leads_newsletter_fgf_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  });
+</script>

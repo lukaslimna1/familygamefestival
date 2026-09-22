@@ -1,15 +1,31 @@
 ---
 interface Props {
   back?: boolean;
+  backHref?: string;
+  backLabel?: string;
+  toHome?: boolean;
 }
 
-const { back = false } = Astro.props;
+const {
+  back = false,
+  backHref,
+  backLabel,
+  toHome = false,
+} = Astro.props;
+
+const href = toHome ? '/' : (backHref ?? (back ? '/snap' : null));
+const label = backLabel ?? (toHome ? 'HOME' : (back ? 'SNAP' : 'HOME'));
+const showBack = back || toHome || Boolean(backHref);
 ---
 
 <header class="snap-v2-header">
-  <div class="snap-v2-brand" aria-label="FGF Snap">
+  <a href="/" class="snap-v2-brand" aria-label="FGF Snap - Voltar à Página Inicial" style="pointer-events: auto; text-decoration: none;">
     <img src="/assets/mascots/icon-mascote.png" alt="" width="52" height="52" />
     <span><strong>FGF SNAP</strong><small>FAMILY GAME FESTIVAL 2026</small></span>
-  </div>
-  {back && <a class="snap-v2-back" href="/snap" aria-label="Voltar ao SNAP">← <span>SNAP</span></a>}
+  </a>
+  {showBack && href && (
+    <a class="snap-v2-back" href={href} aria-label={`Voltar para ${label}`}>
+      ← <span>{label}</span>
+    </a>
+  )}
 </header>

@@ -1,727 +1,2217 @@
 ---
-import { existsSync, readdirSync } from 'node:fs';
-import { basename, extname, join } from 'node:path';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import EventSchedule from '../components/EventSchedule.astro';
-import HomeCompetitionAccordion from '../components/HomeCompetitionAccordion.astro';
-import SponsorHierarchy from '../components/SponsorHierarchy.astro';
-import SiteHeader from '../components/SiteHeader.astro';
-import { event, guests, attractions, artistAlleyArtists, stores, mediaPartners, experiences, tickets, vipTickets, competitorTickets } from '../data/event';
-import { competitionDays, getChampionshipEntry } from '../data/championships';
-import { ONLINE_REGISTRATION_DEADLINE_LABEL, ONLINE_REGISTRATION_ONSITE_NOTICE } from '../config/registration-deadline';
+import { event } from '../data/event';
+import {
+  getPublicTestimonials,
+  getPublicMetrics,
+  FEEDBACK_CATEGORIES
+} from '../lib/server/feedback/repository';
 
-export const prerender = true;
+export const prerender = false;
 
-const homeCompetitionPanels = competitionDays.map((day) => {
-  const entries = day.groups.flatMap((group) => group.entries);
-  const featuredEntries = entries.filter((entry) => 'featured' in entry.tournament && entry.tournament.featured);
-  const groupedEntries = day.groups
-    .map((group) => ({ ...group, entries: group.entries.filter((entry) => !('featured' in entry.tournament && entry.tournament.featured)) }))
-    .filter((group) => group.entries.length > 0);
-  return { ...day, entries, featuredEntries, groupedEntries };
-});
-
-const competitorTicketEntries = competitorTickets.map((ticket) => {
-  const entry = getChampionshipEntry(ticket.tournamentId)!;
-  return { ...ticket, tournament: entry.tournament, schedule: entry.schedule, registrationFree: 'registrationFree' in entry.tournament && entry.tournament.registrationFree, eventAccessNote: entry.eventAccessNote };
-});
-const competitorTicketDays = [
-  { day: 'SÁBADO', date: '19/09', slug: 'sabado' },
-  { day: 'DOMINGO', date: '20/09', slug: 'domingo' }
-].map((ticketDay) => ({
-  ...ticketDay,
-  entries: competitorTicketEntries.filter((entry) => entry.schedule.day === ticketDay.day)
-}));
-const guestVideoDirectory = join(process.cwd(), 'public/assets/videos');
-const guestVideoOrder: Record<string, number> = {
-  'Raul.mp4': 0,
-  'Lana.mp4': 1,
-  'Hélia de Cosplay.mp4': 2,
-  'Bruno Werner.mp4': 3,
-  'Diga Ação Podcast.mp4': 4,
-  'zoofiss.mp4': 5
-};
-const guestVideoTitles: Record<string, string> = {
-  'Bruno Werner.mp4': 'Bruno Werner',
-  'Diga Ação Podcast.mp4': 'Diga Ação Podcast',
-  'zoofiss.mp4': 'Zoofiss'
-};
-const guestVideos = existsSync(guestVideoDirectory)
-  ? readdirSync(guestVideoDirectory, { withFileTypes: true })
-      .filter((entry) => entry.isFile() && /\.(mp4|webm|mov|m4v)$/i.test(entry.name))
-      .sort((a, b) => (guestVideoOrder[a.name] ?? Number.MAX_SAFE_INTEGER) - (guestVideoOrder[b.name] ?? Number.MAX_SAFE_INTEGER) || a.name.localeCompare(b.name, 'pt-BR'))
-      .map((entry) => {
-        const extension = extname(entry.name).toLowerCase();
-        const filenameTitle = basename(entry.name, extension).replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
-        const guest = guests.find((item) => filenameTitle.toLowerCase().startsWith(item.name.split(' ')[0].toLowerCase()));
-        return { filename: entry.name, title: guestVideoTitles[entry.name] ?? guest?.name ?? filenameTitle, sourceType: extension === '.webm' ? 'video/webm' : extension === '.mov' ? 'video/quicktime' : 'video/mp4' };
-      })
-  : [];
+const testimonials = await getPublicTestimonials(12);
+const metrics = await getPublicMetrics();
 
 const siteUrl = 'https://familygamefestival.vercel.app';
-const absoluteAssetUrl = (path: string) => new URL(path, siteUrl).toString();
-const guestSchemas = guests.map((guest) => ({
+const homeStructuredData = {
   '@context': 'https://schema.org',
-  '@type': 'Person',
-  '@id': `${siteUrl}/#guest-${guest.slug}`,
-  name: guest.name,
-  jobTitle: guest.role,
-  description: guest.description,
-  url: `${siteUrl}/#presencas-confirmadas`,
-  sameAs: [guest.instagramUrl],
-  image: absoluteAssetUrl(guest.image)
-}));
-const artistAlleySchemas = artistAlleyArtists.map((artist) => ({
-  '@context': 'https://schema.org',
-  '@type': 'Person',
-  '@id': `${siteUrl}/#artist-${artist.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
-  name: artist.name,
-  jobTitle: artist.role,
-  description: artist.description,
-  url: `${siteUrl}/#artist-alley`,
-  sameAs: [artist.instagramUrl],
-  image: absoluteAssetUrl(artist.image)
-}));
-const attractionsSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'ItemList',
-  name: 'Atrações do Family Game Festival 2026',
-  url: `${siteUrl}/#atracoes`,
-  itemListElement: attractions.map((attraction, index) => ({
-    '@type': 'ListItem',
-    position: index + 1,
-    name: attraction.title,
-    description: attraction.text,
-    url: `${siteUrl}/#atracoes`
-  }))
+  '@type': 'WebSite',
+  name: 'Family Game Festival',
+  url: siteUrl,
+  description: 'Portal pós-evento do Family Game Festival. Obrigado por jogar com a gente! Deixe seu feedback, confira depoimentos e acesse a memória oficial da edição 2026.'
 };
-const homeStructuredData = [...guestSchemas, ...artistAlleySchemas, attractionsSchema];
 ---
 
-<BaseLayout structuredData={homeStructuredData}>
-  <SiteHeader />
+<BaseLayout
+  title="Family Game Festival | Obrigado por Jogar com a Gente!"
+  description="O Family Game Festival 2026 chegou ao fim. Obrigado por jogar com a gente! Envie seu feedback, reviva a edição 2026 e confira fotos e vídeos oficiais."
+  canonical={siteUrl}
+  structuredData={homeStructuredData}
+>
+  <div id="inicio" class="page-top-anchor" aria-hidden="true"></div>
 
-  <section class="event-spotlight" aria-labelledby="event-spotlight-title">
-    <div class="container">
-      <div class="event-spotlight-shell">
-        <div class="event-spotlight-main">
-          <div class="event-spotlight-heading">
-            <p class="eyebrow eyebrow-yellow">Evento confirmado · Bauru/SP</p>
-            <h2 id="event-spotlight-title">O festival está chegando.</h2>
-          </div>
-          <div class="event-spotlight-facts" aria-label="Data, local e horário do evento">
-            <div class="event-spotlight-fact"><span>DATA</span><strong>19 e 20</strong><small>SETEMBRO DE 2026</small></div>
-            <div class="event-spotlight-fact"><span>LOCAL</span><strong>SORRI</strong><small>BAURU · ARENA TAUSTE</small></div>
-            <div class="event-spotlight-fact"><span>HORÁRIO</span><strong>{event.hours}</strong><small>HORÁRIO DO EVENTO</small></div>
-          </div>
-        </div>
+  <!-- Header Pós-Evento -->
+  <header class="post-header">
+    <div class="container post-header-inner">
+      <a class="post-brand" href="#inicio" aria-label="Family Game Festival · início">
+        <img src="/assets/logo.svg" alt="Family Game Festival" width="132" height="38" />
+      </a>
 
-        <div class="event-countdown" data-countdown data-countdown-target="2026-09-19T11:00:00-03:00" role="timer" aria-label="Contagem regressiva para o início do Family Game Festival">
-          <div class="event-countdown-heading"><span>CONTAGEM REGRESSIVA</span><strong data-countdown-status>PARA O FESTIVAL</strong></div>
-          <div class="event-countdown-grid">
-            <div><strong data-countdown-days>00</strong><span>dias</span></div>
-            <div><strong data-countdown-hours>00</strong><span>horas</span></div>
-            <div><strong data-countdown-minutes>00</strong><span>min</span></div>
-            <div><strong data-countdown-seconds>00</strong><span>seg</span></div>
-          </div>
-        </div>
+      <nav class="post-nav" id="post-nav" aria-label="Navegação principal">
+        <a class="post-nav-link is-current" href="#inicio">INÍCIO</a>
+        <a class="post-nav-link" href="#feedback">FEEDBACK</a>
+        <a class="post-nav-link" href="#depoimentos">DEPOIMENTOS</a>
+        <a class="post-nav-link" href="#snaps">FGF SNAP</a>
+        <a class="post-nav-link" href="#newsletter">NOVIDADES</a>
+        <a class="post-nav-link" href="/2026">FGF 2026</a>
+        <a class="post-nav-link" href={event.instagramUrl} target="_blank" rel="noopener noreferrer">
+          INSTAGRAM <span class="nav-arrow" aria-hidden="true">↗</span>
+        </a>
+      </nav>
+
+      <div class="post-header-cta">
+        <a class="button button-yellow button-small" href="#feedback">
+          Deixar Feedback ★
+        </a>
       </div>
     </div>
-  </section>
+  </header>
 
-  <main>
-    <section class="hero" id="inicio">
-      <div class="container hero-grid">
-        <div class="hero-copy">
-          <p class="eyebrow"><span class="status-dot"></span> 1ª edição · Bauru, SP</p>
-          <h1>Family Game Festival <em>2026.</em></h1>
-          <p class="hero-lead">Um evento geek e gamer em Bauru/SP com dois dias de games, campeonatos, dança, cosplay, dublagem e cultura pop para jogar junto.</p>
-          <div class="hero-actions">
-            <a class="button button-yellow" href={event.ticketUrl} target="_blank" rel="noreferrer">Garantir meu ingresso <span aria-hidden="true">↗</span></a>
-            <a class="text-link" href="#campeonatos">Ver campeonatos <span aria-hidden="true">↓</span></a>
-          </div>
-          <div class="event-facts" aria-label="Informações principais do evento">
-            <div><strong>19—20</strong><span>setembro de 2026</span></div>
-            <div><strong>SORRI</strong><span>Bauru · Arena Tauste</span></div>
-            <div><strong>{event.hours}</strong><span>horário do evento</span></div>
-          </div>
+  <main class="post-event-main">
+    <!-- Hero Pós-Evento -->
+    <section class="post-hero" aria-labelledby="post-hero-title">
+      <div class="hero-backdrop" aria-hidden="true">
+        <div class="ambient-glow ambient-cyan"></div>
+        <div class="ambient-glow ambient-yellow"></div>
+        <div class="pixel-matrix"></div>
+      </div>
+
+      <div class="container post-hero-content">
+        <div class="post-hero-badge">
+          <span class="badge-dot"></span>
+          <span class="badge-label">FAMILY GAME FESTIVAL 2026 · EDIÇÃO REALIZADA</span>
         </div>
 
-        <div class="hero-stage" aria-label="Identidade visual do Family Game Festival">
-          <div class="stage-topline"><span>FAMILY GAME FESTIVAL</span><span>FGF / 26</span></div>
-          <div class="stage-art">
-            <img class="stage-grid" src="/assets/svg/grid.svg" alt="" aria-hidden="true" />
-            <img class="stage-lines" src="/assets/svg/interface-lines.svg" alt="" aria-hidden="true" />
-            <span class="stage-label stage-label-top">GAME · GEEK · CULTURE</span>
-            <img class="stage-logo" src="/assets/logo.svg" alt="Family Game Festival 2026" />
-            <img class="stage-mascot" src="/assets/mascots/0 - Pose Original.svg" alt="Mascote do Family Game Festival" />
-            <span class="stage-chip chip-cyan">PLAY</span>
-            <span class="stage-chip chip-pink">LEVEL 01</span>
-            <span class="stage-label stage-label-bottom">19—20 SET · BAURU/SP</span>
+        <h1 id="post-hero-title" class="post-hero-title">
+          OBRIGADO POR JOGAR <br />
+          <span class="title-highlight">COM A GENTE.</span>
+        </h1>
+
+        <p class="post-hero-lead">
+          O Family Game Festival 2026 chegou ao fim. <br class="mobile-hide" />
+          Mas essa história continua sendo construída com você.
+        </p>
+
+        <div class="post-hero-actions">
+          <a class="button button-yellow post-cta-primary" href="#feedback">
+            <span>DEIXAR MEU FEEDBACK</span>
+            <span class="cta-icon" aria-hidden="true">★</span>
+          </a>
+          <a class="button button-outline-cyan post-cta-secondary" href="#snaps">
+            <span>CRIAR MEU SNAP</span>
+            <span class="cta-icon" aria-hidden="true">📸</span>
+          </a>
+          <a class="button button-outline-light post-cta-secondary" href="/2026">
+            <span>REVIVER O FGF 2026</span>
+            <span class="cta-icon" aria-hidden="true">→</span>
+          </a>
+        </div>
+
+        <!-- Barra de Destaques Rápidos -->
+        <div class="post-highlights-bar" aria-label="Resumo do evento">
+          <div class="highlight-item">
+            <span class="highlight-label">CIDADE</span>
+            <strong class="highlight-value">BAURU · SP</strong>
+            <small class="highlight-desc">Arena Tauste · SORRI</small>
           </div>
-          <div class="stage-bottomline"><span>ARENA TAUSTE</span><span class="stage-stars">✦ ✦ ✦</span></div>
+          <div class="highlight-divider" aria-hidden="true"></div>
+          <div class="highlight-item">
+            <span class="highlight-label">DATA HISTÓRICA</span>
+            <strong class="highlight-value">19 E 20 SET 2026</strong>
+            <small class="highlight-desc">1ª Edição Oficial</small>
+          </div>
+          <div class="highlight-divider" aria-hidden="true"></div>
+          <div class="highlight-item">
+            <span class="highlight-label">STATUS</span>
+            <strong class="highlight-value text-yellow">PÓS-EVENTO</strong>
+            <small class="highlight-desc">Ouvindo nossa comunidade</small>
+          </div>
         </div>
       </div>
     </section>
 
-    <EventSchedule />
-
-    <section class="section section-dark intro-section">
-      <div class="container intro-grid">
-        <div>
-          <p class="eyebrow eyebrow-cyan">O festival</p>
-          <h2>Uma arena para quem joga, dança, cria e compartilha.</h2>
-        </div>
-        <div class="intro-copy">
-          <p>{event.experienceLine}</p>
-          <p>{event.socialImpact} É um festival de games e cultura geek com impacto social associado.</p>
-          <a class="text-link text-link-light" href={event.instagramUrl} target="_blank" rel="noreferrer">Acompanhar no Instagram <span aria-hidden="true">↗</span></a>
-        </div>
-      </div>
-    </section>
-
-    <section class="section section-light attractions-section" id="atracoes">
+    <!-- Seção de Feedback Completa -->
+    <section class="section feedback-section" id="feedback" aria-labelledby="feedback-section-title">
       <div class="container">
-        <div class="section-heading heading-row section-heading-with-mascot">
-          <div><p class="eyebrow eyebrow-red">O que te espera</p><h2>Escolha seu modo de jogar.</h2></div>
-          <p class="heading-note">Experiências para quem compete, assiste, coleciona ou só quer passar um dia diferente com a família.</p>
-          <img class="section-mascot section-mascot-strength" src="/assets/mascots/2 - Pose Força.svg" alt="" aria-hidden="true" />
+        <div class="section-heading text-center">
+          <p class="eyebrow eyebrow-yellow">SUA VOZ IMPORTA</p>
+          <h2 id="feedback-section-title" class="feedback-heading-title">COMO FOI SUA EXPERIÊNCIA?</h2>
+          <p class="section-subtitle">
+            Compartilhe sua percepção para nos ajudar a evoluir o Family Game Festival. <br class="mobile-hide" />
+            Escolha abaixo o tipo de manifestação que deseja enviar:
+          </p>
         </div>
 
-        <div class="attraction-grid">
-          {attractions.map((item, index) => (
-            <article class={`attraction-card accent-${item.accent}`}>
-              <div class="card-index">0{index + 1}</div>
-              <img src={`/assets/svg/${item.icon}`} alt="" aria-hidden="true" />
-              <p class="card-eyebrow">{item.eyebrow}</p>
-              <h3>{item.title}</h3>
-              <p>{item.text}</p>
-            </article>
-          ))}
+        <!-- 3 Cards Seletores de Tipo -->
+        <div class="type-selector-grid" role="group" aria-label="Selecione o tipo de feedback">
+          <button
+            type="button"
+            class="type-card type-card-sugestao"
+            data-type-btn="sugestao"
+            aria-pressed="false"
+          >
+            <div class="type-card-header">
+              <span class="type-badge badge-cyan">SUGESTÃO</span>
+              <span class="type-icon-box" aria-hidden="true">💡</span>
+            </div>
+            <h3 class="type-card-title">Sugestão</h3>
+            <p class="type-card-desc">“Tenho uma ideia para melhorar o evento.”</p>
+            <span class="type-card-select-indicator">Selecionar sugestão</span>
+          </button>
+
+          <button
+            type="button"
+            class="type-card type-card-elogio"
+            data-type-btn="elogio"
+            aria-pressed="false"
+          >
+            <div class="type-card-header">
+              <span class="type-badge badge-yellow">ELOGIO</span>
+              <span class="type-icon-box" aria-hidden="true">🏆</span>
+            </div>
+            <h3 class="type-card-title">Elogio</h3>
+            <p class="type-card-desc">“Quero contar algo que gostei.”</p>
+            <span class="type-card-select-indicator">Selecionar elogio</span>
+          </button>
+
+          <button
+            type="button"
+            class="type-card type-card-reclamacao"
+            data-type-btn="reclamacao"
+            aria-pressed="false"
+          >
+            <div class="type-card-header">
+              <span class="type-badge badge-red">RECLAMAÇÃO</span>
+              <span class="type-icon-box" aria-hidden="true">⚠️</span>
+            </div>
+            <h3 class="type-card-title">Reclamação</h3>
+            <p class="type-card-desc">“Algo não funcionou como deveria.”</p>
+            <span class="type-card-select-indicator">Selecionar reclamação</span>
+          </button>
         </div>
 
-        <div class="section-heading guest-heading" id="presencas-confirmadas">
-          <div><p class="eyebrow eyebrow-pink">Presenças confirmadas</p><h2>Gente que transforma a arena.</h2></div>
-        </div>
-        <div class="guest-grid">
-          {guests.map((guest) => (
-            <article class={`guest-card guest-${guest.accent} guest-${guest.slug}`}>
-              <div class="guest-art">
-                <span class="guest-art-label">{guest.badge}</span>
-                {guest.image ? (
-                  <img src={guest.image} alt={`${guest.name} no Family Game Festival`} loading="lazy" />
-                ) : (
-                  <div class="guest-mystery-art" role="img" aria-label="Identidade do jurado será revelada em breve">
-                    <strong>?</strong>
-                    <span>IDENTIDADE<br />EM BREVE</span>
+        <!-- Formulário Dinâmico de Feedback -->
+        <div class="feedback-form-wrapper" id="feedback-form-container" hidden>
+          <form id="feedback-form" class="feedback-form" novalidate>
+            <!-- Honeypot invisível para bots -->
+            <input type="text" name="hp_website" class="sr-only" tabindex="-1" autocomplete="off" />
+
+            <input type="hidden" name="tipo" id="input-tipo" value="" />
+
+            <div class="form-header-banner">
+              <span class="form-selected-pill" id="form-selected-pill">SUGESTÃO</span>
+              <p id="form-selected-desc">Preencha os campos abaixo para enviar sua sugestão à organização.</p>
+            </div>
+
+            <!-- Avaliação por Estrelas (1 a 5) -->
+            <div class="form-group star-rating-group">
+              <label class="form-label" id="star-rating-label">
+                Como você avalia sua experiência no FGF 2026? <span class="required">*</span>
+              </label>
+              <div class="star-rating-shell" role="radiogroup" aria-labelledby="star-rating-label">
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <label class="star-label" title={`${num} estrela${num > 1 ? 's' : ''}`}>
+                    <input
+                      type="radio"
+                      name="estrelas"
+                      value={num}
+                      class="star-input"
+                      required
+                    />
+                    <span class="star-symbol" aria-hidden="true">★</span>
+                    <span class="sr-only">{num} estrela{num > 1 ? 's' : ''}</span>
+                  </label>
+                ))}
+                <span class="star-caption" id="star-caption" aria-live="polite">Selecione uma nota</span>
+              </div>
+            </div>
+
+            <!-- Categoria do Feedback -->
+            <div class="form-group">
+              <label for="categoria-select" class="form-label">
+                Sobre o que você quer falar? <span class="required">*</span>
+              </label>
+              <div class="select-wrapper">
+                <select id="categoria-select" name="categoria" class="form-select" required>
+                  <option value="" disabled selected>Selecione uma área...</option>
+                  {FEEDBACK_CATEGORIES.map((cat) => (
+                    <option value={cat}>{cat}</option>
+                  ))}
+                </select>
+                <span class="select-chevron" aria-hidden="true">⌄</span>
+              </div>
+            </div>
+
+            <!-- Mensagem -->
+            <div class="form-group">
+              <div class="form-label-row">
+                <label for="mensagem-textarea" class="form-label">
+                  Conte pra gente. <span class="required">*</span>
+                </label>
+                <span class="char-counter" id="char-counter">0 / 2000</span>
+              </div>
+              <textarea
+                id="mensagem-textarea"
+                name="mensagem"
+                class="form-textarea"
+                rows="5"
+                minlength="10"
+                maxlength="2000"
+                placeholder="Escreva aqui detalhadamente. Seja sincero e construtivo, sua opinião é lida com respeito e atenção..."
+                required
+              ></textarea>
+            </div>
+
+            <!-- Identificação -->
+            <fieldset class="form-fieldset">
+              <legend class="form-legend">Quer se identificar?</legend>
+              <div class="radio-toggle-group" role="radiogroup">
+                <label class="radio-toggle-card">
+                  <input type="radio" name="anonimo" value="false" checked />
+                  <div class="toggle-card-content">
+                    <strong>Quero me identificar</strong>
+                    <small>Seu nome e e-mail ficam seguros com a organização.</small>
                   </div>
-                )}
-                <span class="guest-art-number">FGF 26</span>
-              </div>
-              <div class="guest-content">
-                <p class="card-eyebrow">{guest.role}</p>
-                <h3>{guest.name}</h3>
-                <p>{guest.description}</p>
-                <p class="guest-highlight">{guest.highlight}</p>
-                {guest.instagramUrl ? (
-                  <a class="text-link" href={guest.instagramUrl} target="_blank" rel="noreferrer">{guest.handle} <span aria-hidden="true">↗</span></a>
-                ) : (
-                  <span class="guest-mystery-link">Revelação em breve</span>
-                )}
-              </div>
-            </article>
-          ))}
-        </div>
-
-      </div>
-    </section>
-
-    <section class="section section-dark guest-videos-section" id="videos" aria-labelledby="guest-videos-title">
-      <div class="container">
-        <div class="section-heading heading-row section-heading-with-mascot">
-          <div><p class="eyebrow eyebrow-cyan">Conteúdo dos convidados</p><h2 id="guest-videos-title">Vídeos que entram em cena.</h2></div>
-          <p class="heading-note heading-note-light">Recados, convites, bastidores e apresentações dos convidados do Family Game Festival.</p>
-          <img class="section-mascot section-mascot-here" src="/assets/mascots/5 - Pose Convidando.svg" alt="" aria-hidden="true" />
-        </div>
-
-        <div class="guest-video-grid">
-          {guestVideos.map((video) => (
-            <article class="guest-video-card">
-              <div class="guest-video-media">
-                <video controls preload="metadata" aria-label={`Vídeo de ${video.title}`}>
-                  <source src={`/assets/videos/${encodeURIComponent(video.filename)}`} type={video.sourceType} />
-                  Seu navegador não consegue reproduzir este vídeo.
-                </video>
-              </div>
-              <div class="guest-video-content">
-                <p class="card-eyebrow">Vídeo do convidado</p>
-                <h3>{video.title}</h3>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    <section class="section section-light exhibitors-section" id="expositores" aria-labelledby="exhibitors-title">
-      <div class="container">
-        <div class="section-heading heading-row section-heading-with-mascot">
-          <div><p class="eyebrow eyebrow-cyan">Expositores</p><h2 id="exhibitors-title">Lojas e Artist Alley.</h2></div>
-          <p class="heading-note">Conheça as lojas que estarão na arena e as lojinhas de artistas independentes do festival.</p>
-          <img class="section-mascot section-mascot-ok" src="/assets/mascots/4 - Pose Ok.svg" alt="" aria-hidden="true" />
-        </div>
-
-        <section class="artist-alley stores-showcase" id="lojas" aria-labelledby="stores-title">
-          <div class="artist-alley-header">
-            <div><p class="eyebrow eyebrow-yellow">Lojas</p><h3 id="stores-title">Lojas</h3></div>
-            <p>Encontre produtos, games e novidades das lojas confirmadas no Family Game Festival.</p>
-          </div>
-          <div class="artist-alley-grid">
-            {stores.map((store, index) => (
-              <article class={`artist-alley-card store-card artist-alley-${store.accent}`}>
-                <div class="artist-alley-art store-art"><img src={store.image} alt={`Logo ${store.name}`} loading="lazy" /></div>
-                <div class="artist-alley-copy">
-                  <span class="artist-alley-index">0{index + 1}</span>
-                  <p class="card-eyebrow">{store.role}</p>
-                  <h4>{store.name}</h4>
-                  <p>{store.description}</p>
-                  <a class="text-link" href={store.href} target="_blank" rel="noreferrer">{store.handle} <span aria-hidden="true">↗</span></a>
-                  <span class="artist-alley-note">{store.note}</span>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section class="artist-alley artist-alley-showcase" id="artist-alley" aria-labelledby="artist-alley-title">
-          <div class="artist-alley-header">
-            <div><p class="eyebrow eyebrow-cyan">Artist Alley</p><h3 id="artist-alley-title">Artist Alley</h3></div>
-            <p>Uma área com lojinhas de artistas independentes. Ainda dá tempo de se inscrever e participar do Artist Alley.</p>
-          </div>
-          <div class="artist-alley-grid">
-            {artistAlleyArtists.map((artist, index) => (
-              <article class={`artist-alley-card artist-alley-${artist.accent}`}>
-                <div class="artist-alley-art"><img src={artist.image} alt={`${artist.name} no Artist Alley do Family Game Festival`} loading="lazy" /></div>
-                <div class="artist-alley-copy">
-                  <span class="artist-alley-index">0{index + 1}</span>
-                  <p class="card-eyebrow">{artist.role}</p>
-                  <h4>{artist.name}</h4>
-                  <p>{artist.description}</p>
-                  <p class="artist-alley-detail">{artist.detail}</p>
-                  <a class="text-link" href={artist.instagramUrl} target="_blank" rel="noreferrer">{artist.handle} <span aria-hidden="true">↗</span></a>
-                  <span class="artist-alley-note">{artist.note}</span>
-                </div>
-              </article>
-            ))}
-          </div>
-          <div class="artist-alley-footer"><div><span>ARTE · CRIAÇÃO · COMUNIDADE</span><strong>ENCONTRE SEU PRÓXIMO FAVORITO ↗</strong></div><a class="button button-yellow button-small" href={event.whatsapp.artistAlley} target="_blank" rel="noreferrer">Inscreva-se no Artist Alley <span aria-hidden="true">↗</span></a></div>
-        </section>
-
-        <div class="exhibitor-cta">
-          <div class="exhibitor-cta-copy">
-            <p class="eyebrow eyebrow-cyan">Expositores & lojistas</p>
-            <h2>Leve sua marca para dentro do jogo também.</h2>
-            <p>Espaços para lojistas e expositores no Family Game Festival. Veja como participar ou fale diretamente com a organização.</p>
-          </div>
-          <div class="exhibitor-actions">
-            <a class="button button-red" href="/expositores">Veja como ser expositor <span aria-hidden="true">↗</span></a>
-          </div>
-          <img class="exhibitor-mascot" src="/assets/mascots/4 - Pose Ok.svg" alt="" aria-hidden="true" />
-        </div>
-      </div>
-    </section>
-
-    <section class="section section-navy tournaments-section" id="campeonatos">
-      <div class="container">
-        <div class="section-heading heading-row section-heading-with-mascot">
-          <div><p class="eyebrow eyebrow-yellow">Programação competitiva</p><h2>Escolha seu campeonato.</h2></div>
-          <img class="section-mascot section-mascot-fight" src="/assets/mascots/3 - Pose Luta.svg" alt="" aria-hidden="true" />
-        </div>
-
-        <div class="tournament-day-tabs" role="tablist" aria-label="Escolha o dia dos campeonatos">
-          {homeCompetitionPanels.map((panel, index) => (
-            <button class={`tournament-day-tab ${index === 0 ? 'is-active' : ''}`} id={`home-${panel.slug}-tab`} type="button" role="tab" aria-selected={index === 0 ? 'true' : 'false'} aria-controls={`home-${panel.slug}-panel`} data-home-day-tab={panel.slug}>
-              <span>{panel.day}</span><small>{panel.date}</small>
-            </button>
-          ))}
-        </div>
-
-        {homeCompetitionPanels.map((panel, panelIndex) => (
-          <div class={`home-competition-panel tournament-day-panel ${panelIndex === 0 ? 'is-active' : ''}`} id={`home-${panel.slug}-panel`} role="tabpanel" aria-labelledby={`home-${panel.slug}-tab`} data-home-day-panel={panel.slug} hidden={panelIndex !== 0}>
-            <div class="home-competition-list">
-              {panel.featuredEntries.length > 0 && (
-                <div class={`competition-group competition-special-group ${panel.featuredEntries.length === 1 ? 'competition-special-group-single' : ''}`}>
-                  <div class="competition-group-heading">
-                    <div><p class="card-eyebrow">Destaque do palco</p><h3>{panel.featuredEntries[0].tournament.category === 'Dance Game' ? 'Competição de Dança' : 'Cosplay'}</h3></div>
-                    <span>{panel.featuredEntries.length} {panel.featuredEntries.length === 1 ? 'atração' : 'atrações'}</span>
+                </label>
+                <label class="radio-toggle-card">
+                  <input type="radio" name="anonimo" value="true" />
+                  <div class="toggle-card-content">
+                    <strong>Quero enviar anonimamente</strong>
+                    <small>Nenhum dado pessoal será vinculado à sua mensagem.</small>
                   </div>
-                  <div class="home-competition-accordion-list">
-                    {panel.featuredEntries.map((entry) => <HomeCompetitionAccordion entry={entry} categoryLabel={entry.tournament.category === 'Dance Game' ? 'Competição de Dança' : 'Cosplay'} featured />)}
+                </label>
+              </div>
+
+              <div class="identified-fields" id="identified-fields">
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label for="nome-input" class="form-label">Nome completo <span class="required">*</span></label>
+                    <input type="text" id="nome-input" name="nome" class="form-input" placeholder="Seu nome completo" />
+                  </div>
+                  <div class="form-group">
+                    <label for="email-input" class="form-label">E-mail <span class="required">*</span></label>
+                    <input type="email" id="email-input" name="email" class="form-input" placeholder="seuemail@exemplo.com" />
                   </div>
                 </div>
-              )}
-
-              {panel.groupedEntries.map((group) => (
-                <div class={`competition-group competition-group-${group.accent}`}>
-                  <div class="competition-group-heading">
-                    <div><p class="card-eyebrow">{group.kicker}</p><h3>{group.title}</h3></div>
-                    <span>{group.entries.length} disputas</span>
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label for="telefone-input" class="form-label">Telefone / WhatsApp <span class="optional">(opcional)</span></label>
+                    <input type="tel" id="telefone-input" name="telefone" class="form-input" placeholder="(14) 99999-9999" />
                   </div>
-                  <div class="home-competition-accordion-list">
-                    {group.entries.map((entry, index) => <HomeCompetitionAccordion entry={entry} categoryLabel={group.kicker} number={index + 1} />)}
+                  <div class="form-group">
+                    <label for="instagram-input" class="form-label">@ do Instagram ou link <span class="optional">(opcional)</span></label>
+                    <input type="text" id="instagram-input" name="instagram" class="form-input" placeholder="@seuusuario ou link do perfil" />
                   </div>
                 </div>
-              ))}
+              </div>
+            </fieldset>
 
+            <!-- Permissão de Contato -->
+            <div class="form-group checkbox-group" id="contact-permission-box">
+              <label class="checkbox-label">
+                <input type="checkbox" name="permiteContato" value="true" class="form-checkbox" />
+                <span class="checkbox-box" aria-hidden="true"></span>
+                <span class="checkbox-text">
+                  Autorizo a organização do Family Game Festival a entrar em contato comigo sobre esta manifestação.
+                </span>
+              </label>
+            </div>
+
+            <!-- Autorização para Publicação -->
+            <fieldset class="form-fieldset">
+              <legend class="form-legend">
+                Podemos compartilhar seu feedback nos canais oficiais do Family Game Festival? <span class="required">*</span>
+              </legend>
+              <p class="fieldset-desc">
+                Depoimentos positivos e sugestões inspiradoras nos ajudam a divulgar a energia da comunidade.
+                Nenhum feedback é tornado público sem o seu consentimento prévio.
+              </p>
+              <div class="publication-options">
+                <label class="pub-option" id="pub-option-name">
+                  <input type="radio" name="autorizacaoPublicacao" value="nome" checked />
+                  <span class="pub-radio-circle"></span>
+                  <span class="pub-option-copy">
+                    <strong>Sim, com meu primeiro nome</strong>
+                    <small>Exemplo: “Participante P.” acompanhado do seu relato.</small>
+                  </span>
+                </label>
+
+                <label class="pub-option">
+                  <input type="radio" name="autorizacaoPublicacao" value="anonimo" />
+                  <span class="pub-radio-circle"></span>
+                  <span class="pub-option-copy">
+                    <strong>Sim, mas de forma anônima</strong>
+                    <small>Seu depoimento será assinado apenas como “Participante FGF”.</small>
+                  </span>
+                </label>
+
+                <label class="pub-option">
+                  <input type="radio" name="autorizacaoPublicacao" value="nao" />
+                  <span class="pub-radio-circle"></span>
+                  <span class="pub-option-copy">
+                    <strong>Não autorizo publicação</strong>
+                    <small>Seu feedback será de uso estritamente interno da organização.</small>
+                  </span>
+                </label>
+              </div>
+            </fieldset>
+
+            <div class="form-alert form-alert-error" id="form-error-box" hidden role="alert"></div>
+
+            <!-- Botão de Envio -->
+            <div class="form-footer">
+              <button type="submit" class="button button-yellow form-submit-btn" id="submit-btn">
+                <span class="btn-text">ENVIAR MANIFESTAÇÃO</span>
+                <span class="btn-loader" hidden aria-hidden="true"></span>
+              </button>
+              <p class="form-disclaimer">
+                Seus dados são tratados com responsabilidade de acordo com a LGPD.
+              </p>
+            </div>
+          </form>
+
+          <!-- Tela de Sucesso -->
+          <div class="feedback-success-state" id="feedback-success-state" hidden role="status" aria-live="polite">
+            <div class="success-icon-box">✓</div>
+            <h3 class="success-title">RECEBEMOS SUA MENSAGEM.</h3>
+            <p class="success-copy">
+              Obrigado por ajudar a construir uma experiência melhor. <br />
+              Todas as manifestações serão registradas e analisadas pela organização do Family Game Festival.
+            </p>
+            <div class="success-actions">
+              <button type="button" class="button button-outline-light button-small" id="reset-form-btn">
+                Enviar outra manifestação
+              </button>
+              <a href="#depoimentos" class="button button-yellow button-small">
+                Ver depoimentos da comunidade ↓
+              </a>
             </div>
           </div>
-        ))}
+        </div>
       </div>
     </section>
 
-    <section class="section section-light experiences-section">
+    <!-- Seção de Depoimentos no Site ("O QUE VOCÊS DISSERAM") -->
+    <section class="section testimonials-section" id="depoimentos" aria-labelledby="depoimentos-title">
       <div class="container">
-        <div class="section-heading section-heading-with-mascot"><p class="eyebrow eyebrow-cyan">Mais para viver</p><h2>O ingresso abre um mapa inteiro.</h2><img class="section-mascot section-mascot-ok" src="/assets/mascots/4 - Pose Ok.svg" alt="" aria-hidden="true" /></div>
-        <div class="experience-grid">
-          {experiences.map((experience) => (
-            <article class="experience-card">
-              <span class="experience-number">{experience.number}</span>
-              <img src={`/assets/svg/${experience.icon}`} alt="" aria-hidden="true" />
-              <h3>{experience.title}</h3>
-              <p>{experience.text}</p>
-            </article>
-          ))}
-        </div>
-        <div class="inclusive-note"><img src="/assets/svg/controller.svg" alt="" aria-hidden="true" /><p><strong>Todo mundo tem espaço na partida.</strong> O festival também prepara competições e experiências inclusivas para pessoas com deficiência. Formatos e detalhes serão divulgados conforme confirmação.</p></div>
-      </div>
-    </section>
-
-    <section class="section section-dark tickets-section" id="ingressos">
-      <div class="container">
-        <div class="section-heading heading-row section-heading-with-mascot">
-          <div><p class="eyebrow eyebrow-yellow">Saiba mais sobre os ingressos</p><h2>Seu próximo fim de semana começa aqui.</h2></div>
-          <p class="heading-note heading-note-light">Os valores abaixo não incluem a taxa da plataforma. Garanta seu ingresso na bilheteria oficial.</p>
-          <img class="section-mascot section-mascot-here" src="/assets/mascots/1 - Pose Aqui.svg" alt="" aria-hidden="true" />
-        </div>
-        <div class="ticket-day-panels" aria-label="Ingressos do evento por dia">
-          {tickets.map((ticketDay) => (
-            <section class={`ticket-day-panel ticket-day-${ticketDay.slug}`} aria-labelledby={`ticket-day-${ticketDay.slug}`}>
-              <div class="ticket-day-heading">
-                <div><p class="eyebrow eyebrow-cyan">Ingressos do evento</p><h3 id={`ticket-day-${ticketDay.slug}`}>{ticketDay.day}</h3></div>
-                <strong>{ticketDay.date}</strong>
-              </div>
-              <div class="ticket-day-grid">
-                {ticketDay.passes.map((ticket) => (
-                  <article class={`ticket-card ticket-${ticket.accent}`}>
-                    <div class="ticket-card-top"><p><span class="ticket-card-icon" aria-hidden="true">{ticket.icon}</span>{ticket.name}</p><span aria-hidden="true">✦</span></div>
-                    <strong>{ticket.price}</strong>
-                    <small>{ticket.fee}</small>
-                    <h4>{ticket.detail}</h4>
-                    <p>{ticket.note}</p>
-                    <div class="ticket-installments">{ticket.installments}</div>
-                    <a class="text-link text-link-light" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar na Eventiza <span aria-hidden="true">↗</span></a>
-                  </article>
-                ))}
-              </div>
-            </section>
-          ))}
+        <div class="section-heading heading-row">
+          <div>
+            <p class="eyebrow eyebrow-cyan">VOZ DA COMUNIDADE</p>
+            <h2 id="depoimentos-title" style="color: #ffffff !important;">O QUE VOCÊS DISSERAM</h2>
+          </div>
+          {metrics.hasQuorum && (
+            <div class="community-metrics-pill" aria-label="Média de avaliação da comunidade">
+              <span class="metrics-star">★</span>
+              <strong>{metrics.mediaFormatada} / 5</strong>
+              <small>({metrics.total} avaliações reais)</small>
+            </div>
+          )}
         </div>
 
-        <div class="vip-highlight">
-          <div class="vip-art"><img src="/assets/logos/bag-vip.png" alt="Bag VIP Diamante Family Game Festival" /></div>
-          <div class="vip-content">
-            <p class="eyebrow eyebrow-yellow">Edição limitada · acesso aos dois dias</p>
-            <div class="vip-title-row"><div><h3>VIP Diamante Family Game</h3><p>Somente 100 unidades · entrada 1 hora antes da abertura.</p></div><span class="vip-stamp">VIP<br /><small>FGF 26</small></span></div>
-            <ul class="vip-benefits">
-              <li><strong>2 dias</strong> de festival</li>
-              <li><strong>Entrada prioritária</strong> e credencial VIP exclusiva</li>
-              <li><strong>3 brindes</strong> exclusivos Family Game</li>
-              <li>Não inclui inscrição nos campeonatos</li>
-            </ul>
-            <div class="vip-option-grid">
-              {vipTickets.map((vip) => (
-                <article class="vip-option">
-                  <p class="vip-option-audience">{vip.audience}</p>
-                  <strong>{vip.price}</strong>
-                  <span>{vip.fee}</span>
-                  <small>{vip.installments}</small>
-                  <a class="button button-yellow" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar VIP <span aria-hidden="true">↗</span></a>
+        {testimonials.length > 0 ? (
+          <div class="testimonials-scroller" tabIndex={0} aria-label="Depoimentos de participantes">
+            <div class="testimonials-grid">
+              {testimonials.map((item) => (
+                <article class:list={['testimonial-card', { 'is-featured': item.destaque }]}>
+                  <div class="testimonial-header">
+                    <div class="testimonial-stars" aria-label={`${item.estrelas} de 5 estrelas`}>
+                      {Array.from({ length: item.estrelas }).map(() => (
+                        <span class="star-filled">★</span>
+                      ))}
+                    </div>
+                    <span class="testimonial-cat-badge">{item.categoria}</span>
+                  </div>
+                  <blockquote class="testimonial-text">
+                    “{item.texto}”
+                  </blockquote>
+                  <div class="testimonial-footer">
+                    <span class="testimonial-author">{item.nomePublico}</span>
+                    <span class="testimonial-badge-role">Participante FGF 2026</span>
+                  </div>
                 </article>
               ))}
             </div>
-            <p class="vip-warning">Experiência especial para viver o festival com benefícios exclusivos. A compra é feita pela Eventiza.</p>
           </div>
-        </div>
-
-        <div class="competitor-tickets">
-          <div class="competitor-heading">
-            <div><p class="eyebrow eyebrow-pink">Ingressos de competição</p><h3>Compre seu ingresso competidor.</h3></div>
-            <p>Compre o ingresso competidor ou o ingresso comum do evento. Inscrições online até {ONLINE_REGISTRATION_DEADLINE_LABEL}. {ONLINE_REGISTRATION_ONSITE_NOTICE} O ingresso competidor já inclui a entrada no evento no dia da disputa.</p>
+        ) : (
+          <div class="testimonials-empty-card">
+            <div class="empty-icon">💬</div>
+            <h3>Seja o primeiro a deixar seu depoimento!</h3>
+            <p>Os feedbacks autorizados pela comunidade serão exibidos aqui após moderação da equipe.</p>
+            <a href="#feedback" class="button button-yellow button-small">Deixar meu feedback agora ★</a>
           </div>
-          <div class="competitor-day-panels">
-            {competitorTicketDays.map((ticketDay) => (
-              <section class={`competitor-day-panel competitor-day-${ticketDay.slug}`} aria-labelledby={`competitor-day-${ticketDay.slug}`}>
-                <div class="competitor-day-heading"><div><p class="eyebrow eyebrow-cyan">Ingressos de competidor</p><h4 id={`competitor-day-${ticketDay.slug}`}>{ticketDay.day}</h4></div><strong>{ticketDay.date} · {ticketDay.entries.length} modalidades</strong></div>
-                <div class="competitor-carousel" data-ticket-carousel>
-                  <div class="competitor-carousel-controls">
-                    <span>Carrossel automático · deslize ou use as setas</span>
-                    <div>
-                    <button class="competitor-carousel-button" type="button" data-ticket-prev aria-label={`Ver ingressos anteriores de ${ticketDay.day.toLowerCase()}`} disabled>←</button>
-                      <button class="competitor-carousel-button" type="button" data-ticket-next aria-label={`Ver próximos ingressos de ${ticketDay.day.toLowerCase()}`}>→</button>
-                    </div>
-                  </div>
-                  <div class="competitor-ticket-grid" data-ticket-track tabindex="0" aria-label={`Ingressos de competidor de ${ticketDay.day.toLowerCase()}`}>
-                    {ticketDay.entries.map((entry) => (
-                      <article class={`competitor-ticket-card ticket-${entry.accent}`} data-ticket-card>
-                        <div class="competitor-ticket-top"><span class="competitor-ticket-icon" aria-hidden="true">{entry.icon}</span><span class="competitor-ticket-label">COMPETIDOR</span></div>
-                        <h5>{entry.tournament.title}</h5>
-                        <p class="competitor-ticket-schedule">{entry.schedule.date} · {entry.schedule.day} · {entry.schedule.time}</p>
-                        <p class:list={['competitor-ticket-access', entry.registrationFree && 'is-free']}>{entry.eventAccessNote}</p>
-                        <div class="competitor-ticket-price"><strong>{entry.price}</strong><span>{entry.fee}</span></div>
-                        <p class="competitor-ticket-installments">{entry.installments}</p>
-                        <p class="competitor-ticket-prize"><span>PREMIAÇÃO</span>{entry.tournament.prize || '—'}</p>
-                        <p class="competitor-ticket-note">{entry.note}</p>
-                        {entry.registrationFree ? <span class="competitor-ticket-free">Inscrição gratuita</span> : <a class="text-link text-link-light" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso competidor <span aria-hidden="true">↗</span></a>}
-                      </article>
-                    ))}
-                  </div>
-                  <div class="competitor-carousel-status" aria-live="polite"><span data-ticket-status></span><small>Compre na Eventiza · Just Dance tem inscrição gratuita.</small></div>
-                </div>
-              </section>
-            ))}
-          </div>
-        </div>
-
-        <div class="ticket-footer"><p><strong>Quer jogar os dois dias?</strong> O VIP dá acesso completo ao festival, com entrada uma hora antes e benefícios exclusivos.</p><a class="button button-yellow" href={event.ticketUrl} target="_blank" rel="noreferrer">Garantir meu ingresso <span aria-hidden="true">↗</span></a></div>
+        )}
       </div>
     </section>
 
-    <section class="section sponsor-home-section" id="patrocinadores">
+    <!-- Seção FGF Snap Pós-Evento ("O FGF SNAP SEGUE ATIVO") -->
+    <section class="section snap-showcase-section" id="snaps" aria-labelledby="snaps-title">
       <div class="container">
-        <div class="section-heading heading-row sponsor-home-heading">
-          <div><p class="eyebrow eyebrow-red">Patrocinadores e apoiadores</p><h2>Nossos patrocinadores <em>entram no jogo.</em></h2></div>
+        <div class="section-heading text-center">
+          <p class="eyebrow eyebrow-yellow">EXPERIÊNCIA INTERATIVA · CONTINUA DISPONÍVEL</p>
+          <h2 id="snaps-title" style="color: #ffffff !important;">O FGF SNAP SEGUE ATIVO PARA VOCÊ</h2>
+          <p class="section-desc" style="max-width: 680px; margin: 0 auto; color: rgba(255, 255, 255, 0.75);">
+            A edição de 2026 terminou, mas o estúdio e as ativações oficiais do Family Game Festival continuam no ar!
+            Crie fotos personalizadas, traga o mascote em 3D para sua sala e compartilhe suas figurinhas no WhatsApp.
+          </p>
         </div>
 
-        <SponsorHierarchy carousel>
-          <div slot="after-hierarchy" class="sponsor-inline-cta">
-            <div class="sponsor-inline-cta-copy"><p class="eyebrow eyebrow-yellow">Quer entrar no jogo?</p><h3>Seja também um dos nossos patrocinadores.</h3></div>
-            <a class="button button-yellow" href="/patrocinadores/como-participar">Veja como ser patrocinador <span aria-hidden="true">↗</span></a>
-            <img class="sponsor-inline-cta-mascot" src="/assets/mascots/5 - Pose Convidando.svg" alt="" aria-hidden="true" />
+        <div class="snap-cards-grid">
+          <!-- Card 1: Criar Sua Foto -->
+          <article class="snap-card snap-card-yellow">
+            <div class="snap-card-header">
+              <span class="snap-card-num">01</span>
+              <span class="snap-card-badge">FOTOS & MOLDURAS</span>
+            </div>
+            <div class="snap-card-body">
+              <h3>CRIAR SUA FOTO</h3>
+              <p>
+                Escolha entre molduras oficiais (Feed e Stories), adicione adesivos retrô e poses do Mascote para guardar e postar nas redes.
+              </p>
+            </div>
+            <div class="snap-card-footer">
+              <a class="button button-yellow button-small snap-card-btn" href="/snap/foto">
+                <span>Abrir Estúdio de Fotos</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </article>
+
+          <!-- Card 2: Mascote em Realidade Aumentada -->
+          <article class="snap-card snap-card-cyan">
+            <div class="snap-card-header">
+              <span class="snap-card-num">02</span>
+              <span class="snap-card-badge">REALIDADE AUMENTADA</span>
+            </div>
+            <div class="snap-card-body">
+              <h3>MASCOTE EM AR</h3>
+              <p>
+                Veja o Mascote 3D oficial do FGF no seu ambiente através da câmera do seu celular, tire fotos e interaja com ele onde estiver.
+              </p>
+            </div>
+            <div class="snap-card-footer">
+              <a class="button button-cyan button-small snap-card-btn" href="/snap/ar">
+                <span>Ver Mascote em 3D / AR</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </article>
+
+          <!-- Card 3: Figurinhas Oficiais -->
+          <article class="snap-card snap-card-pink">
+            <div class="snap-card-header">
+              <span class="snap-card-num">03</span>
+              <span class="snap-card-badge">WHATSAPP & CHAT</span>
+            </div>
+            <div class="snap-card-body">
+              <h3>FIGURINHAS OFICIAIS</h3>
+              <p>
+                Baixe o pacote oficial com expressões, poses de vitória e reações clássicas do Mascote para animar seus grupos gamers.
+              </p>
+            </div>
+            <div class="snap-card-footer">
+              <a class="button button-pink button-small snap-card-btn" href="/snap/figurinhas">
+                <span>Baixar Figurinhas</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </article>
+        </div>
+
+        <!-- Banner Horizontal PWA / App Completo -->
+        <div class="snap-app-banner">
+          <div class="snap-banner-mascot">
+            <img src="/assets/mascots/icon-mascote.png" alt="Mascote FGF" width="72" height="72" loading="lazy" />
           </div>
-        </SponsorHierarchy>
+          <div class="snap-banner-info">
+            <strong>FGF SNAP PWA · APLICATIVO DIRETO NO NAVEGADOR</strong>
+            <p>Você pode adicionar o FGF Snap à tela de início do seu celular para abrir e editar fotos quando quiser, mesmo sem instalar nada pela loja.</p>
+          </div>
+          <div class="snap-banner-actions">
+            <a class="button button-yellow button-small" href="/snap">
+              <span>ACESSAR O FGF SNAP COMPLETO</span>
+              <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="section press-kit-home-section" id="para-quem-divulga" aria-labelledby="media-support-title">
+    <!-- Seção / CTA Instagram -->
+    <section class="section instagram-section" aria-labelledby="instagram-section-title">
       <div class="container">
-        <div class="section-heading heading-row media-support-heading">
-          <div><p class="eyebrow eyebrow-cyan">Imprensa</p><h2 id="media-support-title">Para quem divulga.</h2></div>
-          <p class="heading-note heading-note-light">Parceiros que ajudam o Family Game Festival a chegar mais longe por meio da divulgação.</p>
-        </div>
-        <div class="sponsor-carousel-band media-support-carousel-band" aria-label="Parceiros de divulgação">
-          <div class="sponsor-carousel-viewport">
-            <div class="sponsor-carousel-track">
-              {[...mediaPartners, ...mediaPartners].map((media, index) => {
-                const duplicate = index >= mediaPartners.length;
-                const logoClass = 'lightLogo' in media && media.lightLogo
-                  ? 'sponsor-carousel-logo sponsor-carousel-logo-light'
-                  : 'sponsor-carousel-logo';
-                return (
-                  <a class={`sponsor-carousel-item sponsor-carousel-${media.accent}`} href={media.href} target="_blank" rel="noreferrer" aria-label={`${media.name} · parceiro de divulgação`} title={`${media.name} · parceiro de divulgação`} aria-hidden={duplicate ? 'true' : undefined} tabindex={duplicate ? -1 : undefined}>
-                    <span class={logoClass}><img src={media.image} alt={`Logo ${media.name}`} loading="lazy" /></span>
-                    <span class="sponsor-carousel-pill">Parceiro de divulgação</span>
-                  </a>
-                );
-              })}
+        <div class="instagram-card">
+          <div class="instagram-content">
+            <p class="eyebrow eyebrow-yellow">BASTIDORES E FOTOS</p>
+            <h2 id="instagram-section-title">A ENERGIA DO FESTIVAL EM IMAGENS</h2>
+            <p>
+              Centenas de fotos e vídeos dos campeonatos, cosplays, Just Dance e encontros estão no perfil oficial.
+              Siga e marque <strong class="text-cyan">@familygamex</strong> para aparecer nos nossos destaques!
+            </p>
+            <div class="instagram-actions">
+              <a
+                class="button button-yellow"
+                href={event.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span>VER FOTOS E VÍDEOS NO INSTAGRAM</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </div>
+          <div class="instagram-visual" aria-hidden="true">
+            <div class="insta-photo-mockup photo-1">
+              <div class="insta-badge">FGF 26</div>
+              <span>#FamilyGameFestival</span>
+            </div>
+            <div class="insta-photo-mockup photo-2">
+              <div class="insta-badge">ARENA TAUSTE</div>
+              <span>@familygamex</span>
             </div>
           </div>
         </div>
-        <div class="press-kit-home-cta">
-          <div><p class="eyebrow eyebrow-yellow">Kit de divulgação</p><h2>Quer apoiar o festival com a sua audiência?</h2><p>Abra o Press Kit para encontrar o serviço oficial, ângulos de pauta, textos prontos e os canais de contato.</p></div>
-          <a class="button button-yellow" href="/press-kit">Abrir Press Kit <span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+
+    <!-- Seção Newsletter / Comunidade VIP ("FIQUE POR DENTRO") -->
+    <section class="section newsletter-section" id="newsletter" aria-labelledby="newsletter-title">
+      <div class="container">
+        <div class="newsletter-card">
+          <div class="newsletter-content">
+            <p class="eyebrow eyebrow-yellow">COMUNIDADE FGF · LISTA VIP & NOVIDADES</p>
+            <h2 id="newsletter-title" style="color: #ffffff !important;">RECEBA AS NOVIDADES DO FGF EM PRIMEIRA MÃO</h2>
+            <p class="newsletter-desc">
+              Cadastre seu e-mail e WhatsApp para saber em primeira mão as datas da próxima edição, abertura antecipada de ingressos, novos campeonatos e fotos exclusivas!
+            </p>
+
+            <form id="newsletter-form" class="newsletter-form">
+              <!-- Honeypot para spambots -->
+              <div style="display:none;" aria-hidden="true">
+                <input type="text" name="hp_website" tabindex="-1" autocomplete="off" />
+              </div>
+
+              <div class="newsletter-form-grid">
+                <div class="form-group">
+                  <label for="nl-nome" class="form-label">Nome completo <span class="required">*</span></label>
+                  <input type="text" id="nl-nome" name="nome" class="form-input" placeholder="Seu nome" required />
+                </div>
+
+                <div class="form-group">
+                  <label for="nl-email" class="form-label">Seu melhor e-mail <span class="required">*</span></label>
+                  <input type="email" id="nl-email" name="email" class="form-input" placeholder="seuemail@exemplo.com" required />
+                </div>
+
+                <div class="form-group">
+                  <label for="nl-whatsapp" class="form-label">WhatsApp com DDD <span class="required">*</span></label>
+                  <input type="tel" id="nl-whatsapp" name="whatsapp" class="form-input" placeholder="(14) 99999-9999" required />
+                </div>
+              </div>
+
+              <div class="newsletter-submit-row">
+                <button type="submit" class="button button-yellow" id="nl-submit-btn">
+                  <span class="btn-text">QUERO RECEBER AS NOVIDADES 🚀</span>
+                  <span class="btn-loader" hidden aria-hidden="true"></span>
+                </button>
+                <small class="newsletter-privacy-note">
+                  🔒 Seus dados estão seguros. Não enviamos spam, apenas avisos importantes da organização.
+                </small>
+              </div>
+
+              <div class="form-alert form-alert-error" id="nl-error-box" hidden role="alert" style="display: none;"></div>
+            </form>
+
+            <div class="newsletter-success-box" id="nl-success-box" hidden role="status" style="display: none;">
+              <div class="nl-success-icon">✓</div>
+              <div>
+                <strong>INSCRIÇÃO CONFIRMADA!</strong>
+                <p id="nl-success-msg">Você já está na nossa lista prioritária para as próximas novidades.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="section contact-section" id="contato">
-      <div class="container contact-grid">
-        <div><p class="eyebrow eyebrow-pink">Fale com a organização</p><h2>Vamos colocar sua ideia em jogo?</h2><p>Para ingressos, expositores, patrocínio, imprensa e outras dúvidas, envie uma mensagem pelas redes oficiais do evento.</p><a class="button button-yellow" href={event.instagramUrl} target="_blank" rel="noreferrer">Chamar no Instagram <span aria-hidden="true">↗</span></a></div>
-        <div class="location-card"><div class="location-icon"><img src="/assets/svg/cursor.svg" alt="" aria-hidden="true" /></div><p class="card-eyebrow">Onde acontece</p><h3>{event.venue}</h3><p>{event.address}</p><div class="location-map"><iframe title="Mapa da SORRI Bauru · Avenida Nações Unidas, 5340" src="https://www.google.com/maps?q=SORRI%20Bauru%2C%20Avenida%20Na%C3%A7%C3%B5es%20Unidas%205340%2C%20Bauru%2C%20S%C3%A3o%20Paulo%2C%20Brasil&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div><a class="text-link" href="https://www.google.com/maps/search/?api=1&query=SORRI+Bauru%2C+Avenida+Na%C3%A7%C3%B5es+Unidas+5340%2C+Bauru%2C+S%C3%A3o+Paulo%2C+Brasil" target="_blank" rel="noreferrer">Abrir no mapa <span aria-hidden="true">↗</span></a><div class="location-tags"><span>19/09 · sábado</span><span>20/09 · domingo</span><span>{event.hours}</span></div></div>
+    <!-- CTA Final ("ISSO FOI SÓ O PRIMEIRO CONTINUE.") -->
+    <section class="section continue-section" aria-labelledby="continue-section-title">
+      <div class="container">
+        <div class="continue-shell">
+          <div class="continue-badge">GAME STATUS: STAGE CLEAR</div>
+          <h2 id="continue-section-title" class="continue-title">
+            ISSO FOI SÓ O <span class="text-yellow">PRIMEIRO CONTINUE.</span>
+          </h2>
+          <p class="continue-lead">
+            Quer saber o que vem depois? Acompanhe nossos canais para novidades, fotos e os próximos passos do projeto.
+          </p>
+          <div class="continue-actions">
+            <a class="button button-yellow" href="#feedback">
+              Deixar minha opinião ★
+            </a>
+            <a class="button button-outline-light" href="/2026">
+              Acessar arquivo FGF 2026 →
+            </a>
+          </div>
+        </div>
       </div>
     </section>
-
   </main>
 
+  <!-- Rodapé Pós-Evento -->
   <footer class="site-footer">
-    <div class="container footer-top"><a class="brand" href="#inicio"><img src="/assets/logo.svg" alt="Family Game Festival" /></a><p>Games, cultura geek e impacto local.<br />Bauru · 19—20 setembro 2026</p><a class="button button-yellow button-small" href={event.ticketUrl} target="_blank" rel="noreferrer">Comprar ingresso <span aria-hidden="true">↗</span></a></div>
-    <div class="container footer-bottom"><span>© 2026 Family Game Festival</span><a href={event.instagramUrl} target="_blank" rel="noreferrer">{event.instagram}</a><span>Parte da arrecadação será revertida para a SORRI Bauru.</span><span class="footer-credit">Desenvolvido pela <a href="https://www.instagram.com/usealterstate/" target="_blank" rel="noreferrer">ALTERSTATE</a></span></div>
+    <div class="container footer-top">
+      <a class="brand" href="#inicio">
+        <img src="/assets/logo.svg" alt="Family Game Festival" width="126" height="36" />
+      </a>
+      <p>
+        Games, cultura geek e impacto social.<br />
+        Bauru · SORRI Arena Tauste · 19 e 20 de setembro de 2026
+      </p>
+      <div class="footer-cta-group">
+        <a class="button button-yellow button-small" href="#feedback">Deixar Feedback ★</a>
+        <a class="button button-outline-cyan button-small" href="/snap">Abrir FGF Snap 📸</a>
+        <a class="button button-outline-light button-small" href="/2026">Ver Arquivo 2026</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© 2026 Family Game Festival · Todos os direitos reservados.</span>
+      <a href={event.instagramUrl} target="_blank" rel="noopener noreferrer">{event.instagram}</a>
+      <span>Parte da arrecadação foi revertida para a SORRI Bauru.</span>
+      <span class="footer-credit">Desenvolvido pela <a href="https://www.instagram.com/usealterstate/" target="_blank" rel="noreferrer">ALTERSTATE</a></span>
+    </div>
   </footer>
 
-  <script>
-    const homeDayTabs = document.querySelectorAll<HTMLButtonElement>('[data-home-day-tab]');
-    const homeDayPanels = document.querySelectorAll<HTMLElement>('[data-home-day-panel]');
+  <!-- Estilos Exclusivos da Home Pós-Evento -->
+  <style>
+    /* Header Pós-Evento */
+    .post-header {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      background: rgba(8, 17, 31, .94);
+      border-bottom: 1px solid rgba(255, 255, 255, .12);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .post-header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 72px;
+      gap: 20px;
+    }
+    .post-brand img {
+      display: block;
+      height: 34px;
+      width: auto;
+    }
+    .post-nav {
+      display: flex;
+      align-items: center;
+      gap: clamp(16px, 2.5vw, 32px);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      color: rgba(255, 255, 255, .78);
+    }
+    .post-nav-link {
+      transition: color .2s ease;
+    }
+    .post-nav-link:hover, .post-nav-link:focus-visible, .post-nav-link.is-current {
+      color: var(--yellow);
+    }
+    .nav-arrow {
+      font-size: 11px;
+      color: var(--cyan);
+    }
 
-    const activateHomeDay = (slug: string) => {
-      homeDayTabs.forEach((tab) => {
-        const active = tab.getAttribute('data-home-day-tab') === slug;
-        tab.classList.toggle('is-active', active);
-        tab.setAttribute('aria-selected', String(active));
-      });
-      homeDayPanels.forEach((panel) => {
-        const active = panel.getAttribute('data-home-day-panel') === slug;
-        panel.classList.toggle('is-active', active);
-        panel.hidden = !active;
-      });
+    /* Hero */
+    .post-hero {
+      position: relative;
+      overflow: hidden;
+      background: var(--navy);
+      padding: clamp(64px, 10vw, 120px) 0 clamp(48px, 8vw, 84px);
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
+    }
+    .hero-backdrop {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .ambient-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(110px);
+      opacity: .18;
+    }
+    .ambient-cyan {
+      width: 480px;
+      height: 480px;
+      background: var(--cyan);
+      top: -120px;
+      right: 5%;
+    }
+    .ambient-yellow {
+      width: 420px;
+      height: 420px;
+      background: var(--yellow);
+      bottom: -100px;
+      left: 10%;
+    }
+    .pixel-matrix {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, .08) 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: .4;
+    }
+    .post-hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .post-hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .14);
+      padding: 6px 16px;
+      border-radius: 999px;
+      margin-bottom: 24px;
+    }
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--yellow);
+      box-shadow: 0 0 10px var(--yellow);
+    }
+    .badge-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      color: rgba(255, 255, 255, .9);
+    }
+    .post-hero-title {
+      font-family: var(--display);
+      font-size: clamp(2.6rem, 6.2vw, 4.8rem);
+      line-height: .98;
+      font-weight: 900;
+      letter-spacing: -.02em;
+      color: #fff;
+      margin: 0 0 20px;
+      text-transform: uppercase;
+    }
+    .title-highlight {
+      color: var(--yellow);
+      text-shadow: 0 0 40px rgba(255, 201, 40, .28);
+    }
+    .post-hero-lead {
+      font-size: clamp(1.05rem, 2vw, 1.32rem);
+      line-height: 1.55;
+      color: rgba(255, 255, 255, .82);
+      margin: 0 auto 36px;
+      max-width: 640px;
+    }
+    .post-hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 54px;
+    }
+    .post-cta-primary {
+      min-width: 220px;
+      font-size: 14px;
+    }
+    .post-cta-secondary {
+      min-width: 200px;
+      font-size: 14px;
+    }
+    .cta-icon {
+      font-size: 15px;
+      margin-left: 4px;
+    }
+
+    /* Barra de Destaques */
+    .post-highlights-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      padding: 20px 28px;
+      background: rgba(13, 27, 46, .85);
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 6px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, .35);
+    }
+    .highlight-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .highlight-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      color: var(--cyan);
+    }
+    .highlight-value {
+      font-family: var(--display);
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .text-yellow {
+      color: var(--yellow);
+    }
+    .highlight-desc {
+      font-size: 12px;
+      color: rgba(255, 255, 255, .62);
+    }
+    .highlight-divider {
+      display: none;
+    }
+
+    /* Seção de Feedback */
+    .feedback-section {
+      background: #091424;
+      padding: clamp(60px, 8vw, 96px) 0;
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
+    }
+    .text-center {
+      text-align: center;
+      margin-bottom: 44px;
+    }
+    .feedback-heading-title {
+      font-family: var(--display);
+      font-size: clamp(2rem, 4.4vw, 3.2rem);
+      font-weight: 900;
+      color: #fff;
+      margin: 8px 0 12px;
+      letter-spacing: -.02em;
+    }
+    .section-subtitle {
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, .75);
+      margin: 0 auto;
+      max-width: 620px;
+    }
+
+    /* Grid com os 3 Cards de Tipo */
+    .type-selector-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 36px;
+    }
+    .type-card {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      padding: 24px 22px;
+      background: rgba(13, 27, 46, .75);
+      border: 2px solid rgba(255, 255, 255, .1);
+      border-radius: 6px;
+      cursor: pointer;
+      color: #fff;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+      position: relative;
+    }
+    .type-card:hover, .type-card:focus-visible {
+      transform: translateY(-4px);
+      background: rgba(18, 36, 58, .9);
+    }
+    .type-card.is-selected {
+      border-color: var(--yellow);
+      background: #10233b;
+      box-shadow: 0 0 24px rgba(255, 201, 40, .18);
+    }
+    .type-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .type-badge {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      padding: 3px 8px;
+      border-radius: 3px;
+    }
+    .badge-cyan { background: rgba(25, 198, 242, .18); color: var(--cyan); border: 1px solid var(--cyan); }
+    .badge-yellow { background: rgba(255, 201, 40, .18); color: var(--yellow); border: 1px solid var(--yellow); }
+    .badge-red { background: rgba(242, 43, 53, .18); color: #ff6b72; border: 1px solid #f22b35; }
+    .type-icon-box {
+      font-size: 20px;
+    }
+    .type-card-title {
+      font-family: var(--display);
+      font-size: 1.45rem;
+      font-weight: 800;
+      margin: 0 0 6px;
+      color: #fff;
+    }
+    .type-card-desc {
+      font-size: 14px;
+      color: rgba(255, 255, 255, .72);
+      line-height: 1.4;
+      margin: 0 0 16px;
+      flex-grow: 1;
+    }
+    .type-card-select-indicator {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      color: var(--yellow);
+      text-transform: uppercase;
+    }
+
+    /* Formulário */
+    .feedback-form-wrapper {
+      max-width: 760px;
+      margin: 0 auto;
+      background: #0d1b2e;
+      border: 1px solid rgba(255, 255, 255, .15);
+      border-radius: 8px;
+      padding: clamp(24px, 4.5vw, 42px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .45);
+      position: relative;
+    }
+    .form-header-banner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, .05);
+      border-radius: 4px;
+      margin-bottom: 28px;
+      border-left: 4px solid var(--yellow);
+    }
+    .form-selected-pill {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      padding: 4px 10px;
+      background: var(--yellow);
+      color: var(--navy);
+      border-radius: 3px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .form-header-banner p {
+      margin: 0;
+      font-size: 13px;
+      color: rgba(255, 255, 255, .85);
+    }
+    .form-group {
+      margin-bottom: 24px;
+    }
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .form-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .char-counter {
+      font-size: 12px;
+      color: rgba(255, 255, 255, .5);
+    }
+    .required {
+      color: var(--red);
+    }
+    .optional {
+      font-size: 12px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, .5);
+    }
+
+    /* Estrelas Interativas */
+    .star-rating-shell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(8, 17, 31, .6);
+      padding: 14px 18px;
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 6px;
+    }
+    .star-label {
+      cursor: pointer;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .star-input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .star-symbol {
+      font-size: 32px;
+      color: rgba(255, 255, 255, .25);
+      transition: color .15s ease, transform .15s ease;
+      user-select: none;
+    }
+    .star-label:hover .star-symbol,
+    .star-label.is-lit .star-symbol,
+    .star-input:checked ~ .star-symbol {
+      color: var(--yellow);
+      transform: scale(1.12);
+    }
+    .star-input:focus-visible ~ .star-symbol {
+      outline: 2px solid var(--cyan);
+      border-radius: 4px;
+    }
+    .star-caption {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, .8);
+      margin-left: 12px;
+    }
+
+    /* Inputs e Selects */
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      background: #08111f;
+      border: 1px solid rgba(255, 255, 255, .16);
+      border-radius: 4px;
+      padding: 12px 14px;
+      color: #fff;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--yellow);
+      box-shadow: 0 0 0 3px rgba(255, 201, 40, .18);
+    }
+    .select-wrapper {
+      position: relative;
+    }
+    .form-select {
+      appearance: none;
+      cursor: pointer;
+      padding-right: 36px;
+    }
+    .select-chevron {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--yellow);
+      font-size: 16px;
+      pointer-events: none;
+    }
+    .form-textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* Fieldset & Toggles */
+    .form-fieldset {
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 6px;
+      padding: 20px 18px;
+      margin: 0 0 24px;
+      background: rgba(8, 17, 31, .4);
+    }
+    .form-legend {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      padding: 0 8px;
+    }
+    .fieldset-desc {
+      font-size: 13px;
+      color: rgba(255, 255, 255, .7);
+      margin: 0 0 16px;
+      line-height: 1.45;
+    }
+    .radio-toggle-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .radio-toggle-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background .2s ease, border-color .2s ease;
+    }
+    .radio-toggle-card:has(input:checked) {
+      border-color: var(--yellow);
+      background: rgba(255, 201, 40, .08);
+    }
+    .toggle-card-content strong {
+      display: block;
+      font-size: 13px;
+      color: #fff;
+    }
+    .toggle-card-content small {
+      display: block;
+      font-size: 11px;
+      color: rgba(255, 255, 255, .6);
+      margin-top: 2px;
+    }
+
+    /* Checkbox & Publicação */
+    .checkbox-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+    }
+    .form-checkbox {
+      position: absolute;
+      opacity: 0;
+    }
+    .checkbox-box {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, .3);
+      border-radius: 3px;
+      background: #08111f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      transition: border-color .15s ease, background .15s ease;
+    }
+    .form-checkbox:checked + .checkbox-box {
+      border-color: var(--yellow);
+      background: var(--yellow);
+    }
+    .form-checkbox:checked + .checkbox-box::after {
+      content: '✓';
+      color: var(--navy);
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .checkbox-text {
+      font-size: 13px;
+      color: rgba(255, 255, 255, .82);
+      line-height: 1.45;
+    }
+
+    .publication-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .pub-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background .15s ease, border-color .15s ease;
+    }
+    .pub-option:has(input:checked) {
+      border-color: var(--yellow);
+      background: rgba(255, 201, 40, .08);
+    }
+    .pub-option input {
+      position: absolute;
+      opacity: 0;
+    }
+    .pub-radio-circle {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, .3);
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pub-option:has(input:checked) .pub-radio-circle {
+      border-color: var(--yellow);
+    }
+    .pub-option:has(input:checked) .pub-radio-circle::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--yellow);
+    }
+    .pub-option-copy strong {
+      display: block;
+      font-size: 13px;
+      color: #fff;
+    }
+    .pub-option-copy small {
+      display: block;
+      font-size: 12px;
+      color: rgba(255, 255, 255, .6);
+      margin-top: 2px;
+    }
+
+    /* Alertas e Envio */
+    .form-alert {
+      padding: 14px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .form-alert-error {
+      background: rgba(242, 43, 53, .15);
+      border: 1px solid var(--red);
+      color: #ff8a90;
+    }
+    .form-footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .form-submit-btn {
+      width: 100%;
+      max-width: 320px;
+      font-size: 14px;
+    }
+    .form-disclaimer {
+      font-size: 12px;
+      color: rgba(255, 255, 255, .5);
+      text-align: center;
+      margin: 0;
+    }
+
+    /* Estado de Sucesso */
+    .feedback-success-state {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .success-icon-box {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--yellow);
+      color: var(--navy);
+      font-size: 32px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      box-shadow: 0 0 30px rgba(255, 201, 40, .4);
+    }
+    .success-title {
+      font-family: var(--display);
+      font-size: 2rem;
+      color: #fff;
+      margin: 0 0 12px;
+      letter-spacing: -.02em;
+    }
+    .success-copy {
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, .8);
+      max-width: 520px;
+      margin: 0 auto 30px;
+      line-height: 1.5;
+    }
+    .success-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* Depoimentos */
+    .testimonials-section {
+      background: #08111f;
+      padding: clamp(60px, 8vw, 96px) 0;
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
+    }
+    .testimonials-section h2,
+    #depoimentos-title {
+      color: #ffffff !important;
+    }
+    .community-metrics-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255, 201, 40, .12);
+      border: 1px solid rgba(255, 201, 40, .3);
+      border-radius: 999px;
+      color: #fff;
+      font-size: 13px;
+    }
+    .metrics-star {
+      color: var(--yellow);
+      font-size: 15px;
+    }
+    .community-metrics-pill strong {
+      color: var(--yellow);
+      font-weight: 800;
+    }
+    .community-metrics-pill small {
+      color: rgba(255, 255, 255, .7);
+    }
+    .testimonials-scroller {
+      overflow-x: auto;
+      padding-bottom: 14px;
+    }
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .testimonial-card {
+      background: #0d1b2e;
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 6px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: transform .2s ease, border-color .2s ease;
+    }
+    .testimonial-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 201, 40, .3);
+    }
+    .testimonial-card.is-featured {
+      border-color: rgba(255, 201, 40, .4);
+      background: #0f2038;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .3);
+    }
+    .testimonial-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .testimonial-stars {
+      color: var(--yellow);
+      letter-spacing: 2px;
+      font-size: 15px;
+    }
+    .testimonial-cat-badge {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      padding: 3px 8px;
+      background: rgba(25, 198, 242, .12);
+      color: var(--cyan);
+      border: 1px solid rgba(25, 198, 242, .3);
+      border-radius: 3px;
+    }
+    .testimonial-text {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, .88);
+      font-style: italic;
+      flex-grow: 1;
+    }
+    .testimonial-footer {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, .08);
+      padding-top: 12px;
+    }
+    .testimonial-author {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .testimonial-badge-role {
+      font-size: 11px;
+      color: rgba(255, 255, 255, .5);
+    }
+    .testimonials-empty-card {
+      text-align: center;
+      padding: 48px 24px;
+      background: #0d1b2e;
+      border: 1px dashed rgba(255, 255, 255, .15);
+      border-radius: 8px;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+    .empty-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+    .testimonials-empty-card h3 {
+      color: #fff;
+      font-size: 1.25rem;
+      margin: 0 0 8px;
+    }
+    .testimonials-empty-card p {
+      color: rgba(255, 255, 255, .7);
+      font-size: 14px;
+      margin: 0 0 20px;
+    }
+
+    /* FGF Snap Showcase */
+    .snap-showcase-section {
+      background: #060d18;
+      padding: clamp(60px, 8vw, 96px) 0;
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
+      position: relative;
+    }
+    .snap-showcase-section .section-heading h2 {
+      color: #ffffff !important;
+    }
+    .snap-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 36px;
+    }
+    .snap-card {
+      background: #0d1b2e;
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: 6px;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: transform .2s ease, border-color .2s ease;
+      position: relative;
+    }
+    .snap-card:hover {
+      transform: translateY(-4px);
+    }
+    .snap-card-yellow {
+      border-top: 3px solid var(--yellow);
+    }
+    .snap-card-yellow:hover {
+      border-color: rgba(255, 201, 40, .4);
+    }
+    .snap-card-cyan {
+      border-top: 3px solid var(--cyan);
+    }
+    .snap-card-cyan:hover {
+      border-color: rgba(25, 198, 242, .4);
+    }
+    .snap-card-pink {
+      border-top: 3px solid var(--pink);
+    }
+    .snap-card-pink:hover {
+      border-color: rgba(242, 45, 145, .4);
+    }
+    .snap-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .snap-card-num {
+      font-family: var(--display);
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 900;
+      color: var(--yellow);
+    }
+    .snap-card-cyan .snap-card-num {
+      color: var(--cyan);
+    }
+    .snap-card-pink .snap-card-num {
+      color: var(--pink);
+    }
+    .snap-card-badge {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .6);
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, .05);
+      border-radius: 3px;
+    }
+    .snap-card-body h3 {
+      color: #fff;
+      font-family: var(--display);
+      font-size: 1.6rem;
+      margin: 0 0 8px;
+      letter-spacing: -.02em;
+    }
+    .snap-card-body p {
+      color: rgba(255, 255, 255, .75);
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 0;
+      flex-grow: 1;
+    }
+    .snap-card-footer {
+      margin-top: auto;
+      padding-top: 8px;
+    }
+    .snap-card-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .button-cyan {
+      background: var(--cyan);
+      color: var(--navy);
+      border: 1px solid var(--cyan);
+    }
+    .button-cyan:hover {
+      background: #7ce2f8;
+      border-color: #7ce2f8;
+    }
+    .button-pink {
+      background: var(--pink);
+      color: #fff;
+      border: 1px solid var(--pink);
+    }
+    .button-pink:hover {
+      background: #f453a2;
+      border-color: #f453a2;
+    }
+    .button-outline-cyan {
+      background: transparent;
+      color: var(--cyan);
+      border: 1px solid var(--cyan);
+    }
+    .button-outline-cyan:hover {
+      background: rgba(25, 198, 242, .12);
+      color: #fff;
+    }
+    .snap-app-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      margin-top: 32px;
+      padding: 24px 28px;
+      background: linear-gradient(135deg, rgba(13, 27, 46, .9) 0%, rgba(20, 38, 64, .95) 100%);
+      border: 1px solid rgba(25, 198, 242, .3);
+      border-radius: 6px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+    }
+    .snap-banner-mascot img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,.4));
+    }
+    .snap-banner-info {
+      flex: 1;
+    }
+    .snap-banner-info strong {
+      display: block;
+      color: var(--yellow);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      margin-bottom: 4px;
+    }
+    .snap-banner-info p {
+      margin: 0;
+      color: rgba(255, 255, 255, .8);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .snap-banner-actions {
+      flex-shrink: 0;
+    }
+    @media (max-width: 768px) {
+      .snap-app-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+        padding: 20px;
+      }
+      .snap-banner-actions {
+        width: 100%;
+      }
+      .snap-banner-actions .button {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+      }
+    }
+
+    /* Instagram */
+    .instagram-section {
+      background: #091424;
+      padding: clamp(50px, 7vw, 84px) 0;
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
+    }
+    .instagram-card {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 36px;
+      align-items: center;
+      background: linear-gradient(135deg, #0d1d33 0%, #10243e 100%);
+      border: 1px solid rgba(25, 198, 242, .25);
+      border-radius: 8px;
+      padding: clamp(32px, 5vw, 56px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, .4);
+    }
+    .instagram-content h2 {
+      font-family: var(--display);
+      font-size: clamp(1.8rem, 3.8vw, 2.6rem);
+      font-weight: 900;
+      color: #fff;
+      margin: 8px 0 14px;
+      letter-spacing: -.02em;
+    }
+    .instagram-content p {
+      font-size: 15px;
+      color: rgba(255, 255, 255, .82);
+      line-height: 1.55;
+      margin: 0 0 24px;
+    }
+    .text-cyan {
+      color: var(--cyan);
+    }
+    .instagram-visual {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+    }
+    .insta-photo-mockup {
+      background: #07111e;
+      border: 1px solid rgba(255, 255, 255, .15);
+      border-radius: 6px;
+      padding: 24px 20px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+      transition: transform .2s ease;
+    }
+    .insta-photo-mockup:hover {
+      transform: translateX(6px);
+    }
+    .photo-1 {
+      border-left: 4px solid var(--yellow);
+    }
+    .photo-2 {
+      border-left: 4px solid var(--cyan);
+      margin-left: 24px;
+    }
+    .insta-badge {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      color: var(--yellow);
+    }
+
+    /* Newsletter / Comunidade VIP */
+    .newsletter-section {
+      background: #081220;
+      padding: clamp(60px, 8vw, 96px) 0;
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
+    }
+    .newsletter-card {
+      background: linear-gradient(135deg, rgba(13, 27, 46, .95) 0%, rgba(16, 36, 62, .95) 100%);
+      border: 1px solid rgba(255, 201, 40, .3);
+      border-radius: 8px;
+      padding: clamp(32px, 5vw, 56px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, .4);
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .newsletter-card h2 {
+      margin: 8px 0 14px;
+      font-size: clamp(1.8rem, 3.8vw, 2.6rem);
+      font-weight: 900;
+    }
+    .newsletter-desc {
+      max-width: 620px;
+      margin: 0 auto 32px;
+      color: rgba(255, 255, 255, .8);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .newsletter-form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      text-align: left;
+      margin-bottom: 24px;
+    }
+    .newsletter-submit-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .newsletter-privacy-note {
+      color: rgba(255, 255, 255, .55);
+      font-size: 12px;
+    }
+    .newsletter-success-box[hidden],
+    .form-alert[hidden] {
+      display: none !important;
+    }
+    .form-alert-error {
+      padding: 12px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      margin-top: 14px;
+      text-align: center;
+      background: rgba(255, 107, 107, 0.15);
+      border: 1px solid rgba(255, 107, 107, 0.4);
+      color: #ff9b9b;
+    }
+    .newsletter-success-box {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      background: rgba(86, 213, 139, .12);
+      border: 1px solid rgba(86, 213, 139, .35);
+      border-radius: 6px;
+      padding: 24px;
+      text-align: left;
+      margin-top: 16px;
+    }
+    .nl-success-icon {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #56d58b;
+      color: #040e1a;
+      font-size: 22px;
+      font-weight: 900;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .newsletter-success-box strong {
+      color: #56d58b;
+      font-size: 1.1rem;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .newsletter-success-box p {
+      margin: 0;
+      color: rgba(255, 255, 255, .88);
+      font-size: 14px;
+    }
+    @media (max-width: 768px) {
+      .newsletter-form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Continue Section */
+    .continue-section {
+      background: #060e19;
+      padding: clamp(60px, 8vw, 96px) 0;
+    }
+    .continue-shell {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .continue-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      color: var(--cyan);
+      background: rgba(25, 198, 242, .1);
+      border: 1px solid rgba(25, 198, 242, .25);
+      padding: 5px 14px;
+      border-radius: 3px;
+      margin-bottom: 20px;
+    }
+    .continue-title {
+      font-family: var(--display);
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      line-height: .98;
+      font-weight: 900;
+      color: #fff;
+      margin: 0 0 16px;
+      letter-spacing: -.02em;
+    }
+    .continue-lead {
+      font-size: clamp(1.05rem, 1.8vw, 1.2rem);
+      color: rgba(255, 255, 255, .75);
+      margin: 0 auto 36px;
+      line-height: 1.5;
+    }
+    .continue-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* Footer CTAs */
+    .footer-cta-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    @media (max-width: 860px) {
+      .type-selector-grid {
+        grid-template-columns: 1fr;
+      }
+      .instagram-card {
+        grid-template-columns: 1fr;
+      }
+      .post-highlights-bar {
+        grid-template-columns: 1fr;
+        text-align: left;
+      }
+      .form-grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .radio-toggle-group {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .post-nav {
+        display: none;
+      }
+      .mobile-hide {
+        display: none;
+      }
+    }
+  </style>
+
+  <!-- Script Frontend de Interação do Formulário -->
+  <script>
+    // Gerenciador de Seleção dos 3 Cards de Tipo
+    const typeButtons = document.querySelectorAll<HTMLButtonElement>('[data-type-btn]');
+    const formContainer = document.getElementById('feedback-form-container');
+    const inputTipo = document.getElementById('input-tipo') as HTMLInputElement | null;
+    const formSelectedPill = document.getElementById('form-selected-pill');
+    const formSelectedDesc = document.getElementById('form-selected-desc');
+
+    const typeDescriptions: Record<string, { label: string; desc: string }> = {
+      sugestao: {
+        label: 'SUGESTÃO',
+        desc: 'Conte sua ideia para tornar as próximas edições e experiências ainda melhores.'
+      },
+      elogio: {
+        label: 'ELOGIO',
+        desc: 'Fale sobre o que você mais curtiu no evento! Ficamos felizes em saber o que deu certo.'
+      },
+      reclamacao: {
+        label: 'RECLAMAÇÃO',
+        desc: 'Relate com detalhes o que não funcionou. Toda crítica é analisada para correções imediatas.'
+      }
     };
 
-    homeDayTabs.forEach((tab) => tab.addEventListener('click', () => {
-      const slug = tab.getAttribute('data-home-day-tab');
-      if (slug) activateHomeDay(slug);
-    }));
+    const selectType = (type: string) => {
+      typeButtons.forEach((btn) => {
+        const isMatch = btn.getAttribute('data-type-btn') === type;
+        btn.classList.toggle('is-selected', isMatch);
+        btn.setAttribute('aria-pressed', String(isMatch));
+      });
 
-    document.querySelectorAll<HTMLElement>('[data-home-competition-item]').forEach((item) => {
-      const toggle = item.querySelector<HTMLButtonElement>('[data-home-competition-toggle]');
-      const details = item.querySelector<HTMLElement>('[data-home-competition-details]');
-      if (!toggle || !details) return;
+      if (inputTipo) inputTipo.value = type;
 
-      toggle.addEventListener('click', () => {
-        const expanded = item.classList.toggle('is-expanded');
-        toggle.setAttribute('aria-expanded', String(expanded));
-        details.hidden = !expanded;
+      const info = typeDescriptions[type] || typeDescriptions.sugestao;
+      if (formSelectedPill) formSelectedPill.textContent = info.label;
+      if (formSelectedDesc) formSelectedDesc.textContent = info.desc;
+
+      if (formContainer) {
+        formContainer.hidden = false;
+        // Scroll suave até o formulário
+        formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+
+    typeButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const type = btn.getAttribute('data-type-btn');
+        if (type) selectType(type);
       });
     });
 
-    document.querySelectorAll('[data-ticket-carousel]').forEach((carousel) => {
-      const track = carousel.querySelector<HTMLElement>('[data-ticket-track]');
-      const cards = Array.from(carousel.querySelectorAll<HTMLElement>('[data-ticket-card]'));
-      const previous = carousel.querySelector<HTMLButtonElement>('[data-ticket-prev]');
-      const next = carousel.querySelector<HTMLButtonElement>('[data-ticket-next]');
-      const status = carousel.querySelector<HTMLElement>('[data-ticket-status]');
-      if (!track || !cards.length || !previous || !next || !status) return;
+    // Estrelas Interativas
+    const starInputs = document.querySelectorAll<HTMLInputElement>('input[name="estrelas"]');
+    const starLabels = document.querySelectorAll<HTMLLabelElement>('.star-label');
+    const starCaption = document.getElementById('star-caption');
 
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-      let autoplayTimer: number | undefined;
-      let isPaused = false;
+    const captions: Record<number, string> = {
+      1: '1 estrela — Muito ruim',
+      2: '2 estrelas — Precisa melhorar',
+      3: '3 estrelas — Regular / Bom',
+      4: '4 estrelas — Muito bom!',
+      5: '5 estrelas — Excelente! Adorei!'
+    };
 
-      const getStep = () => {
-        const card = cards[0];
-        if (!card) return 0;
-        const styles = window.getComputedStyle(track);
-        const gap = Number.parseFloat(styles.columnGap || styles.gap || '0');
-        return card.getBoundingClientRect().width + gap;
-      };
-
-      const getVisible = (step: number) => step ? Math.max(1, Math.round(track.clientWidth / step)) : 1;
-      const getMaxStart = (step: number) => Math.max(0, cards.length - getVisible(step));
-      const getCurrent = (step: number) => {
-        const maxStart = getMaxStart(step);
-        return step ? Math.min(maxStart, Math.max(0, Math.round(track.scrollLeft / step))) : 0;
-      };
-
-      const updateCarousel = () => {
-        const step = getStep();
-        const visible = getVisible(step);
-        const current = getCurrent(step);
-        const first = Math.min(cards.length, current + 1);
-        const last = Math.min(cards.length, first + visible - 1);
-        const hasOverflow = getMaxStart(step) > 0;
-        status.textContent = `${first}–${last} de ${cards.length}`;
-        previous.disabled = !hasOverflow;
-        next.disabled = !hasOverflow;
-      };
-
-      const scrollToIndex = (index: number) => {
-        const step = getStep();
-        if (!step) return;
-        track.scrollTo({ left: Math.max(0, index) * step, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
-      };
-
-      const move = (direction: number) => {
-        const step = getStep();
-        const maxStart = getMaxStart(step);
-        if (!maxStart) return;
-        const current = getCurrent(step);
-        const target = direction > 0
-          ? current >= maxStart ? 0 : current + 1
-          : current <= 0 ? maxStart : current - 1;
-        scrollToIndex(target);
-      };
-
-      const stopAutoplay = () => {
-        if (autoplayTimer) window.clearInterval(autoplayTimer);
-        autoplayTimer = undefined;
-      };
-
-      const startAutoplay = () => {
-        stopAutoplay();
-        if (isPaused || reduceMotion.matches || document.hidden || cards.length < 2) return;
-        autoplayTimer = window.setInterval(() => move(1), 4800);
-      };
-
-      const pauseAutoplay = () => {
-        isPaused = true;
-        stopAutoplay();
-      };
-
-      const resumeAutoplay = () => {
-        isPaused = false;
-        startAutoplay();
-      };
-
-      previous.addEventListener('click', () => move(-1));
-      next.addEventListener('click', () => move(1));
-      carousel.addEventListener('mouseenter', pauseAutoplay);
-      carousel.addEventListener('mouseleave', resumeAutoplay);
-      carousel.addEventListener('focusin', pauseAutoplay);
-      carousel.addEventListener('focusout', (event) => {
-        const focusEvent = event as FocusEvent;
-        if (!(focusEvent.relatedTarget instanceof Node) || !carousel.contains(focusEvent.relatedTarget)) resumeAutoplay();
+    const updateStarDisplay = (value: number) => {
+      starLabels.forEach((label, idx) => {
+        label.classList.toggle('is-lit', idx < value);
       });
-      track.addEventListener('scroll', updateCarousel, { passive: true });
-      track.addEventListener('touchstart', pauseAutoplay, { passive: true });
-      window.addEventListener('resize', () => {
-        updateCarousel();
-        if (!isPaused) startAutoplay();
+      if (starCaption) {
+        starCaption.textContent = captions[value] || 'Selecione uma nota';
+      }
+    };
+
+    starInputs.forEach((input) => {
+      input.addEventListener('change', () => {
+        const val = Number(input.value);
+        updateStarDisplay(val);
       });
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) stopAutoplay();
-        else startAutoplay();
-      });
-      updateCarousel();
-      startAutoplay();
     });
 
-    const countdown = document.querySelector('[data-countdown]');
-    const countdownTarget = countdown?.getAttribute('data-countdown-target');
-    const countdownStatus = countdown?.querySelector('[data-countdown-status]');
-    const countdownDays = countdown?.querySelector('[data-countdown-days]');
-    const countdownHours = countdown?.querySelector('[data-countdown-hours]');
-    const countdownMinutes = countdown?.querySelector('[data-countdown-minutes]');
-    const countdownSeconds = countdown?.querySelector('[data-countdown-seconds]');
+    // Contador de Caracteres da Mensagem
+    const messageTextarea = document.getElementById('mensagem-textarea') as HTMLTextAreaElement | null;
+    const charCounter = document.getElementById('char-counter');
+    messageTextarea?.addEventListener('input', () => {
+      if (charCounter && messageTextarea) {
+        const len = messageTextarea.value.length;
+        charCounter.textContent = `${len} / 2000`;
+        charCounter.style.color = len > 1900 ? 'var(--yellow)' : 'rgba(255, 255, 255, .5)';
+      }
+    });
 
-    if (countdown && countdownTarget && countdownDays && countdownHours && countdownMinutes && countdownSeconds) {
-      const targetTimestamp = new Date(countdownTarget).getTime();
+    // Alternância de Identificação (Anônimo vs Identificado)
+    const anonimoRadios = document.querySelectorAll<HTMLInputElement>('input[name="anonimo"]');
+    const identifiedFields = document.getElementById('identified-fields');
+    const contactBox = document.getElementById('contact-permission-box');
+    const nomeInput = document.getElementById('nome-input') as HTMLInputElement | null;
+    const emailInput = document.getElementById('email-input') as HTMLInputElement | null;
 
-      const updateCountdown = () => {
-        const remaining = Math.max(targetTimestamp - Date.now(), 0);
-        const totalSeconds = Math.floor(remaining / 1000);
-        const days = Math.floor(totalSeconds / 86400);
-        const hours = Math.floor((totalSeconds % 86400) / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-        const format = (value: number) => String(value).padStart(2, '0');
+    const toggleIdentification = (isAnonimo: boolean) => {
+      if (identifiedFields) {
+        identifiedFields.style.display = isAnonimo ? 'none' : 'block';
+      }
+      if (contactBox) {
+        contactBox.style.display = isAnonimo ? 'none' : 'block';
+      }
+      if (nomeInput) nomeInput.required = !isAnonimo;
+      if (emailInput) emailInput.required = !isAnonimo;
 
-        countdownDays.textContent = format(days);
-        countdownHours.textContent = format(hours);
-        countdownMinutes.textContent = format(minutes);
-        countdownSeconds.textContent = format(seconds);
+      const pubOptionName = document.getElementById('pub-option-name');
+      const pubNameRadio = document.querySelector<HTMLInputElement>('input[name="autorizacaoPublicacao"][value="nome"]');
+      const pubAnonRadio = document.querySelector<HTMLInputElement>('input[name="autorizacaoPublicacao"][value="anonimo"]');
 
-        if (remaining === 0 && countdownStatus) countdownStatus.textContent = 'O FESTIVAL COMEÇOU';
-      };
+      if (pubOptionName) {
+        pubOptionName.style.display = isAnonimo ? 'none' : 'flex';
+      }
+      if (isAnonimo && pubNameRadio?.checked && pubAnonRadio) {
+        pubAnonRadio.checked = true;
+      }
+    };
 
-      updateCountdown();
-      const countdownTimer = window.setInterval(updateCountdown, 1000);
-      window.addEventListener('pagehide', () => window.clearInterval(countdownTimer), { once: true });
+    anonimoRadios.forEach((radio) => {
+      radio.addEventListener('change', () => {
+        toggleIdentification(radio.value === 'true');
+      });
+    });
+
+    // Envio do Formulário com Validação e Feedback Instantâneo
+    const feedbackForm = document.getElementById('feedback-form') as HTMLFormElement | null;
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+    const errorBox = document.getElementById('form-error-box');
+    const successState = document.getElementById('feedback-success-state');
+    const resetFormBtn = document.getElementById('reset-form-btn');
+
+    feedbackForm?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!feedbackForm || !submitBtn) return;
+
+      if (errorBox) {
+        errorBox.hidden = true;
+        errorBox.textContent = '';
+      }
+
+      // Validação básica do cliente
+      const formData = new FormData(feedbackForm);
+      const tipo = formData.get('tipo');
+      const estrelas = formData.get('estrelas');
+      const categoria = formData.get('categoria');
+      const mensagem = String(formData.get('mensagem') || '').trim();
+      const isAnonimo = formData.get('anonimo') === 'true';
+
+      if (!tipo) {
+        showError('Por favor, selecione se é uma Sugestão, Elogio ou Reclamação.');
+        return;
+      }
+      if (!estrelas) {
+        showError('Por favor, selecione de 1 a 5 estrelas para avaliar sua experiência.');
+        return;
+      }
+      if (!categoria) {
+        showError('Por favor, selecione sobre o que você deseja falar na lista de áreas.');
+        return;
+      }
+      if (mensagem.length < 10) {
+        showError('Por favor, escreva uma mensagem com pelo menos 10 caracteres.');
+        return;
+      }
+      if (!isAnonimo) {
+        const nome = String(formData.get('nome') || '').trim();
+        const email = String(formData.get('email') || '').trim();
+        if (nome.length < 2) {
+          showError('Por favor, informe seu nome completo ou opte pelo envio anônimo.');
+          return;
+        }
+        if (!email.includes('@') || email.length < 5) {
+          showError('Por favor, informe um endereço de e-mail válido.');
+          return;
+        }
+      }
+
+      // Submissão assíncrona
+      submitBtn.disabled = true;
+      const btnText = submitBtn.querySelector('.btn-text');
+      const btnLoader = submitBtn.querySelector('.btn-loader');
+      if (btnText) btnText.textContent = 'ENVIANDO MANIFESTAÇÃO...';
+      if (btnLoader) btnLoader.removeAttribute('hidden');
+
+      try {
+        const response = await fetch('/api/feedbacks', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Não foi possível registrar sua manifestação.');
+        }
+
+        // Sucesso
+        feedbackForm.hidden = true;
+        if (successState) successState.hidden = false;
+        successState?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (err: any) {
+        showError(err.message || 'Ocorreu um erro ao enviar. Tente novamente.');
+      } finally {
+        submitBtn.disabled = false;
+        if (btnText) btnText.textContent = 'ENVIAR MANIFESTAÇÃO';
+        if (btnLoader) btnLoader.setAttribute('hidden', '');
+      }
+    });
+
+    function showError(msg: string) {
+      if (errorBox) {
+        errorBox.textContent = msg;
+        errorBox.hidden = false;
+        errorBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    resetFormBtn?.addEventListener('click', () => {
+      if (feedbackForm && successState) {
+        feedbackForm.reset();
+        feedbackForm.hidden = false;
+        successState.hidden = true;
+        updateStarDisplay(0);
+        if (charCounter) charCounter.textContent = '0 / 2000';
+        toggleIdentification(false);
+        feedbackForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+
+    // Inscrição na Newsletter / Comunidade VIP
+    const nlForm = document.getElementById('newsletter-form') as HTMLFormElement | null;
+    const nlSubmitBtn = document.getElementById('nl-submit-btn') as HTMLButtonElement | null;
+    const nlErrorBox = document.getElementById('nl-error-box');
+    const nlSuccessBox = document.getElementById('nl-success-box');
+    const nlSuccessMsg = document.getElementById('nl-success-msg');
+
+    nlForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!nlForm || !nlSubmitBtn) return;
+
+      if (nlErrorBox) {
+        nlErrorBox.hidden = true;
+        nlErrorBox.style.display = 'none';
+        nlErrorBox.textContent = '';
+      }
+      if (nlSuccessBox) {
+        nlSuccessBox.hidden = true;
+        nlSuccessBox.style.display = 'none';
+      }
+
+      const formData = new FormData(nlForm);
+      const nome = String(formData.get('nome') || '').trim();
+      const email = String(formData.get('email') || '').trim();
+      const whatsapp = String(formData.get('whatsapp') || '').trim();
+
+      if (nome.length < 2) {
+        showNlError('Por favor, informe seu nome completo.');
+        return;
+      }
+      if (!email.includes('@') || email.length < 5) {
+        showNlError('Por favor, informe um endereço de e-mail válido.');
+        return;
+      }
+      if (whatsapp.length < 8) {
+        showNlError('Por favor, informe seu número de WhatsApp com DDD.');
+        return;
+      }
+
+      nlSubmitBtn.disabled = true;
+      const btnText = nlSubmitBtn.querySelector('.btn-text');
+      const btnLoader = nlSubmitBtn.querySelector('.btn-loader');
+      if (btnText) btnText.textContent = 'CADASTRANDO...';
+      if (btnLoader) btnLoader.removeAttribute('hidden');
+
+      try {
+        const response = await fetch('/api/newsletter', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Não foi possível cadastrar seu contato.');
+        }
+
+        // Sucesso real: esconde o formulário e mostra a caixa de confirmação
+        nlForm.hidden = true;
+        nlForm.style.display = 'none';
+        if (nlSuccessBox) {
+          nlSuccessBox.hidden = false;
+          nlSuccessBox.style.display = 'flex';
+          if (nlSuccessMsg && result.message) {
+            nlSuccessMsg.textContent = result.message;
+          }
+        }
+      } catch (err: any) {
+        showNlError(err.message || 'Erro ao conectar. Tente novamente.');
+      } finally {
+        nlSubmitBtn.disabled = false;
+        if (btnText) btnText.textContent = 'QUERO RECEBER AS NOVIDADES 🚀';
+        if (btnLoader) btnLoader.setAttribute('hidden', '');
+      }
+    });
+
+    function showNlError(msg: string) {
+      if (nlErrorBox) {
+        nlErrorBox.textContent = msg;
+        nlErrorBox.hidden = false;
+        nlErrorBox.style.display = 'block';
+      }
     }
   </script>
 </BaseLayout>
