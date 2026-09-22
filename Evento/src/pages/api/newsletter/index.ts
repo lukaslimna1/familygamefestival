@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { subscribeNewsletter } from '../../../lib/server/newsletter/repository';
+import { checkRateLimit, getClientIp } from '../../../lib/server/security/rateLimit';
 
 export const prerender = false;
 
@@ -13,6 +14,23 @@ const newsletterSchema = z.object({
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    // Rate limit por IP para prevenir abuso automatizado (máximo 6 inscrições por minuto)
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(clientIp, 'newsletter_subscribe', { windowMs: 60_000, max: 6 });
+    if (!rateCheck.allowed) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Muitas tentativas em pouco tempo. Por favor, aguarde alguns instantes antes de enviar novamente.'
+      }), {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'no-store',
+          'Retry-After': String(rateCheck.retryAfterSeconds)
+        }
+      });
+    }
+
     let payload: Record<string, unknown> = {};
     const contentType = request.headers.get('content-type') || '';
 

@@ -81,7 +81,7 @@ const statusLabels: Record<string, string> = {
         <span class:list={['admin-v2-status', tipoBadgeClass[feedback.tipo] || 'status-pending']}>
           {tipoLabels[feedback.tipo] || feedback.tipo}
         </span>
-        <span class:list={['admin-v2-status', statusBadgeClass[feedback.status] || 'status-pending']}>
+        <span id="detail-status-badge" class:list={['admin-v2-status', statusBadgeClass[feedback.status] || 'status-pending']}>
           {statusLabels[feedback.status] || feedback.status}
         </span>
         {feedback.publicadoSite && (
@@ -187,15 +187,19 @@ const statusLabels: Record<string, string> = {
 
           <form id="form-publish" style="display: grid; gap: 1rem;">
             <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; padding: 0.75rem; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--admin-line);">
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; color: #fff; font-weight: 700;">
+              <label style={`display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #fff; font-weight: 700; ${feedback.autorizacaoPublicacao === 'nao' ? 'opacity: 0.45; cursor: not-allowed;' : 'cursor: pointer;'}`}>
                 <input
                   type="checkbox"
                   id="pub-switch"
                   name="publicadoSite"
                   checked={Boolean(feedback.publicadoSite)}
+                  disabled={feedback.autorizacaoPublicacao === 'nao'}
                   style="width: 16px; height: 16px; accent-color: var(--admin-green);"
                 />
                 Publicar este depoimento na Home oficial
+                {feedback.autorizacaoPublicacao === 'nao' && (
+                  <span style="color: var(--admin-red); font-size: 0.65rem; font-weight: 600;">(Bloqueado: autor não autorizou)</span>
+                )}
               </label>
 
               <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.75rem; color: var(--admin-yellow); font-weight: 700;">
@@ -303,6 +307,7 @@ const statusLabels: Record<string, string> = {
                 type="button"
                 class="admin-button admin-button-secondary"
                 id="btn-copy-reply"
+                disabled={!feedback.resposta || !feedback.resposta.trim()}
                 title="Copiar texto de resposta formatado para colar no WhatsApp, Instagram ou E-mail"
               >
                 <AdminIcon name="copy" />
@@ -459,9 +464,17 @@ const statusLabels: Record<string, string> = {
 
   // Salvar Resposta Oficial
   const formReply = document.getElementById('form-reply');
+  const textareaReply = document.getElementById('textarea-reply') as HTMLTextAreaElement | null;
+  const btnCopy = document.getElementById('btn-copy-reply') as HTMLButtonElement | null;
+
+  textareaReply?.addEventListener('input', () => {
+    if (btnCopy && textareaReply) {
+      btnCopy.disabled = !textareaReply.value.trim();
+    }
+  });
+
   formReply?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const textareaReply = document.getElementById('textarea-reply');
     const resposta = textareaReply?.value || '';
 
     try {
@@ -476,14 +489,26 @@ const statusLabels: Record<string, string> = {
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error || 'Erro ao salvar resposta.');
       showToast('Resposta oficial registrada com sucesso!');
-    } catch (err) {
+
+      // Atualiza status para 'respondido' em tempo real no DOM
+      const selectStatus = document.getElementById('select-status') as HTMLSelectElement | null;
+      if (selectStatus) selectStatus.value = 'respondido';
+      const statusBadge = document.getElementById('detail-status-badge');
+      if (statusBadge) {
+        statusBadge.textContent = 'Respondido';
+        statusBadge.className = 'admin-v2-status status-approved';
+      }
+      if (btnCopy && textareaReply) {
+        btnCopy.disabled = !textareaReply.value.trim();
+      }
+    } catch (err: any) {
       showToast(err.message, true);
     }
   });
 
   // Atualizar Status
   const btnUpdateStatus = document.getElementById('btn-update-status');
-  const selectStatus = document.getElementById('select-status');
+  const selectStatus = document.getElementById('select-status') as HTMLSelectElement | null;
   btnUpdateStatus?.addEventListener('click', async () => {
     const status = selectStatus?.value;
     if (!status) return;
@@ -500,7 +525,21 @@ const statusLabels: Record<string, string> = {
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error || 'Erro ao atualizar status.');
       showToast('Status atualizado com sucesso!');
-    } catch (err) {
+
+      const statusBadge = document.getElementById('detail-status-badge');
+      if (statusBadge && status) {
+        const labels: Record<string, string> = {
+          novo: 'Novo', lido: 'Lido', em_analise: 'Em análise',
+          respondido: 'Respondido', resolvido: 'Resolvido', arquivado: 'Arquivado'
+        };
+        const classes: Record<string, string> = {
+          novo: 'status-pending', lido: 'status-correction', em_analise: 'status-correction',
+          respondido: 'status-approved', resolvido: 'status-approved', arquivado: 'status-rejected'
+        };
+        statusBadge.textContent = labels[status] || status;
+        statusBadge.className = `admin-v2-status ${classes[status] || 'status-pending'}`;
+      }
+    } catch (err: any) {
       showToast(err.message, true);
     }
   });

@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { createFeedback, FEEDBACK_CATEGORIES, type PublicationConsent } from '../../../lib/server/feedback/repository';
+import { checkRateLimit, getClientIp } from '../../../lib/server/security/rateLimit';
 
 export const prerender = false;
 
@@ -26,6 +27,23 @@ const feedbackSchema = z.object({
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    // Rate limit por IP para prevenir abuso automatizado (máximo 6 tentativas por minuto)
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(clientIp, 'feedback_submit', { windowMs: 60_000, max: 6 });
+    if (!rateCheck.allowed) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Muitas mensagens enviadas em pouco tempo. Por favor, aguarde alguns instantes antes de enviar novamente.'
+      }), {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'no-store',
+          'Retry-After': String(rateCheck.retryAfterSeconds)
+        }
+      });
+    }
+
     let payload: Record<string, unknown> = {};
 
     const contentType = request.headers.get('content-type') || '';

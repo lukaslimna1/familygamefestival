@@ -58,14 +58,27 @@ export async function subscribeNewsletter(input: SubscribeNewsletterInput) {
 }
 
 export async function getNewsletterStats() {
-  const db = getDatabase();
-  const [countResult] = await db
-    .select({ total: sql<number>`count(*)` })
-    .from(newsletterLeads);
+  try {
+    const db = getDatabase();
+    const today = new Date().toISOString().split('T')[0];
 
-  return {
-    total: Number(countResult?.total ?? 0)
-  };
+    const [statsResult] = await db
+      .select({
+        total: sql<number>`count(*)`,
+        comWhatsapp: sql<number>`count(case when length(trim(${newsletterLeads.whatsapp})) >= 8 then 1 end)`,
+        hoje: sql<number>`count(case when ${newsletterLeads.createdAt} like ${today + '%'} then 1 end)`
+      })
+      .from(newsletterLeads);
+
+    return {
+      total: Number(statsResult?.total ?? 0),
+      comWhatsapp: Number(statsResult?.comWhatsapp ?? 0),
+      hoje: Number(statsResult?.hoje ?? 0)
+    };
+  } catch (error) {
+    console.error('[Newsletter stats fallback]', error);
+    return { total: 0, comWhatsapp: 0, hoje: 0 };
+  }
 }
 
 export async function listNewsletterLeads(options: { search?: string; limit?: number; offset?: number } = {}) {
@@ -107,4 +120,33 @@ export async function listNewsletterLeads(options: { search?: string; limit?: nu
 
   const items = await query;
   return { items, total };
+}
+
+export async function getAllNewsletterLeadsForExport(search?: string) {
+  try {
+    const db = getDatabase();
+    const conditions = [];
+
+    if (search && search.trim()) {
+      const term = `%${search.trim()}%`;
+      conditions.push(
+        or(
+          ilike(newsletterLeads.nome, term),
+          ilike(newsletterLeads.email, term),
+          ilike(newsletterLeads.whatsapp, term)
+        )
+      );
+    }
+
+    const whereClause = conditions.length > 0 ? conditions[0] : undefined;
+
+    return await db
+      .select()
+      .from(newsletterLeads)
+      .where(whereClause)
+      .orderBy(desc(newsletterLeads.createdAt));
+  } catch (error) {
+    console.error('[Newsletter export fallback]', error);
+    return [];
+  }
 }

@@ -113,58 +113,73 @@ export async function createFeedback(input: CreateFeedbackInput) {
 }
 
 export async function getPublicTestimonials(limit = 12): Promise<PublicTestimonial[]> {
-  const db = getDatabase();
+  try {
+    const db = getDatabase();
 
-  const rows = await db
-    .select({
-      id: feedbacks.id,
-      tipo: feedbacks.tipo,
-      estrelas: feedbacks.estrelas,
-      categoria: feedbacks.categoria,
-      mensagem: feedbacks.mensagem,
-      textoPublico: feedbacks.textoPublico,
-      nomePublico: feedbacks.nomePublico,
-      destaque: feedbacks.destaque,
-      createdAt: feedbacks.createdAt
-    })
-    .from(feedbacks)
-    .where(eq(feedbacks.publicadoSite, true))
-    .orderBy(desc(feedbacks.destaque), desc(feedbacks.createdAt))
-    .limit(limit);
+    const rows = await db
+      .select({
+        id: feedbacks.id,
+        tipo: feedbacks.tipo,
+        estrelas: feedbacks.estrelas,
+        categoria: feedbacks.categoria,
+        mensagem: feedbacks.mensagem,
+        textoPublico: feedbacks.textoPublico,
+        nomePublico: feedbacks.nomePublico,
+        destaque: feedbacks.destaque,
+        createdAt: feedbacks.createdAt
+      })
+      .from(feedbacks)
+      .where(eq(feedbacks.publicadoSite, true))
+      .orderBy(desc(feedbacks.destaque), desc(feedbacks.createdAt))
+      .limit(limit);
 
-  return rows.map((row) => ({
-    id: row.id,
-    tipo: row.tipo as FeedbackType,
-    estrelas: row.estrelas,
-    categoria: row.categoria,
-    texto: row.textoPublico?.trim() || row.mensagem,
-    nomePublico: row.nomePublico || 'Anônimo',
-    destaque: Boolean(row.destaque),
-    criadoEm: row.createdAt
-  }));
+    return rows.map((row) => ({
+      id: row.id,
+      tipo: row.tipo as FeedbackType,
+      estrelas: row.estrelas,
+      categoria: row.categoria,
+      texto: row.textoPublico?.trim() || row.mensagem,
+      nomePublico: row.nomePublico || 'Anônimo',
+      destaque: Boolean(row.destaque),
+      criadoEm: row.createdAt
+    }));
+  } catch (error) {
+    console.error('[SSR Safe Fallback] Erro ao buscar depoimentos públicos:', error);
+    return [];
+  }
 }
 
 export async function getPublicMetrics(): Promise<PublicMetrics> {
-  const db = getDatabase();
+  try {
+    const db = getDatabase();
 
-  const [result] = await db
-    .select({
-      total: sql<number>`count(*)`,
-      somaEstrelas: sql<number>`coalesce(sum(${feedbacks.estrelas}), 0)`
-    })
-    .from(feedbacks);
+    const [result] = await db
+      .select({
+        total: sql<number>`count(*)`,
+        somaEstrelas: sql<number>`coalesce(sum(${feedbacks.estrelas}), 0)`
+      })
+      .from(feedbacks);
 
-  const total = Number(result?.total ?? 0);
-  const soma = Number(result?.somaEstrelas ?? 0);
-  const mediaEstrelas = total > 0 ? Number((soma / total).toFixed(1)) : 0;
-  const mediaFormatada = mediaEstrelas.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const total = Number(result?.total ?? 0);
+    const soma = Number(result?.somaEstrelas ?? 0);
+    const mediaEstrelas = total > 0 ? Number((soma / total).toFixed(1)) : 0;
+    const mediaFormatada = mediaEstrelas.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
-  return {
-    total,
-    mediaEstrelas,
-    mediaFormatada,
-    hasQuorum: total >= 5
-  };
+    return {
+      total,
+      mediaEstrelas,
+      mediaFormatada,
+      hasQuorum: total >= 5
+    };
+  } catch (error) {
+    console.error('[SSR Safe Fallback] Erro ao buscar métricas públicas:', error);
+    return {
+      total: 0,
+      mediaEstrelas: 0,
+      mediaFormatada: '0,0',
+      hasQuorum: false
+    };
+  }
 }
 
 export interface FeedbackFilterOptions {

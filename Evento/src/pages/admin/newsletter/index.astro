@@ -59,16 +59,23 @@ const totalPages = Math.ceil(total / pageSize);
 
       <article class="admin-v2-kpi kpi-green">
         <span class="admin-v2-kpi-icon"><AdminIcon name="whatsapp" /></span>
-        <strong class="admin-v2-kpi-value">{rows.filter((r) => Boolean(r.whatsapp)).length}</strong>
+        <strong class="admin-v2-kpi-value">{stats.comWhatsapp}</strong>
         <span class="admin-v2-kpi-label">Com WhatsApp</span>
-        <small>Prontos para disparos</small>
+        <small>Prontos para disparos (base global)</small>
       </article>
 
       <article class="admin-v2-kpi kpi-yellow">
         <span class="admin-v2-kpi-icon"><AdminIcon name="spark" /></span>
+        <strong class="admin-v2-kpi-value">{stats.hoje}</strong>
+        <span class="admin-v2-kpi-label">Cadastros Hoje</span>
+        <small>Novos contatos nas últimas 24h</small>
+      </article>
+
+      <article class="admin-v2-kpi kpi-cyan">
+        <span class="admin-v2-kpi-icon"><AdminIcon name="folder" /></span>
         <strong class="admin-v2-kpi-value">{total}</strong>
         <span class="admin-v2-kpi-label">Filtro Atual</span>
-        <small>Registros exibidos</small>
+        <small>Encontrados nesta busca</small>
       </article>
     </section>
 
@@ -85,67 +92,82 @@ const totalPages = Math.ceil(total / pageSize);
         </label>
         <button class="admin-button admin-button-primary" type="submit">Buscar</button>
         <a class="admin-button admin-button-secondary" href="/admin/newsletter">Limpar</a>
-        <button type="button" class="admin-button admin-button-secondary" id="btn-export-csv" style="margin-left: auto;">
+        <a
+          class="admin-button admin-button-secondary"
+          href={`/api/admin/newsletter/export${search ? `?q=${encodeURIComponent(search)}` : ''}`}
+          download
+          style="margin-left: auto;"
+          title="Exportar todos os registros correspondentes da base em formato CSV"
+        >
           <AdminIcon name="download" />
-          <span>Exportar CSV</span>
-        </button>
+          <span>Exportar Base Completa (CSV)</span>
+        </a>
       </form>
     </section>
 
-    <!-- Tabela de Leads -->
-    <section class="admin-v2-card" aria-labelledby="newsletter-list-title">
+    <!-- Tabela de Contatos -->
+    <section class="admin-v2-card admin-v2-table-card" aria-label="Lista de Inscritos na Newsletter">
       <div class="admin-v2-card-heading">
         <div>
           <p class="admin-section-kicker">Base de contatos</p>
-          <h2 id="newsletter-list-title">Inscritos da Newsletter</h2>
-          <p>Contatos capturados no pós-evento para engajamento das próximas edições.</p>
+          <h2>Inscritos na Newsletter</h2>
+          <p>Exibindo {rows.length} de {total} registros encontrados.</p>
         </div>
       </div>
 
       {rows.length > 0 ? (
         <div class="admin-v2-table-wrap">
-          <table class="admin-v2-table admin-v2-cosplay-table" id="leads-table">
+          <table class="admin-v2-table" id="leads-table">
             <thead>
               <tr>
-                <th style="width: 140px;">Data de Cadastro</th>
                 <th>Nome</th>
                 <th>E-mail</th>
-                <th style="width: 180px;">WhatsApp</th>
-                <th style="width: 140px;">Origem</th>
+                <th>WhatsApp</th>
+                <th>Origem</th>
+                <th>Data de Inscrição</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => {
-                const wa = whatsappUrl(row.whatsapp);
+              {rows.map((lead) => {
+                const wa = whatsappUrl(lead.whatsapp);
                 return (
                   <tr>
                     <td>
-                      <span class="admin-v2-code">
-                        {formatAdminDate(row.createdAt)}
-                      </span>
+                      <strong style="color: #fff;">{lead.nome}</strong>
                     </td>
                     <td>
-                      <strong style="color: #fff; font-size: 0.8rem;">{row.nome}</strong>
+                      <span style="color: var(--admin-cyan);">{lead.email}</span>
                     </td>
                     <td>
-                      <a href={`mailto:${row.email}`} style="color: var(--admin-cyan); font-size: 0.78rem;">
-                        {row.email}
-                      </a>
-                    </td>
-                    <td>
-                      {wa ? (
-                        <a class="admin-v2-contact-whatsapp" href={wa} target="_blank" rel="noreferrer" style="display: inline-flex; align-items: center; gap: 4px;">
-                          <span>{row.whatsapp}</span>
-                          <AdminIcon name="whatsapp" />
-                        </a>
+                      {lead.whatsapp ? (
+                        <span>{lead.whatsapp}</span>
                       ) : (
-                        <span style="color: var(--admin-muted); font-size: 0.75rem;">{row.whatsapp}</span>
+                        <span style="color: var(--admin-muted); font-size: 0.72rem;">Não informado</span>
                       )}
                     </td>
                     <td>
-                      <span class="admin-v2-compact-label" style="text-transform: none;">
-                        {row.origem}
+                      <span class="admin-v2-chip">{lead.origem || 'home'}</span>
+                    </td>
+                    <td>
+                      <span style="color: var(--admin-muted); font-size: 0.72rem;">
+                        {formatAdminDate(lead.createdAt)}
                       </span>
+                    </td>
+                    <td>
+                      {wa && (
+                        <a
+                          class="admin-button admin-button-secondary"
+                          href={wa}
+                          target="_blank"
+                          rel="noreferrer"
+                          style="font-size: 0.7rem; padding: 0.25rem 0.5rem;"
+                          title="Abrir conversa no WhatsApp"
+                        >
+                          <AdminIcon name="whatsapp" />
+                          <span>Chamar</span>
+                        </a>
+                      )}
                     </td>
                   </tr>
                 );
@@ -181,25 +203,3 @@ const totalPages = Math.ceil(total / pageSize);
     </section>
   </div>
 </AdminLayout>
-
-<script>
-  const btnExport = document.getElementById('btn-export-csv');
-  btnExport?.addEventListener('click', () => {
-    const table = document.getElementById('leads-table') as HTMLTableElement | null;
-    if (!table) return;
-
-    const rows = Array.from(table.querySelectorAll('tr'));
-    const csvContent = rows.map((row) => {
-      const cols = Array.from(row.querySelectorAll('th, td'));
-      return cols.map((col) => `"${(col.textContent || '').trim().replace(/"/g, '""')}"`).join(';');
-    }).join('\n');
-
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `leads_newsletter_fgf_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-  });
-</script>

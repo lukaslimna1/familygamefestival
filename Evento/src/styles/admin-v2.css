@@ -85,8 +85,8 @@
 
 .admin-v2-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: .7rem;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: .75rem;
 }
 
 .admin-v2-kpi {
@@ -735,7 +735,7 @@
 .admin-account-menu-panel button:focus-visible { color: #fff; background: rgba(25, 198, 242, .1); outline: none; }
 .admin-account-menu-panel form { margin: 0; border-top: 1px solid var(--admin-line); }
 
-@media (max-width: 1250px) {
+@media (max-width: 1400px) {
   .admin-v2-kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .admin-topbar-search { width: min(16rem, 22vw); }
 }
